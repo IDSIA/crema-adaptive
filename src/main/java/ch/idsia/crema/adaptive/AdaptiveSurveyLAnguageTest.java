@@ -20,7 +20,7 @@ import java.util.stream.IntStream;
  * Project: Credo3
  * Date:    21.02.2017 16:22
  */
-public class AdaptiveSurveyLAnguageTest {
+public class AdaptiveSurveyLanguageTest {
 
 	// debug and thread configuration ----------------------------------------------------------------------------------
 	private static final boolean DEBUG = false;
@@ -79,7 +79,7 @@ public class AdaptiveSurveyLAnguageTest {
 	 *
 	 * @param student refernece id of the students
 	 */
-	private AdaptiveSurveyLAnguageTest(int student) {
+	private AdaptiveSurveyLanguageTest(int student) {
 		this.student = student;
 
 		random = new Random(seed + student);
@@ -105,7 +105,7 @@ public class AdaptiveSurveyLAnguageTest {
 				try {
 					System.out.printf("Start for student %d%n", studentId);
 
-					AdaptiveSurveyLAnguageTest aslat = new AdaptiveSurveyLAnguageTest(studentId);
+					AdaptiveSurveyLanguageTest aslat = new AdaptiveSurveyLanguageTest(studentId);
 					aslat.test();
 
 					saveToFile(aslat, out_path);
@@ -118,7 +118,7 @@ public class AdaptiveSurveyLAnguageTest {
 		es.shutdown();
 	}
 
-	private static synchronized void saveToFile(AdaptiveSurveyLAnguageTest aslat, Path path) {
+	private static synchronized void saveToFile(AdaptiveSurveyLanguageTest aslat, Path path) {
 		try (BufferedWriter bw = Files.newBufferedWriter(path, StandardOpenOption.CREATE, StandardOpenOption.APPEND)) {
 			StringBuilder out = new StringBuilder();
 			out.append(String.format("%3d %2d ", aslat.student, aslat.questionAnswered));
