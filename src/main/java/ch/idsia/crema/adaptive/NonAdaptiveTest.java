@@ -189,7 +189,7 @@ public class NonAdaptiveTest {
 				String line = scan.nextLine();
 				if (!remove.contains(rowNumber)) {
 					col = 0;
-					for (String element : line.split(",")) {
+					for (String element : line.split(" *,")) {
 						trueLevels[scount][col] = Integer.parseInt(element);
 						col++;
 					}
@@ -214,7 +214,7 @@ public class NonAdaptiveTest {
 				String line = scan.nextLine();
 				if (!remove.contains(rowNumber)) {
 					col = 0;
-					for (String element : line.split(",")) {
+					for (String element : line.split(" *,")) {
 						trueLevels2[scount][col] = Integer.parseInt(element);
 						col++;
 					}
