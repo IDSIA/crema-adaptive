@@ -15,13 +15,13 @@ public class AbellanEntropy {
 		l = new double[]{0.3, 0.4, 0.0, 0.0, 0.0};
 		u = new double[]{1.0, 1.0, 0.04, 1.0, 1.0};
 
-		e = ae.getMaxEntropy(l, u);
+		e = ae.getDistrWithMaxEntropy(l, u);
 		System.out.println(Arrays.toString(e));
 
 		l = new double[]{0.08771929824561402, 0.21052631578947367, 0.3508771929824561, 0.3508771929824561};
 		u = new double[]{0.08771929824561402, 0.21052631578947367, 0.3508771929824561, 0.3508771929824561};
 
-		e = ae.getMaxEntropy(l, u);
+		e = ae.getDistrWithMaxEntropy(l, u);
 		System.out.println(Arrays.toString(e));
 
 //		l = new double[]{0.3164556962025316, 0.3164556962025316, 0.05063291139240505, 0.3164556962025316};
@@ -39,28 +39,16 @@ public class AbellanEntropy {
 	 * @return the index of the minimum value
 	 */
 	private int minLS(double[] arr, boolean[] b) {
-		int index = 0;
-		boolean[] b2 = b.clone();
-		double myMin;
+		int index = -1;
+		double myMin = Double.POSITIVE_INFINITY;
 
-		if (!allFalse(b2)) {
-			for (int i = 0; i < arr.length; i++) {
-				if (b2[i]) {
+		for (int i = 0; i < b.length; i++) {
+			if (b[i]) {
+				if (arr[i] < myMin) {
+					myMin = arr[i];
 					index = i;
-					break;
 				}
 			}
-			myMin = arr[index];
-			for (int i = 0; i < b2.length; i++) {
-				if (b2[i]) {
-					if (arr[i] < myMin) {
-						myMin = arr[i];
-						index = i;
-					}
-				}
-			}
-		} else {
-			index = -1;
 		}
 
 		return index;
@@ -98,6 +86,7 @@ public class AbellanEntropy {
 		boolean[] b2 = b.clone();
 		int index = minLS(arr, b2);
 		double min1 = arr[index];
+//		Deactivate all the minimums (set to false all of them)
 		for (int i = 0; i < arr.length; i++)
 			if (arr[i] == min1)
 				b2[i] = false;
@@ -123,10 +112,9 @@ public class AbellanEntropy {
 		return true;
 	}
 
-	public double[] getMaxEntropy(double[] l, double[] u) {
+//	FIXME: return the probability distribution with the maximum entropy
+	public double[] getDistrWithMaxEntropy(double[] l, double[] u) {
 		// ALGORITHM
-		double ss;
-		int r, f, m;
 		boolean[] S = new boolean[l.length];
 		for (int i = 0; i < l.length; i++) {
 			S[i] = true;
@@ -138,10 +126,10 @@ public class AbellanEntropy {
 					S[i] = false;
 				}
 			}
-			ss = DoubleStream.of(l).sum();
-			r = minLS(l, S);
-			f = secondMinLS(l, S);
-			m = nMinLS(l, S);
+			double ss = DoubleStream.of(l).sum();
+			int r = minLS(l, S);  // index of the first minimum value in l
+			int f = secondMinLS(l, S);  // index of the second minimum value in l
+			int m = nMinLS(l, S);  // the number of "minimum" elements in l
 			for (int i = 0; i < l.length; i++) {
 				if (l[i] == l[minLS(l, S)]) {
 					if (f == -1) {
