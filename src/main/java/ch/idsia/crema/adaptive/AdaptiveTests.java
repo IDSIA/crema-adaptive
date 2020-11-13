@@ -35,9 +35,10 @@ public class AdaptiveTests {
 		AdaptiveFileTools.writeBNFile(myPath + credalFileName);
 		System.out.println("Inference time ...");
 
-		// Demonstrative answers sequence
+//		// Demonstrative answers sequence
 //		double[][] right2 = {{0.0, 7.0, 9.0, 10.0}, {0.0, 8.0, 8.0, 7.0}, {0.0, 5.0, 5.0, 5.0}, {0.0, 4.0, 6.0, 1.0}};
 //		double[][] wrong2 = {{0.0, 6.0, 5.0, 5.0}, {0.0, 4.0, 7.0, 3.0}, {0.0, 1.0, 2.0, 5.0}, {0.0, 5.0, 8.0, 9.0}};
+
 		// Whole set of answers
 		double[][][] right2 = {{{0.0, 4.0, 5.0, 5.0}, {0.0, 4.0, 1.0, 5.0}, {0.0, 4.0, 3.0, 0.0}, {0.0, 1.0, 2.0, 1.0}}, {{0.0, 3.0, 6.0, 2.0}, {0.0, 4.0, 1.0, 1.0}, {0.0, 3.0, 2.0, 0.0}, {0.0, 2.0, 4.0, 4.0}}, {{0.0, 5.0, 0.0, 0.0}, {0.0, 1.0, 0.0, 0.0}, {0.0, 0.0, 0.0, 0.0}, {0.0, 0.0, 0.0, 0.0}}};
 		double[][][] wrong2 = {{{0.0, 6.0, 5.0, 5.0}, {0.0, 4.0, 7.0, 3.0}, {0.0, 1.0, 2.0, 5.0}, {0.0, 5.0, 8.0, 9.0}}, {{0.0, 7.0, 4.0, 8.0}, {0.0, 4.0, 7.0, 7.0}, {0.0, 2.0, 3.0, 5.0}, {0.0, 4.0, 6.0, 6.0}}, {{0.0, 5.0, 10.0, 10.0}, {0.0, 7.0, 8.0, 8.0}, {0.0, 5.0, 5.0, 5.0}, {0.0, 6.0, 10.0, 10.0}}};
@@ -70,6 +71,7 @@ public class AdaptiveTests {
 				// Compute and print the results of the Bayesian
 				results = myTest.germanTest(myPath + bayesFileName, skill, right2[student], wrong2[student]);
 				System.out.print("[ID" + student + "][S" + skill + "][Bayes]\t\t");
+//				Same upper and lower bounds in case of a Bayesian inference
 				for (double p : results[0]) System.out.printf(Locale.ROOT, "%2.3f\t", p * 100);
 				System.out.print("\n");
 			}
@@ -207,6 +209,7 @@ public class AdaptiveTests {
 			double[][] lP = new double[nLevels][2];
 			double[][] uP = new double[nLevels][2];
 
+//			Computing the entropy
 			for (int l = 0; l < nLevels; l++) {
 				for (int l2 = 0; l2 < 4; l2++) {
 					myLogs[l][0] += Math.log(qType[l2][l][0]) * rightQ[s][l2];

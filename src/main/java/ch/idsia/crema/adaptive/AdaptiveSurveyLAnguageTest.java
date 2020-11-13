@@ -77,7 +77,7 @@ public class AdaptiveSurveyLanguageTest {
 	 * Create a survey test for a single student. Each students will have its lists of questions, its personal test,
 	 * and its answer sheet.
 	 *
-	 * @param student refernece id of the students
+	 * @param student reference id of the students
 	 */
 	private AdaptiveSurveyLanguageTest(int student) {
 		this.student = student;
@@ -195,8 +195,8 @@ public class AdaptiveSurveyLanguageTest {
 				results[s] = at.germanTest(credalFileName, s, askedQuestion, rightQuestion);
 
 				// entropy of the skill
-				double[] distribution = ae.getMaxEntropy(results[s][0], results[s][1]);
-				double HS = H(distribution, states);
+				double[] distribution = ae.getDistrWithMaxEntropy(results[s][0], results[s][1]);
+				double HS = H(distribution);
 
 				for (int l = 0; l < levelNumber; l++) {
 					List<Integer> availableQuestions = q.getQuestions(s, l);
@@ -224,15 +224,20 @@ public class AdaptiveSurveyLanguageTest {
 						rightQuestion[s][l] -= r;
 					}
 
-					// ma between right and wrong
+					// max between right and wrong
 					double H = Math.max(HResults[0], HResults[1]);
 					if (DEBUG) System.out.println("H = " + H);
 
+//					FIXME
 					double ig = HS - H; // infogain
+//					double ig = HS - HResults[0];
 
 					// minimize
+//					FIXME: what means??
 					if (ig < 0) {
 						System.err.println("Negative information gain: " + s + " (" + HS + ") " + l + " (" + H + "): " + ig);
+//						System.err.println(HResults[0]);
+//						System.err.println(HResults[1]);
 					}
 					if (ig > maxIG) {
 						maxIG = H;
@@ -268,8 +273,8 @@ public class AdaptiveSurveyLanguageTest {
 				results[s] = at.germanTest(credalFileName, s, askedQuestion, rightQuestion);
 
 				// entropy of the skill
-				double[] distribution = ae.getMaxEntropy(results[s][0], results[s][1]);
-				double HS = H(distribution, states);
+				double[] distribution = ae.getDistrWithMaxEntropy(results[s][0], results[s][1]);
+				double HS = H(distribution);
 
 				if (HS > STOP_THRESHOLD) {
 					System.out.println("HS(" + s + ") = " + HS + ", continue");
@@ -295,20 +300,21 @@ public class AdaptiveSurveyLanguageTest {
 		if (DoubleStream.of(results[0]).sum() > 1 - 10E-15) {
 			// precise model
 			if (DEBUG) System.out.println("Precise model");
-			HResults[r] = H(results[0], states);
+			HResults[r] = H(results[0]);
 		} else {
 			// imprecise model
-			double[] maxLocalEntropy = ae.getMaxEntropy(results[0], results[1]);
+			double[] maxLocalEntropy = ae.getDistrWithMaxEntropy(results[0], results[1]);
 			if (DEBUG) System.out.println(s + " " + l + " " + r + " " + Arrays.toString(maxLocalEntropy));
-			HResults[r] = H(maxLocalEntropy, states);
+			HResults[r] = H(maxLocalEntropy);
 		}
 	}
 
-	private double H(double[] d, int x) {
+	private double H(double[] d) {
 		double h = 0.0;
 
 		for (double v : d) {
-			double logXv = Math.log(v) / Math.log(x);
+//			FIXME log base 4
+			double logXv = Math.log(v) / Math.log(AdaptiveSurveyLanguageTest.states);
 			h += v * logXv;
 		}
 
