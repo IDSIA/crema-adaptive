@@ -41,7 +41,7 @@ public class AdaptiveSurveyLanguageTest {
 	private static final int states = levelNumber;
 
 	/**
-	 * Fixed andom seed.
+	 * Fixed random seed.
 	 */
 	private static final long seed = 42;
 
