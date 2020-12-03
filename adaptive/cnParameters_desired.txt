@@ -26,8 +26,8 @@
 0.6 0.625 // lP(Q=right|S=2),uP(Q=right|S=2)
 0.80 0.825 // lP(Q=right|S=3),uP(Q=right|S=3)
 // K(Q|S) hard
-0.25 0.25 // lP(Q=right|S=0),uP(Q=right|S=0)
-0.25 0.25 // lP(Q=right|S=1),uP(Q=right|S=1)
-0.325 0.35 // lP(Q=right|S=2),uP(Q=right|S=2)
-0.6 0.625 // lP(Q=right|S=3),uP(Q=right|S=3)
+0.250 0.250 // lP(Q=right|S=0),uP(Q=right|S=0)
+0.250 0.250 // lP(Q=right|S=1),uP(Q=right|S=1)
+0.325 0.350 // lP(Q=right|S=2),uP(Q=right|S=2)
+0.600 0.625 // lP(Q=right|S=3),uP(Q=right|S=3)
 
