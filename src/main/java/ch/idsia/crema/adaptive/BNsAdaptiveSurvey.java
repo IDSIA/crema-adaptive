@@ -31,10 +31,10 @@ public class BNsAdaptiveSurvey {
             "adaptive/Wortschatz und Strukturen2015-16.csv"
     };
 
-    private static final int numberOfSkills = 4;
-    private static final int numberOfDifficultyLevels = 4;
-    private static final int numberOfLevels = 4;
-    private static final int states = numberOfDifficultyLevels;
+    private static final int nSkills = 4;
+    private static final int nDifficultyLevels = 4;
+    private static final int nSkillLevels = 4;
+    private static final int states = nDifficultyLevels;
 
     private static final long randomSeed = 42;
 
@@ -50,22 +50,21 @@ public class BNsAdaptiveSurvey {
     private final int student;
 
     //    FIXME
-    private final double[][] askedQuestion = new double[numberOfSkills][numberOfDifficultyLevels]; // {{0, 0, 0, 0}, {0, 0, 0, 0}, {0, 0, 0, 0}, {0, 0, 0, 0}}
+    private final double[][] askedQuestion = new double[nSkills][nDifficultyLevels]; // {{0, 0, 0, 0}, {0, 0, 0, 0}, {0, 0, 0, 0}, {0, 0, 0, 0}}
     //    FIXME
-    private final double[][] rightAnswer = new double[numberOfSkills][numberOfDifficultyLevels]; // {{0, 0, 0, 0}, {0, 0, 0, 0}, {0, 0, 0, 0}, {0, 0, 0, 0}}
+    private final double[][] rightAnswer = new double[nSkills][nDifficultyLevels]; // {{0, 0, 0, 0}, {0, 0, 0, 0}, {0, 0, 0, 0}, {0, 0, 0, 0}}
 
-    private final double[][][] priorResults = new double[numberOfSkills][][];
-    private final double[][][] hypoteticPosteriorResults = new double[numberOfSkills][][];
+    private final double[][][] priorResults = new double[nSkills][][];
+    private final double[][][] hypotheticalPosteriorResults = new double[nSkills][][];
+    private final double[][][] posteriorResults = new double[nSkills][][];
+
+    private final double[][][][] answerLikelihood = new double[nSkills][][][];
 
     // Debug variables
-    private final double[][][] hypoteticPosteriorResultsWrong = new double[numberOfSkills][][];
-    private final double[][][] hypoteticPosteriorResultsTrue = new double[numberOfSkills][][];
+    private final double[][][] hypoteticPosteriorResultsWrong = new double[nSkills][][];
+    private final double[][][] hypoteticPosteriorResultsTrue = new double[nSkills][][];
 
-    private final double[][][] posteriorResults = new double[numberOfSkills][][];
-
-    private final double[][][][] answerLikelihood = new double[numberOfSkills][][][];
-
-    private final AnswerSet[] questionsPerSkill = new AnswerSet[numberOfSkills];
+    private final AnswerSet[] questionsPerSkill = new AnswerSet[nSkills];
 
     private final BNsAdaptiveTests BNsAdaptiveTests;
     private final AbellanEntropy abellanEntropy;
@@ -122,7 +121,7 @@ public class BNsAdaptiveSurvey {
             out.append(String.format("%3d %2d ", aslat.student, aslat.questionAnswered));
 
             double[][][] results = aslat.getResults();
-            for (int s = 0; s < numberOfSkills; s++) {
+            for (int s = 0; s < nSkills; s++) {
                 // interval dominance
                 int[] dominating = intervalDominance(results[s][0], results[s][1]);
 
@@ -186,64 +185,67 @@ public class BNsAdaptiveSurvey {
         do {
             // search for next question using
             double maxIG = 0.0;
-            int nextS = -1;
-            int nextL = -1;
+            int nextSkill = -1;
+            int nextDifficultyLevel = -1;
 
 
-            for (int s = 0; s < numberOfSkills; s++) {
+            for (int s = 0; s < nSkills; s++) {
 //              Current prior
-                Object[] output = BNsAdaptiveTests.germanTest(bayesianFileName, s, askedQuestion, rightAnswer);
-                priorResults[s] = (double[][])output[0];
-                answerLikelihood[s] = (double[][][])output[1];
+                Object[] testOutput = BNsAdaptiveTests.germanTest(bayesianFileName, s, askedQuestion, rightAnswer);
+                priorResults[s] = (double[][])testOutput[0];
+                answerLikelihood[s] = (double[][][])testOutput[1];
 
                 // entropy of the skill
-                for (int k = 0; k < numberOfSkills; k ++) {
-                    if (Math.abs(priorResults[s][0][k] - priorResults[s][1][k] ) >= 0.000001) {
-                        System.err.println("Different lower and upper in priors!! " + priorResults[s][0][k] + ", " + priorResults[s][1][k]);
+                for (int dl = 0; dl < nDifficultyLevels; dl ++) {
+                    if (Math.abs(priorResults[s][0][dl] - priorResults[s][1][dl] ) >= 0.000001) {
+                        System.err.println("Different lower and upper in priors!! " + priorResults[s][0][dl] + ", " + priorResults[s][1][dl]);
                         break;
                     }
                 }
 
                 double HS = H(priorResults[s][0]);
 
-                for (int l = 0; l < numberOfDifficultyLevels; l++) {
-                    List<Integer> availableQuestions = questionSet.getQuestions(s, l);
+                for (int dl = 0; dl < nDifficultyLevels; dl++) {
+                    List<Integer> availableQuestions = questionSet.getQuestions(s, dl);
 
                     // compute entropy only if we have questions available
                     if (availableQuestions.size() == 0) {
-                        System.out.println("No more question for skill " + s + " level " + l);
+                        System.out.println("No more question for skill " + s + " level " + dl);
                         continue;
                     }
 
                     double[] HResults = new double[2];
-                    for (int r = 0; r < 2; r++) {
-                        askedQuestion[s][l] += 1;
-                        rightAnswer[s][l] += r;
+                    for (int answer = 0; answer < 2; answer++) {
+                        askedQuestion[s][dl] += 1;
+                        rightAnswer[s][dl] += answer;
 
-                        output = BNsAdaptiveTests.germanTest(bayesianFileName, s, askedQuestion, rightAnswer);
-                        hypoteticPosteriorResults[s] = (double[][])output[0];
+                        if (s == 0 && dl == 3) { // && answer == 1) {
+                            System.out.printf("Error debugging");
+                        }
+                        testOutput = BNsAdaptiveTests.germanTest(bayesianFileName, s, askedQuestion, rightAnswer);
+                        hypotheticalPosteriorResults[s] = (double[][]) testOutput[0];
 
-                        if (r == 0) {
-                            hypoteticPosteriorResultsWrong[s] = (double[][]) output[0];
+                        if (answer == 0) {
+                            hypoteticPosteriorResultsWrong[s] = (double[][]) testOutput[0];
                         } else {
-                            hypoteticPosteriorResultsTrue[s] = (double[][]) output[0];
+                            hypoteticPosteriorResultsTrue[s] = (double[][]) testOutput[0];
                         }
 
-                        computeEntropy(hypoteticPosteriorResults[s], HResults, r);
+                        computeEntropy(hypotheticalPosteriorResults[s], HResults, answer);
 
                         // clear
-                        askedQuestion[s][l] -= 1;
-                        rightAnswer[s][l] -= r;
+                        askedQuestion[s][dl] -= 1;
+                        rightAnswer[s][dl] -= answer;
                     }
 
                     double rightAnswerProbability = 0;
                     double wrongAnswerProbability = 0;
 
-                    for (int j = 0; j < numberOfLevels; j++) {
-                        // FIXME before priorResults[s][0][j] was priorResults[0][0][j]
-                        //  same for answerLikelihood[s][l][j][0] that was answerLikelihood[0][l][j][0]
-                        rightAnswerProbability += answerLikelihood[s][l][j][0] * priorResults[s][0][j];
-                        wrongAnswerProbability += (1 - answerLikelihood[s][l][j][0]) * priorResults[s][0][j];
+                    for (int sl = 0; sl < nSkillLevels; sl++) {
+                        // FIXME before priorResults[skill][0][sl] was priorResults[0][0][sl]
+                        //  same for answerLikelihood[skill][dl][sl][0] that was answerLikelihood[0][dl][sl][0]
+                        rightAnswerProbability += answerLikelihood[s][dl][sl][0] * priorResults[s][0][sl];
+                        wrongAnswerProbability += (1 - answerLikelihood[s][dl][sl][0]) * priorResults[s][0][sl];
                     }
 
                     double sumProbs = rightAnswerProbability + wrongAnswerProbability;
@@ -255,21 +257,17 @@ public class BNsAdaptiveSurvey {
                     double H = HResults[0] * wrongAnswerProbability + HResults[1] * rightAnswerProbability;
 
                     // FIXME: before the max between right and wrong was computed
-//                    double H = Math.min(HResults[0], HResults[1]);
+                    // double H = Math.min(HResults[0], HResults[1]);
                     double ig = HS - H; // infogain
 
-                    // minimize
-//					FIXME: what means??
                     if (ig < 0) {
-                        System.err.println("Negative information gain for skill " + s + " level " + l + ": \n IG = HS" +
-                                " - H = " + HS + " - " +  H + "=" + ig);
-//						System.err.println(HResults[0]);
-//						System.err.println(HResults[1]);
+                        System.err.println("Negative information gain for skill " + s + " level " + dl +
+                                           ": \n IG = HS" + " - H = " + HS + " - " +  H + "=" + ig);
                     }
                     if (ig > maxIG) {
                         maxIG = H;
-                        nextS = s;
-                        nextL = l;
+                        nextSkill = s;
+                        nextDifficultyLevel = dl;
                     }
                 }
             }
@@ -280,30 +278,30 @@ public class BNsAdaptiveSurvey {
             }
 
             // get available questions
-            List<Integer> availableQuestions = questionSet.getQuestions(nextS, nextL);
+            List<Integer> availableQuestions = questionSet.getQuestions(nextSkill, nextDifficultyLevel);
 
             int indexQ = random.nextInt(availableQuestions.size());
             int nextQ = availableQuestions.get(indexQ);
-            int answer = questionsPerSkill[nextS].getAnswer(student, nextQ);
+            int answer = questionsPerSkill[nextSkill].getAnswer(student, nextQ);
 
-            System.out.printf("%d next: %d %d (H=%.4f), Q=%d, answer: %d%n", i, nextS, nextL, maxIG, indexQ, answer);
+            System.out.printf("%d next: %d %d (H=%.4f), Q=%d, answer: %d%n", i, nextSkill, nextDifficultyLevel, maxIG, indexQ, answer);
 
             questionAnswered++;
             availableQuestions.remove(indexQ);
 
-            askedQuestion[nextS][nextL] += 1;
-            rightAnswer[nextS][nextL] += answer;
+            askedQuestion[nextSkill][nextDifficultyLevel] += 1;
+            rightAnswer[nextSkill][nextDifficultyLevel] += answer;
 
             // stop criteria
             stop = true;
-            for (int s = 0; s < numberOfSkills; s++) {
+            for (int s = 0; s < nSkills; s++) {
                 Object[] output = BNsAdaptiveTests.germanTest(bayesianFileName, s, askedQuestion, rightAnswer);
                 posteriorResults[s] = (double[][])output[0];
 
                 // entropy of the skill
-                for (int k = 0; k < numberOfSkills; k ++) {
-                    if (Math.abs(posteriorResults[s][0][k] - posteriorResults[s][1][k] ) >= 0.000001) {
-                        System.err.println("Different lower and upper in posteriors!! " + posteriorResults[s][0][k] + ", " + posteriorResults[s][1][k]);
+                for (int dl = 0; dl < nDifficultyLevels; dl ++) {
+                    if (Math.abs(posteriorResults[s][0][dl] - posteriorResults[s][1][dl] ) >= 0.000001) {
+                        System.err.println("Different lower and upper in posteriors!! " + posteriorResults[s][0][dl] + ", " + posteriorResults[s][1][dl]);
                         break;
                     }
                 }
@@ -344,7 +342,7 @@ public class BNsAdaptiveSurvey {
         double h = 0.0;
 
         for (double v : d) {
-//			FIXME log base 4
+			// log base 4
             double logXv = Math.log(v) / Math.log(BNsAdaptiveSurvey.states);
             h += v * logXv;
         }
@@ -353,16 +351,16 @@ public class BNsAdaptiveSurvey {
     }
 
     private double[][][] getResults() {
-        double[][][] res = new double[numberOfSkills][][];
-        Object[] out;
+        double[][][] result = new double[nSkills][][];
+        Object[] testResult;
 
-        for (int s = 0; s < numberOfSkills; s++) {
+        for (int s = 0; s < nSkills; s++) {
 
-            out = BNsAdaptiveTests.germanTest(bayesianFileName, s, askedQuestion, rightAnswer);
-            res[s] = (double[][]) out[0];
+            testResult = BNsAdaptiveTests.germanTest(bayesianFileName, s, askedQuestion, rightAnswer);
+            result[s] = (double[][]) testResult[0];
         }
 
-        return res;
+        return result;
     }
 
 }
