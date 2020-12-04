@@ -59,8 +59,8 @@ public class BNsAdaptiveSurvey {
     private final double[][][][] answerLikelihood = new double[nSkills][][][];
 
     // Debug variables
-    private final double[][][] hypoteticPosteriorResultsWrong = new double[nSkills][][];
-    private final double[][][] hypoteticPosteriorResultsTrue = new double[nSkills][][];
+    private final double[][][] hypotheticalPosteriorResultsWrong = new double[nSkills][][];
+    private final double[][][] hypotheticalPosteriorResultsRight = new double[nSkills][][];
 
     private final AnswerSet[] questionsPerSkill = new AnswerSet[nSkills];
 
@@ -223,16 +223,16 @@ public class BNsAdaptiveSurvey {
                             rightQ[s][dl] += 1;
                         }
 
-//                        if (s == 0 && dl == 3) { // && answer == 1) {
-//                            System.out.printf("Error debugging");
-//                        }
+                        if (s == 0 && dl == 3) { // && answer == 1) {
+                            System.out.printf("Error debugging");
+                        }
                         testOutput = BNsAdaptiveTests.germanTest(bayesianFileName, s, rightQ, wrongQ);
                         hypotheticalPosteriorResults[s] = (double[][]) testOutput[0];
 
                         if (answer == 0) {
-                            hypoteticPosteriorResultsWrong[s] = (double[][]) testOutput[0];
+                            hypotheticalPosteriorResultsWrong[s] = (double[][]) testOutput[0];
                         } else {
-                            hypoteticPosteriorResultsTrue[s] = (double[][]) testOutput[0];
+                            hypotheticalPosteriorResultsRight[s] = (double[][]) testOutput[0];
                         }
 
                         computeEntropy(hypotheticalPosteriorResults[s], HResults, answer);
@@ -265,11 +265,9 @@ public class BNsAdaptiveSurvey {
 
                     double H = HResults[0] * wrongAnswerProbability + HResults[1] * rightAnswerProbability;
 
-                    // FIXME: before the max between right and wrong was computed
-                    // double H = Math.min(HResults[0], HResults[1]);
                     double ig = HS - H; // infogain
 
-                    if (ig < 0) {
+                    if (ig < 0.000001) {
                         System.err.println("Negative information gain for skill " + s + " level " + dl +
                                            ": \n IG = HS" + " - H = " + HS + " - " +  H + "=" + ig);
                     }
@@ -329,8 +327,8 @@ public class BNsAdaptiveSurvey {
                 }
             }
 
-            System.out.printf("Asked question %s%n", ArrayUtils.toString(rightQ));
-            System.out.printf("Right question %s%n", ArrayUtils.toString(wrongQ));
+            System.out.printf("Right question %s%n", ArrayUtils.toString(rightQ));
+            System.out.printf("Wrong question %s%n", ArrayUtils.toString(wrongQ));
 
             if (questionSet.isEmpty()) {
                 System.out.println("All questions done!");
