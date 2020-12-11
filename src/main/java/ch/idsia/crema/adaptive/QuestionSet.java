@@ -53,12 +53,14 @@ class QuestionSet {
         if (questions == null) {
             loadKeyList();
         }
-
-        questionNum--;
         return questions.get(skill).get(level);
     }
 
     boolean isEmpty() {
         return questionNum == 0;
+    }
+
+    public void revomeQuestion() {
+        questionNum--;
     }
 }

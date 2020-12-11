@@ -49,8 +49,10 @@ public class BNsAdaptiveSurvey {
     // Object variables ------------------------------------------------------------------------------------------------
     private final int student;
 
-    private final double[][] rightQ = new double[nSkills][nDifficultyLevels]; // {{0, 0, 0, 0}, {0, 0, 0, 0}, {0, 0, 0, 0}, {0, 0, 0, 0}}
-    private final double[][] wrongQ = new double[nSkills][nDifficultyLevels]; // {{0, 0, 0, 0}, {0, 0, 0, 0}, {0, 0, 0, 0}, {0, 0, 0, 0}}
+    private final double[][] rightQ = new double[nSkills][nDifficultyLevels];
+    // {{0, 0, 0, 0}, {0, 0, 0, 0}, {0, 0, 0, 0}, {0, 0, 0, 0}}
+    private final double[][] wrongQ = new double[nSkills][nDifficultyLevels];
+    // {{0, 0, 0, 0}, {0, 0, 0, 0}, {0, 0, 0, 0}, {0, 0, 0, 0}}
 
     private final double[][][] priorResults = new double[nSkills][][];
     private final double[][][] hypotheticalPosteriorResults = new double[nSkills][][];
@@ -69,7 +71,7 @@ public class BNsAdaptiveSurvey {
     private final QuestionSet questionSet;
     private final Random random;
 
-    private int i = 0;
+    private int question = 0;
     private int questionAnswered = 0;
 
     /**
@@ -94,7 +96,8 @@ public class BNsAdaptiveSurvey {
 
     public static void main(String[] args) {
 
-        final Path out_path = Paths.get("output_" + new SimpleDateFormat("yyyy.MM.dd_HH-mm-ss").format(new Date()) + " .txt");
+        final Path out_path = Paths.get("output_" + new SimpleDateFormat("yyyy.MM.dd_HH-mm-ss")
+                                   .format(new Date()) + " .txt");
 
         // for each student
         for (int student = minStudent; student < maxStudent; student++) {
@@ -186,17 +189,17 @@ public class BNsAdaptiveSurvey {
             int nextSkill = -1;
             int nextDifficultyLevel = -1;
 
-
             for (int s = 0; s < nSkills; s++) {
-//              Current prior
+                // Current prior
                 Object[] testOutput = BNsAdaptiveTests.germanTest(bayesianFileName, s, rightQ, wrongQ);
-                priorResults[s] = (double[][])testOutput[0];
-                answerLikelihood[s] = (double[][][])testOutput[1];
+                priorResults[s] = (double[][]) testOutput[0];
+                answerLikelihood[s] = (double[][][]) testOutput[1];
 
                 // entropy of the skill
-                for (int dl = 0; dl < nDifficultyLevels; dl ++) {
-                    if (Math.abs(priorResults[s][0][dl] - priorResults[s][1][dl] ) >= 0.000001) {
-                        System.err.println("Different lower and upper in priors!! " + priorResults[s][0][dl] + ", " + priorResults[s][1][dl]);
+                for (int dl = 0; dl < nDifficultyLevels; dl++) {
+                    if (Math.abs(priorResults[s][0][dl] - priorResults[s][1][dl]) >= 0.000001) {
+                        System.err.println("Different lower and upper in priors!! " + priorResults[s][0][dl] + ", " +
+                                           priorResults[s][1][dl]);
                         break;
                     }
                 }
@@ -223,9 +226,9 @@ public class BNsAdaptiveSurvey {
                             rightQ[s][dl] += 1;
                         }
 
-                        if (s == 0 && dl == 3) { // && answer == 1) {
-                            System.out.printf("Error debugging");
-                        }
+//                        if (s == 0 && dl == 3) { // && answer == 1) {
+//                            System.out.printf("Error debugging");
+//                        }
                         testOutput = BNsAdaptiveTests.germanTest(bayesianFileName, s, rightQ, wrongQ);
                         hypotheticalPosteriorResults[s] = (double[][]) testOutput[0];
 
@@ -269,10 +272,15 @@ public class BNsAdaptiveSurvey {
 
                     if (ig < 0.000001) {
                         System.err.println("Negative information gain for skill " + s + " level " + dl +
-                                           ": \n IG = HS" + " - H = " + HS + " - " +  H + "=" + ig);
+                                ": \n IG = HS" + " - H = " + HS + " - " + H + "=" + ig);
                     }
+
+                    System.out.printf("skill %d, difficulty level %d, ig %.4f, max_ig %.4f %n", s, dl, ig, maxIG);
+
                     if (ig > maxIG) {
-                        maxIG = H;
+                        System.out.printf(" ig > maxIG --> Updating maxIG...%n");
+                        //  maxIG = H;
+                        maxIG = ig;
                         nextSkill = s;
                         nextDifficultyLevel = dl;
                     }
@@ -285,16 +293,30 @@ public class BNsAdaptiveSurvey {
             }
 
             // get available questions
-            List<Integer> availableQuestions = questionSet.getQuestions(nextSkill, nextDifficultyLevel);
 
+            // FIXME
+            List<Integer> availableQuestions = null;
+            
+            try {
+                availableQuestions = questionSet.getQuestions(nextSkill, nextDifficultyLevel);
+            } catch(NullPointerException e) {
+
+                System.out.print(questionSet);
+                System.out.print("NullPointerException Caught");
+            }
+
+            assert availableQuestions != null;
             int indexQ = random.nextInt(availableQuestions.size());
             int nextQ = availableQuestions.get(indexQ);
             int answer = questionsPerSkill[nextSkill].getAnswer(student, nextQ);
 
-            System.out.printf("%d next: %d %d (H=%.4f), Q=%d, answer: %d%n", i, nextSkill, nextDifficultyLevel, maxIG, indexQ, answer);
+            System.out.printf("Asked question %d, answer %d%n next skill %d, " +
+                              "next difficulty level %d, (H=%.4f)%n", question, answer,
+                              nextSkill, nextDifficultyLevel, maxIG);
 
             questionAnswered++;
             availableQuestions.remove(indexQ);
+            questionSet.revomeQuestion();
 
             if (answer == 0) {
                 wrongQ[nextSkill][nextDifficultyLevel] += 1;
@@ -307,35 +329,49 @@ public class BNsAdaptiveSurvey {
 
             // stop criteria
             stop = true;
+            // FIXME: We are supposed to stop asking questions when the current
+            //  evaluation is sufficiently informative, hence when the skills entropy
+            //  given the answer is below some threshold.
+            //  I am not sure it is correct to compute the posterior iterating on
+            //  all the skills, since in this way we continue to compute it only
+            //  on the first one until HS < STOP_THRESHOLD
             for (int s = 0; s < nSkills; s++) {
                 Object[] output = BNsAdaptiveTests.germanTest(bayesianFileName, s, rightQ, wrongQ);
-                posteriorResults[s] = (double[][])output[0];
+                posteriorResults[s] = (double[][]) output[0];
 
                 // entropy of the skill
-                for (int dl = 0; dl < nDifficultyLevels; dl ++) {
-                    if (Math.abs(posteriorResults[s][0][dl] - posteriorResults[s][1][dl] ) >= 0.000001) {
-                        System.err.println("Different lower and upper in posteriors!! " + posteriorResults[s][0][dl] + ", " + posteriorResults[s][1][dl]);
+                for (int dl = 0; dl < nDifficultyLevels; dl++) {
+                    if (Math.abs(posteriorResults[s][0][dl] - posteriorResults[s][1][dl]) >= 0.000001) {
+                        System.err.println("Different lower and upper in posteriors!! " + posteriorResults[s][0][dl] +
+                                           ", " + posteriorResults[s][1][dl]);
                         break;
                     }
                 }
                 double HS = H(posteriorResults[s][0]);
 
                 if (HS > STOP_THRESHOLD) {
-                    System.out.println("HS(" + s + ") = " + HS + ", continue");
+                    System.out.println("HS(s=" + s + ") = " + HS + ", HS > STOP_THRESHOLD, continue");
                     stop = false;
                     break;
+                } else {
+                    System.out.println("HS(s=" + s + ") = " + HS + ", HS < STOP_THRESHOLD");
                 }
             }
 
             System.out.printf("Right question %s%n", ArrayUtils.toString(rightQ));
             System.out.printf("Wrong question %s%n", ArrayUtils.toString(wrongQ));
+            System.out.print("\n");
 
+            if (question == 94) {
+                System.out.println();
+            }
             if (questionSet.isEmpty()) {
                 System.out.println("All questions done!");
                 break;
             }
 
-            i++;
+            question++;
+
         } while (!stop);
         System.out.println("Done!");
     }
@@ -355,7 +391,7 @@ public class BNsAdaptiveSurvey {
         double h = 0.0;
 
         for (double v : d) {
-			// log base 4
+            // log base 4
             double logXv = Math.log(v) / Math.log(BNsAdaptiveSurvey.states);
             h += v * logXv;
         }
