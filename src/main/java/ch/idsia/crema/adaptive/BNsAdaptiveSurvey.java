@@ -362,11 +362,9 @@ public class BNsAdaptiveSurvey {
             System.out.printf("Wrong question %s%n", ArrayUtils.toString(wrongQ));
             System.out.print("\n");
 
-            if (question == 94) {
-                System.out.println();
-            }
             if (questionSet.isEmpty()) {
                 System.out.println("All questions done!");
+                System.out.printf("Skills probabilities %s%n", ArrayUtils.toString(posteriorResults));
                 break;
             }
 
