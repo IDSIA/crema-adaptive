@@ -10,8 +10,6 @@ import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.stream.DoubleStream;
 import java.util.stream.IntStream;
 
@@ -22,54 +20,56 @@ import java.util.stream.IntStream;
  */
 public class CNsAdaptiveSurvey {
 
-    // debug and thread configuration ----------------------------------------------------------------------------------
-    private static final boolean DEBUG = false;
-    private static final int THREAD_POOL_SIZE = 8;
-
-    // adaptive configuration data -------------------------------------------------------------------------------------
-
+    // Adaptive configuration data -------------------------------------------------------------------------------------
     private static final String credalFileName = "adaptive/cnParameters.txt";
-    private static final String[] csvs = {
+    private static final String[] dataset = {
             "adaptive/Hören2015-16.csv",
             "adaptive/Kommunikation2015-16.csv",
             "adaptive/Lesen2015-16.csv",
             "adaptive/Wortschatz und Strukturen2015-16.csv"
     };
 
-    private static final int skillNumber = 4;
-    private static final int levelNumber = 4;
-    private static final int states = levelNumber;
+    private static final int nSkills = 4;
+    private static final int nDifficultyLevels = 4;
+    private static final int nSkillLevels = 4;
+    private static final int states = nDifficultyLevels;
 
-    /**
-     * Fixed random seed.
-     */
-    private static final long seed = 42;
+    private static final long randomSeed = 42;
 
-    /**
-     * First id, inclusive.
-     */
+    // First id, inclusive
     private static final int minStudent = 0;
-    /**
-     * Last id, exclusive.
-     */
+    // Last id, exclusive
     private static final int maxStudent = 1;
 
-    /**
-     * Minimum value of entropy to stop the survey.
-     */
+    // Minimum value of entropy to stop the survey.
     private static final double STOP_THRESHOLD = 0.25;
 
-    // object variables ------------------------------------------------------------------------------------------------
+    // Object variables ------------------------------------------------------------------------------------------------
     private final int student;
-    private final double[][] askedQuestion = new double[skillNumber][levelNumber]; // {{0, 0, 0, 0}, {0, 0, 0, 0}, {0, 0, 0, 0}, {0, 0, 0, 0}}
-    private final double[][] rightQuestion = new double[skillNumber][levelNumber]; // {{0, 0, 0, 0}, {0, 0, 0, 0}, {0, 0, 0, 0}, {0, 0, 0, 0}};
-    private final double[][][] results = new double[skillNumber][][];
-    private final AnswerSet[] qs = new AnswerSet[skillNumber];
-    private final AdaptiveTests at;
-    private final AbellanEntropy ae;
-    private final QuestionSet q;
+
+    private final double[][] rightQ = new double[nSkills][nDifficultyLevels];
+    // {{0, 0, 0, 0}, {0, 0, 0, 0}, {0, 0, 0, 0}, {0, 0, 0, 0}}
+    private final double[][] wrongQ = new double[nSkills][nDifficultyLevels];
+    // {{0, 0, 0, 0}, {0, 0, 0, 0}, {0, 0, 0, 0}, {0, 0, 0, 0}}
+
+    private final double[][][] priorResults = new double[nSkills][][];
+    private final double[][][] hypotheticalPosteriorResults = new double[nSkills][][];
+    private final double[][][] posteriorResults = new double[nSkills][][];
+
+    private final double[][][][] answerLikelihood = new double[nSkills][][][];
+
+    // Debug variables
+    private final double[][][] hypotheticalPosteriorResultsWrong = new double[nSkills][][];
+    private final double[][][] hypotheticalPosteriorResultsRight = new double[nSkills][][];
+
+    private final AnswerSet[] questionsPerSkill = new AnswerSet[nSkills];
+
+    private final BNsAdaptiveTests BNsAdaptiveTests;
+    private final AbellanEntropy abellanEntropy;
+    private final QuestionSet questionSet;
     private final Random random;
-    private int i = 0;
+
+    private int question = 0;
     private int questionAnswered = 0;
 
 
@@ -79,52 +79,47 @@ public class CNsAdaptiveSurvey {
      *
      * @param student reference id of the students
      */
-    private AdaptiveSurveyLanguageTest(int student) {
+    private CNsAdaptiveSurvey(int student) {
         this.student = student;
 
-        random = new Random(seed + student);
-        at = new AdaptiveTests();
-        ae = new AbellanEntropy();
-        q = new QuestionSet();
-        q.loadKeyList();
+        random = new Random(randomSeed + student);
+        BNsAdaptiveTests = new BNsAdaptiveTests();
+        abellanEntropy = new AbellanEntropy();
+        questionSet = new QuestionSet();
+        questionSet.loadKeyList();
 
-        for (int i = 0; i < qs.length; i++) {
-            qs[i] = new AnswerSet().load(csvs[i]);
+        for (int i = 0; i < questionsPerSkill.length; i++) {
+            questionsPerSkill[i] = new AnswerSet().load(dataset[i]);
         }
     }
 
     public static void main(String[] args) {
-        ExecutorService es = Executors.newFixedThreadPool(THREAD_POOL_SIZE);
 
-        final Path out_path = Paths.get("output_" + new SimpleDateFormat("yyyy.MM.dd_HH-mm-ss").format(new Date()) + " .txt");
+        final Path out_path = Paths.get("output_" + new SimpleDateFormat("yyyy.MM.dd_HH-mm-ss")
+                                   .format(new Date()) + " .txt");
 
         // for each student
         for (int student = minStudent; student < maxStudent; student++) {
-            final int studentId = student;
-            es.submit(() -> {
-                try {
-                    System.out.printf("Start for student %d%n", studentId);
+            try {
+                System.out.printf("Start for student %d%n", student);
 
-                    AdaptiveSurveyLanguageTest aslat = new AdaptiveSurveyLanguageTest(studentId);
-                    aslat.test();
+                CNsAdaptiveSurvey aslat = new CNsAdaptiveSurvey(student);
+                aslat.test();
 
-                    saveToFile(aslat, out_path);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            });
+                saveToFile(aslat, out_path);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
-
-        es.shutdown();
     }
 
-    private static synchronized void saveToFile(AdaptiveSurveyLanguageTest aslat, Path path) {
+    private static synchronized void saveToFile(CNsAdaptiveSurvey aslat, Path path) {
         try (BufferedWriter bw = Files.newBufferedWriter(path, StandardOpenOption.CREATE, StandardOpenOption.APPEND)) {
             StringBuilder out = new StringBuilder();
             out.append(String.format("%3d %2d ", aslat.student, aslat.questionAnswered));
 
             double[][][] results = aslat.getResults();
-            for (int s = 0; s < skillNumber; s++) {
+            for (int s = 0; s < nSkills; s++) {
                 // interval dominance
                 int[] dominating = intervalDominance(results[s][0], results[s][1]);
 
@@ -188,61 +183,91 @@ public class CNsAdaptiveSurvey {
         do {
             // search for next question using
             double maxIG = 0.0;
-            int nextS = -1;
-            int nextL = -1;
+            int nextSkill = -1;
+            int nextDifficultyLevel = -1;
 
-            for (int s = 0; s < skillNumber; s++) {
-                results[s] = at.germanTest(credalFileName, s, askedQuestion, rightQuestion);
+            for (int s = 0; s < nSkills; s++) {
+                // Current prior
+                Object[] testOutput = BNsAdaptiveTests.germanTest(credalFileName, s, rightQ, wrongQ);
+                priorResults[s] = (double[][]) testOutput[0];
+                answerLikelihood[s] = (double[][][]) testOutput[1];
 
-                // entropy of the skill
-                double[] distribution = ae.getDistrWithMaxEntropy(results[s][0], results[s][1]);
+                // Entropy of the skill
+                double[] distribution = abellanEntropy.getDistrWithMaxEntropy(priorResults[s][0], priorResults[s][1]);
                 double HS = H(distribution);
 
-                for (int l = 0; l < levelNumber; l++) {
-                    List<Integer> availableQuestions = q.getQuestions(s, l);
+                for (int dl = 0; dl < nDifficultyLevels; dl++) {
+                    List<Integer> availableQuestions = questionSet.getQuestions(s, dl);
 
                     // compute entropy only if we have questions available
                     if (availableQuestions.size() == 0) {
-                        System.out.println("No more question for skill " + s + " level " + l);
+                        System.out.println("No more question for skill " + s + " level " + dl);
                         continue;
                     }
 
                     double[] HResults = new double[2];
-                    for (int r = 0; r < 2; r++) {
-                        askedQuestion[s][l] += 1;
-                        rightQuestion[s][l] += r;
+                    for (int answer = 0; answer < 2; answer++) {
 
-                        results[s] = at.germanTest(credalFileName, s, askedQuestion, rightQuestion);
+                        if (answer == 0) {
+                            wrongQ[s][dl] += 1;
+                        } else {
+                            rightQ[s][dl] += 1;
+                        }
 
-                        if (DEBUG) System.out.println(Arrays.toString(results[0]));    // lower
-                        if (DEBUG) System.out.println(Arrays.toString(results[1]));    // upper
+                        testOutput = BNsAdaptiveTests.germanTest(credalFileName, s, rightQ, wrongQ);
+                        hypotheticalPosteriorResults[s] = (double[][]) testOutput[0];
 
-                        computeEntropy(results[s], HResults, s, l, r);
+                        if (answer == 0) {
+                            hypotheticalPosteriorResultsWrong[s] = (double[][]) testOutput[0];
+                        } else {
+                            hypotheticalPosteriorResultsRight[s] = (double[][]) testOutput[0];
+                        }
+
+                        computeEntropy(hypotheticalPosteriorResults[s], HResults, answer);
 
                         // clear
-                        askedQuestion[s][l] -= 1;
-                        rightQuestion[s][l] -= r;
+                        if (answer == 0) {
+                            wrongQ[s][dl] -= 1;
+                        } else {
+                            rightQ[s][dl] -= 1;
+                        }
+                    }
+                    double rightAnswerProbability = 0;
+                    double wrongAnswerProbability = 0;
+
+                    for (int sl = 0; sl < nSkillLevels; sl++) {
+                        // answerLikelihood[s][dl][sl][0] not 0
+                        rightAnswerProbability += answerLikelihood[s][dl][sl][0] * priorResults[s][0][sl];
+                        wrongAnswerProbability += (1 - answerLikelihood[s][dl][sl][0]) * priorResults[s][0][sl];
                     }
 
-                    // max between right and wrong
-                    double H = Math.max(HResults[0], HResults[1]);
-                    if (DEBUG) System.out.println("H = " + H);
+                    double sumProbs = rightAnswerProbability + wrongAnswerProbability;
 
-//					FIXME
+                    if (Math.abs(1.0 - sumProbs) >= 0.000001) {
+                        System.err.println("Sum of probabilities not 1 -> " + sumProbs);
+                    }
+
+                    double H = HResults[0] * wrongAnswerProbability + HResults[1] * rightAnswerProbability;
+
+                    // max between right and wrong
+                    // double H = Math.max(HResults[0], HResults[1]);
                     double ig = HS - H; // infogain
-//					double ig = HS - HResults[0];
 
                     // minimize
 //					FIXME: what means??
-                    if (ig < 0) {
-                        System.err.println("Negative information gain: " + s + " (" + HS + ") " + l + " (" + H + "): " + ig);
-//						System.err.println(HResults[0]);
-//						System.err.println(HResults[1]);
+                    if (ig < 0.000001) {
+                        System.err.println("Negative information gain for skill " + s + " level " + dl +
+                                ": \n IG = HS" + " - H = " + HS + " - " + H + "=" + ig);
                     }
+
+                    System.out.printf("skill %d, difficulty level %d, ig %.4f, max_ig %.4f %n", s, dl, ig, maxIG);
+
                     if (ig > maxIG) {
-                        maxIG = H;
-                        nextS = s;
-                        nextL = l;
+                        System.out.printf(" ig > maxIG --> Updating maxIG...%n");
+
+                        maxIG = ig;
+                        nextSkill = s;
+                        nextDifficultyLevel = dl;
                     }
                 }
             }
@@ -253,58 +278,76 @@ public class CNsAdaptiveSurvey {
             }
 
             // get available questions
-            List<Integer> availableQuestions = q.getQuestions(nextS, nextL);
+            List<Integer> availableQuestions = null;
+
+            try {
+                availableQuestions = questionSet.getQuestions(nextSkill, nextDifficultyLevel);
+            } catch (NullPointerException e) {
+                System.out.print(questionSet);
+                System.out.print("NullPointerException Caught");
+            }
+
+            assert availableQuestions != null;
 
             int indexQ = random.nextInt(availableQuestions.size());
             int nextQ = availableQuestions.get(indexQ);
-            int answer = qs[nextS].getAnswer(student, nextQ);
+            int answer = questionsPerSkill[nextSkill].getAnswer(student, nextQ);
 
-            System.out.printf("%d next: %d %d (H=%.4f), Q=%d, answer: %d%n", i, nextS, nextL, maxIG, indexQ, answer);
+            System.out.printf("Asked question %d, answer %d%n next skill %d, " +
+                            "next difficulty level %d, (H=%.4f)%n", question, answer,
+                    nextSkill, nextDifficultyLevel, maxIG);
 
             questionAnswered++;
             availableQuestions.remove(indexQ);
+            questionSet.revomeQuestion();
 
-            askedQuestion[nextS][nextL] += 1;
-            rightQuestion[nextS][nextL] += answer;
+            if (answer == 0) {
+                wrongQ[nextSkill][nextDifficultyLevel] += 1;
+            } else {
+                rightQ[nextSkill][nextDifficultyLevel] += 1;
+            }
 
             // stop criteria
             stop = true;
-            for (int s = 0; s < skillNumber; s++) {
-                results[s] = at.germanTest(credalFileName, s, askedQuestion, rightQuestion);
+            for (int s = 0; s < nSkills; s++) {
+                Object[] output = BNsAdaptiveTests.germanTest(credalFileName, s, rightQ, wrongQ);
+                posteriorResults[s] = (double[][]) output[0];
 
                 // entropy of the skill
-                double[] distribution = ae.getDistrWithMaxEntropy(results[s][0], results[s][1]);
+                double[] distribution = abellanEntropy.getDistrWithMaxEntropy(posteriorResults[s][0], posteriorResults[s][1]);
                 double HS = H(distribution);
 
                 if (HS > STOP_THRESHOLD) {
-                    System.out.println("HS(" + s + ") = " + HS + ", continue");
+                    System.out.println("HS(s=" + s + ") = " + HS + ", HS > STOP_THRESHOLD, continue");
                     stop = false;
                     break;
+                } else {
+                    System.out.println("HS(s=" + s + ") = " + HS + ", HS < STOP_THRESHOLD");
                 }
             }
 
-            System.out.printf("Asked question %s%n", ArrayUtils.toString(askedQuestion));
-            System.out.printf("Right question %s%n", ArrayUtils.toString(rightQuestion));
+            System.out.printf("Right question %s%n", ArrayUtils.toString(rightQ));
+            System.out.printf("Wrong question %s%n", ArrayUtils.toString(wrongQ));
+            System.out.print("\n");
 
-            if (q.isEmpty()) {
+            if (questionSet.isEmpty()) {
                 System.out.println("All questions done!");
+                System.out.printf("Skills probabilities %s%n", ArrayUtils.toString(posteriorResults));
                 break;
             }
 
-            i++;
+            question++;
         } while (!stop);
         System.out.println("Done!");
     }
 
-    private void computeEntropy(double[][] results, double[] HResults, int s, int l, int r) {
+    private void computeEntropy(double[][] results, double[] HResults, int r) {
         if (DoubleStream.of(results[0]).sum() > 1 - 10E-15) {
             // precise model
-            if (DEBUG) System.out.println("Precise model");
             HResults[r] = H(results[0]);
         } else {
             // imprecise model
-            double[] maxLocalEntropy = ae.getDistrWithMaxEntropy(results[0], results[1]);
-            if (DEBUG) System.out.println(s + " " + l + " " + r + " " + Arrays.toString(maxLocalEntropy));
+            double[] maxLocalEntropy = abellanEntropy.getDistrWithMaxEntropy(results[0], results[1]);
             HResults[r] = H(maxLocalEntropy);
         }
     }
@@ -313,8 +356,8 @@ public class CNsAdaptiveSurvey {
         double h = 0.0;
 
         for (double v : d) {
-//			FIXME log base 4
-            double logXv = Math.log(v) / Math.log(AdaptiveSurveyLanguageTest.states);
+ 			// log base 4
+            double logXv = Math.log(v) / Math.log(CNsAdaptiveSurvey.states);
             h += v * logXv;
         }
 
@@ -322,11 +365,15 @@ public class CNsAdaptiveSurvey {
     }
 
     private double[][][] getResults() {
-        double[][][] res = new double[skillNumber][][];
-        for (int s = 0; s < skillNumber; s++) {
-            res[s] = at.germanTest(credalFileName, s, askedQuestion, rightQuestion);
+        double[][][] result = new double[nSkills][][];
+        Object[] testResult;
+
+        for (int s = 0; s < nSkills; s++) {
+
+            testResult = BNsAdaptiveTests.germanTest(credalFileName, s, rightQ, wrongQ);
+            result[s] = (double[][]) testResult[0];
         }
 
-        return res;
+        return result;
     }
 }
