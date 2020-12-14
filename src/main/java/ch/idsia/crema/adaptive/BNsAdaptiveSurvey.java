@@ -22,7 +22,6 @@ import java.util.stream.IntStream;
 public class BNsAdaptiveSurvey {
 
     // Adaptive configuration data -------------------------------------------------------------------------------------
-
     private static final String bayesianFileName = "adaptive/cnParametersBayes.txt";
     private static final String[] dataset = {
             "adaptive/Hören2015-16.csv",
@@ -111,9 +110,7 @@ public class BNsAdaptiveSurvey {
             } catch (Exception e) {
                 e.printStackTrace();
             }
-
         }
-
     }
 
     private static synchronized void saveToFile(BNsAdaptiveSurvey aslat, Path path) {
@@ -195,7 +192,7 @@ public class BNsAdaptiveSurvey {
                 priorResults[s] = (double[][]) testOutput[0];
                 answerLikelihood[s] = (double[][][]) testOutput[1];
 
-                // entropy of the skill
+                // Entropy of the skill
                 for (int dl = 0; dl < nDifficultyLevels; dl++) {
                     if (Math.abs(priorResults[s][0][dl] - priorResults[s][1][dl]) >= 0.000001) {
                         System.err.println("Different lower and upper in priors!! " + priorResults[s][0][dl] + ", " +
@@ -293,14 +290,11 @@ public class BNsAdaptiveSurvey {
             }
 
             // get available questions
-
-            // FIXME
             List<Integer> availableQuestions = null;
             
             try {
                 availableQuestions = questionSet.getQuestions(nextSkill, nextDifficultyLevel);
             } catch(NullPointerException e) {
-
                 System.out.print(questionSet);
                 System.out.print("NullPointerException Caught");
             }
