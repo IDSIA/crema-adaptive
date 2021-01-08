@@ -18,7 +18,7 @@ import java.util.stream.IntStream;
  * Project: Crema
  * Date:    14.12.2020 9:00
  */
-public class CNsAdaptiveSurvey {
+public class CNsAdaptiveSurveyTest {
 
     // Adaptive configuration data -------------------------------------------------------------------------------------
     private static final String credalFileName = "adaptive/cnParameters.txt";
@@ -64,7 +64,7 @@ public class CNsAdaptiveSurvey {
 
     private final AnswerSet[] questionsPerSkill = new AnswerSet[nSkills];
 
-    private final BNsAdaptiveTests BNsAdaptiveTests;
+    private final AdaptiveTests AdaptiveTests;
     private final AbellanEntropy abellanEntropy;
     private final QuestionSet questionSet;
     private final Random random;
@@ -79,11 +79,11 @@ public class CNsAdaptiveSurvey {
      *
      * @param student reference id of the students
      */
-    private CNsAdaptiveSurvey(int student) {
+    private CNsAdaptiveSurveyTest(int student) {
         this.student = student;
 
         random = new Random(randomSeed + student);
-        BNsAdaptiveTests = new BNsAdaptiveTests();
+        AdaptiveTests = new AdaptiveTests();
         abellanEntropy = new AbellanEntropy();
         questionSet = new QuestionSet();
         questionSet.loadKeyList();
@@ -103,7 +103,7 @@ public class CNsAdaptiveSurvey {
             try {
                 System.out.printf("Start for student %d%n", student);
 
-                CNsAdaptiveSurvey aslat = new CNsAdaptiveSurvey(student);
+                CNsAdaptiveSurveyTest aslat = new CNsAdaptiveSurveyTest(student);
                 aslat.test();
 
                 saveToFile(aslat, out_path);
@@ -113,7 +113,7 @@ public class CNsAdaptiveSurvey {
         }
     }
 
-    private static synchronized void saveToFile(CNsAdaptiveSurvey aslat, Path path) {
+    private static synchronized void saveToFile(CNsAdaptiveSurveyTest aslat, Path path) {
         try (BufferedWriter bw = Files.newBufferedWriter(path, StandardOpenOption.CREATE, StandardOpenOption.APPEND)) {
             StringBuilder out = new StringBuilder();
             out.append(String.format("%3d %2d ", aslat.student, aslat.questionAnswered));
@@ -188,7 +188,7 @@ public class CNsAdaptiveSurvey {
 
             for (int s = 0; s < nSkills; s++) {
                 // Current prior
-                Object[] testOutput = BNsAdaptiveTests.germanTest(credalFileName, s, rightQ, wrongQ);
+                Object[] testOutput = AdaptiveTests.germanTest(credalFileName, s, rightQ, wrongQ);
                 priorResults[s] = (double[][]) testOutput[0];
                 answerLikelihood[s] = (double[][][]) testOutput[1];
 
@@ -214,7 +214,7 @@ public class CNsAdaptiveSurvey {
                             rightQ[s][dl] += 1;
                         }
 
-                        testOutput = BNsAdaptiveTests.germanTest(credalFileName, s, rightQ, wrongQ);
+                        testOutput = AdaptiveTests.germanTest(credalFileName, s, rightQ, wrongQ);
                         hypotheticalPosteriorResults[s] = (double[][]) testOutput[0];
 
                         if (answer == 0) {
@@ -235,6 +235,7 @@ public class CNsAdaptiveSurvey {
                     double rightAnswerProbability = 0;
                     double wrongAnswerProbability = 0;
 
+                    // FIXME
                     for (int sl = 0; sl < nSkillLevels; sl++) {
                         // answerLikelihood[s][dl][sl][0] not 0
                         rightAnswerProbability += answerLikelihood[s][dl][sl][0] * priorResults[s][0][sl];
@@ -253,8 +254,9 @@ public class CNsAdaptiveSurvey {
                     // double H = Math.max(HResults[0], HResults[1]);
                     double ig = HS - H; // infogain
 
+                    // end FIXME
+                    
                     // minimize
-//					FIXME: what means??
                     if (ig < 0.000001) {
                         System.err.println("Negative information gain for skill " + s + " level " + dl +
                                 ": \n IG = HS" + " - H = " + HS + " - " + H + "=" + ig);
@@ -310,7 +312,7 @@ public class CNsAdaptiveSurvey {
             // stop criteria
             stop = true;
             for (int s = 0; s < nSkills; s++) {
-                Object[] output = BNsAdaptiveTests.germanTest(credalFileName, s, rightQ, wrongQ);
+                Object[] output = AdaptiveTests.germanTest(credalFileName, s, rightQ, wrongQ);
                 posteriorResults[s] = (double[][]) output[0];
 
                 // entropy of the skill
@@ -357,7 +359,7 @@ public class CNsAdaptiveSurvey {
 
         for (double v : d) {
  			// log base 4
-            double logXv = Math.log(v) / Math.log(CNsAdaptiveSurvey.states);
+            double logXv = Math.log(v) / Math.log(CNsAdaptiveSurveyTest.states);
             h += v * logXv;
         }
 
@@ -370,7 +372,7 @@ public class CNsAdaptiveSurvey {
 
         for (int s = 0; s < nSkills; s++) {
 
-            testResult = BNsAdaptiveTests.germanTest(credalFileName, s, rightQ, wrongQ);
+            testResult = AdaptiveTests.germanTest(credalFileName, s, rightQ, wrongQ);
             result[s] = (double[][]) testResult[0];
         }
 

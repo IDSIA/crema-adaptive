@@ -19,7 +19,7 @@ import java.util.stream.IntStream;
  * Date:    24.11.2020 11:40
  */
 
-public class BNsAdaptiveSurvey {
+public class BNsAdaptiveSurveyTest {
 
     // Adaptive configuration data -------------------------------------------------------------------------------------
     private static final String bayesianFileName = "adaptive/cnParametersBayes.txt";
@@ -65,7 +65,7 @@ public class BNsAdaptiveSurvey {
 
     private final AnswerSet[] questionsPerSkill = new AnswerSet[nSkills];
 
-    private final BNsAdaptiveTests BNsAdaptiveTests;
+    private final AdaptiveTests AdaptiveTests;
     private final AbellanEntropy abellanEntropy;
     private final QuestionSet questionSet;
     private final Random random;
@@ -79,11 +79,11 @@ public class BNsAdaptiveSurvey {
      *
      * @param student reference id of the students
      */
-    private BNsAdaptiveSurvey(int student) {
+    private BNsAdaptiveSurveyTest(int student) {
         this.student = student;
 
         random = new Random(randomSeed + student);
-        BNsAdaptiveTests = new BNsAdaptiveTests();
+        AdaptiveTests = new AdaptiveTests();
         abellanEntropy = new AbellanEntropy();
         questionSet = new QuestionSet();
         questionSet.loadKeyList();
@@ -103,7 +103,7 @@ public class BNsAdaptiveSurvey {
             try {
                 System.out.printf("Start for student %d%n", student);
 
-                BNsAdaptiveSurvey aslat = new BNsAdaptiveSurvey(student);
+                BNsAdaptiveSurveyTest aslat = new BNsAdaptiveSurveyTest(student);
                 aslat.test();
 
                 saveToFile(aslat, out_path);
@@ -113,7 +113,7 @@ public class BNsAdaptiveSurvey {
         }
     }
 
-    private static synchronized void saveToFile(BNsAdaptiveSurvey aslat, Path path) {
+    private static synchronized void saveToFile(BNsAdaptiveSurveyTest aslat, Path path) {
         try (BufferedWriter bw = Files.newBufferedWriter(path, StandardOpenOption.CREATE, StandardOpenOption.APPEND)) {
             StringBuilder out = new StringBuilder();
             out.append(String.format("%3d %2d ", aslat.student, aslat.questionAnswered));
@@ -188,7 +188,7 @@ public class BNsAdaptiveSurvey {
 
             for (int s = 0; s < nSkills; s++) {
                 // Current prior
-                Object[] testOutput = BNsAdaptiveTests.germanTest(bayesianFileName, s, rightQ, wrongQ);
+                Object[] testOutput = AdaptiveTests.germanTest(bayesianFileName, s, rightQ, wrongQ);
                 priorResults[s] = (double[][]) testOutput[0];
                 answerLikelihood[s] = (double[][][]) testOutput[1];
 
@@ -226,7 +226,7 @@ public class BNsAdaptiveSurvey {
 //                        if (s == 0 && dl == 3) { // && answer == 1) {
 //                            System.out.printf("Error debugging");
 //                        }
-                        testOutput = BNsAdaptiveTests.germanTest(bayesianFileName, s, rightQ, wrongQ);
+                        testOutput = AdaptiveTests.germanTest(bayesianFileName, s, rightQ, wrongQ);
                         hypotheticalPosteriorResults[s] = (double[][]) testOutput[0];
 
                         if (answer == 0) {
@@ -330,7 +330,7 @@ public class BNsAdaptiveSurvey {
             //  all the skills, since in this way we continue to compute it only
             //  on the first one until HS < STOP_THRESHOLD
             for (int s = 0; s < nSkills; s++) {
-                Object[] output = BNsAdaptiveTests.germanTest(bayesianFileName, s, rightQ, wrongQ);
+                Object[] output = AdaptiveTests.germanTest(bayesianFileName, s, rightQ, wrongQ);
                 posteriorResults[s] = (double[][]) output[0];
 
                 // entropy of the skill
@@ -384,7 +384,7 @@ public class BNsAdaptiveSurvey {
 
         for (double v : d) {
             // log base 4
-            double logXv = Math.log(v) / Math.log(BNsAdaptiveSurvey.states);
+            double logXv = Math.log(v) / Math.log(BNsAdaptiveSurveyTest.states);
             h += v * logXv;
         }
 
@@ -397,7 +397,7 @@ public class BNsAdaptiveSurvey {
 
         for (int s = 0; s < nSkills; s++) {
 
-            testResult = BNsAdaptiveTests.germanTest(bayesianFileName, s, rightQ, wrongQ);
+            testResult = AdaptiveTests.germanTest(bayesianFileName, s, rightQ, wrongQ);
             result[s] = (double[][]) testResult[0];
         }
 

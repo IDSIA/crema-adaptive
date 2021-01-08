@@ -20,7 +20,7 @@ import java.util.stream.IntStream;
  * Project: Credo3
  * Date:    21.02.2017 16:22
  */
-public class AdaptiveSurveyLanguageTest {
+public class AdaptiveSurveyLanguageTest_old {
 
 	// debug and thread configuration ----------------------------------------------------------------------------------
 	private static final boolean DEBUG = false;
@@ -65,7 +65,7 @@ public class AdaptiveSurveyLanguageTest {
 	private final double[][] rightQuestion = new double[skillNumber][levelNumber]; // {{0, 0, 0, 0}, {0, 0, 0, 0}, {0, 0, 0, 0}, {0, 0, 0, 0}};
 	private final double[][][] results = new double[skillNumber][][];
 	private final AnswerSet[] qs = new AnswerSet[skillNumber];
-	private final AdaptiveTests at;
+	private final AdaptiveTests_old at;
 	private final AbellanEntropy ae;
 	private final QuestionSet q;
 	private final Random random;
@@ -79,11 +79,11 @@ public class AdaptiveSurveyLanguageTest {
 	 *
 	 * @param student reference id of the students
 	 */
-	private AdaptiveSurveyLanguageTest(int student) {
+	private AdaptiveSurveyLanguageTest_old(int student) {
 		this.student = student;
 
 		random = new Random(seed + student);
-		at = new AdaptiveTests();
+		at = new AdaptiveTests_old();
 		ae = new AbellanEntropy();
 		q = new QuestionSet();
 		q.loadKeyList();
@@ -105,7 +105,7 @@ public class AdaptiveSurveyLanguageTest {
 				try {
 					System.out.printf("Start for student %d%n", studentId);
 
-					AdaptiveSurveyLanguageTest aslat = new AdaptiveSurveyLanguageTest(studentId);
+					AdaptiveSurveyLanguageTest_old aslat = new AdaptiveSurveyLanguageTest_old(studentId);
 					aslat.test();
 
 					saveToFile(aslat, out_path);
@@ -118,7 +118,7 @@ public class AdaptiveSurveyLanguageTest {
 		es.shutdown();
 	}
 
-	private static synchronized void saveToFile(AdaptiveSurveyLanguageTest aslat, Path path) {
+	private static synchronized void saveToFile(AdaptiveSurveyLanguageTest_old aslat, Path path) {
 		try (BufferedWriter bw = Files.newBufferedWriter(path, StandardOpenOption.CREATE, StandardOpenOption.APPEND)) {
 			StringBuilder out = new StringBuilder();
 			out.append(String.format("%3d %2d ", aslat.student, aslat.questionAnswered));
@@ -314,7 +314,7 @@ public class AdaptiveSurveyLanguageTest {
 
 		for (double v : d) {
 //			FIXME log base 4
-			double logXv = Math.log(v) / Math.log(AdaptiveSurveyLanguageTest.states);
+			double logXv = Math.log(v) / Math.log(AdaptiveSurveyLanguageTest_old.states);
 			h += v * logXv;
 		}
 
