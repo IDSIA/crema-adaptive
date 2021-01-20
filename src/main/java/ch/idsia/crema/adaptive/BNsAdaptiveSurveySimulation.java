@@ -233,9 +233,11 @@ public class BNsAdaptiveSurveySimulation {
 
             try {
                 availableQuestions = questionSet.getQuestions(nextSkill, nextDifficultyLevel);
-            } catch(NullPointerException e) {
+            } catch (NullPointerException e) {
                 System.out.print(questionSet);
-                System.out.print("NullPointerException Caught");
+                System.out.println("NullPointerException Caught\n");
+                System.out.println("No more answers available!\n");
+                break;
             }
 
             assert availableQuestions != null;
