@@ -208,7 +208,7 @@ public class BNsAdaptiveSurveyTest {
 
                     // compute entropy only if we have questions available
                     if (availableQuestions.size() == 0) {
-                        System.out.println("No more question for skill " + s + " level " + dl);
+//                        System.out.println("No more question for skill " + s + " level " + dl);
                         continue;
                     }
 
@@ -251,8 +251,6 @@ public class BNsAdaptiveSurveyTest {
                     double wrongAnswerProbability = 0;
 
                     for (int sl = 0; sl < nSkillLevels; sl++) {
-                        // FIXME before priorResults[skill][0][sl] was priorResults[0][0][sl]
-                        //  same for answerLikelihood[skill][dl][sl][0] that was answerLikelihood[0][dl][sl][0]
                         rightAnswerProbability += answerLikelihood[s][dl][sl][0] * priorResults[s][0][sl];
                         wrongAnswerProbability += (1 - answerLikelihood[s][dl][sl][0]) * priorResults[s][0][sl];
                     }
@@ -267,15 +265,15 @@ public class BNsAdaptiveSurveyTest {
 
                     double ig = HS - H; // infogain
 
-                    if (ig < 0.000001) {
+                    if (ig < 0.0000001) {
                         System.err.println("Negative information gain for skill " + s + " level " + dl +
                                 ": \n IG = HS" + " - H = " + HS + " - " + H + "=" + ig);
                     }
 
-                    System.out.printf("skill %d, difficulty level %d, ig %.4f, max_ig %.4f %n", s, dl, ig, maxIG);
+//                    System.out.printf("skill %d, difficulty level %d, ig %.4f, max_ig %.4f %n", s, dl, ig, maxIG);
 
                     if (ig > maxIG) {
-                        System.out.printf(" ig > maxIG --> Updating maxIG...%n");
+//                        System.out.printf(" ig > maxIG --> Updating maxIG...%n");
                         //  maxIG = H;
                         maxIG = ig;
                         nextSkill = s;
@@ -304,9 +302,10 @@ public class BNsAdaptiveSurveyTest {
             int nextQ = availableQuestions.get(indexQ);
             int answer = questionsPerSkill[nextSkill].getAnswer(student, nextQ);
 
-            System.out.printf("Asked question %d, answer %d%n next skill %d, " +
-                              "next difficulty level %d, (H=%.4f)%n", question, answer,
-                              nextSkill, nextDifficultyLevel, maxIG);
+            System.out.printf("Asked question %d, answer %d%n " +
+                                "Testing skill %d, " +
+                                "of difficulty level %d, (H=%.4f)%n", question, answer,
+                                nextSkill, nextDifficultyLevel, maxIG);
 
             questionAnswered++;
             availableQuestions.remove(indexQ);
@@ -323,12 +322,6 @@ public class BNsAdaptiveSurveyTest {
 
             // stop criteria
             stop = true;
-            // FIXME: We are supposed to stop asking questions when the current
-            //  evaluation is sufficiently informative, hence when the skills entropy
-            //  given the answer is below some threshold.
-            //  I am not sure it is correct to compute the posterior iterating on
-            //  all the skills, since in this way we continue to compute it only
-            //  on the first one until HS < STOP_THRESHOLD
             for (int s = 0; s < nSkills; s++) {
                 Object[] output = AdaptiveTests.germanTest(bayesianFileName, s, rightQ, wrongQ);
                 posteriorResults[s] = (double[][]) output[0];
@@ -354,11 +347,33 @@ public class BNsAdaptiveSurveyTest {
 
             System.out.printf("Right question %s%n", ArrayUtils.toString(rightQ));
             System.out.printf("Wrong question %s%n", ArrayUtils.toString(wrongQ));
+
+            int[] skillsLevels = new int[nSkills];
+
+            for (int s = 0; s < nSkills; s++) {
+                double max = Double.NEGATIVE_INFINITY;
+                int index = -1;
+
+                for (int i = 0; i < priorResults[s][0].length; i++) {
+                    if (max < priorResults[s][0][i]) {
+                        max = priorResults[s][0][i];
+                        index = i;
+                    }
+                }
+
+                skillsLevels[s] = index;
+            }
+
+            System.out.printf("Skills probabilities %s%n", ArrayUtils.toString(posteriorResults));
+            System.out.printf("Skills probabilities %s%n", ArrayUtils.toString(priorResults));
+            System.out.printf("Skills levels %s%n", ArrayUtils.toString(skillsLevels));
             System.out.print("\n");
 
             if (questionSet.isEmpty()) {
                 System.out.println("All questions done!");
                 System.out.printf("Skills probabilities %s%n", ArrayUtils.toString(posteriorResults));
+                System.out.printf("Skills probabilities %s%n", ArrayUtils.toString(priorResults));
+                System.out.printf("Skills levels %s%n", ArrayUtils.toString(skillsLevels));
                 break;
             }
 
