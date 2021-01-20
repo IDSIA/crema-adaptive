@@ -118,12 +118,12 @@ public class BNsAdaptiveSurveySimulation {
     }
 
     private static synchronized void appendToFile(BNsAdaptiveSurveySimulation aslat, Path right_path, Path wrong_path) {
-        try (BufferedWriter bw = Files.newBufferedWriter(right_path, StandardOpenOption.APPEND)) {
+        try (BufferedWriter bw = Files.newBufferedWriter(right_path, StandardOpenOption.CREATE, StandardOpenOption.APPEND)) {
             bw.write(ArrayUtils.toString(aslat.rightQ) + "\n");
 
         } catch (IOException ignored) {
         }
-        try (BufferedWriter bw = Files.newBufferedWriter(wrong_path, StandardOpenOption.APPEND)) {
+        try (BufferedWriter bw = Files.newBufferedWriter(wrong_path, StandardOpenOption.CREATE, StandardOpenOption.APPEND)) {
             bw.write(ArrayUtils.toString(aslat.rightQ) + "\n");
         } catch (IOException ignored) {
         }
