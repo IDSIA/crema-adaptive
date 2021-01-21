@@ -58,7 +58,7 @@ public class NonAdaptiveTest {
 	private final double[][] wrongQuestion = new double[skillNumber][levelNumber]; // {{0, 0, 0, 0}, {0, 0, 0, 0}, {0, 0, 0, 0}, {0, 0, 0, 0}}
 	private final double[][] rightQuestion = new double[skillNumber][levelNumber]; // {{0, 0, 0, 0}, {0, 0, 0, 0}, {0, 0, 0, 0}, {0, 0, 0, 0}};
 	private final AnswerSet[] qs = new AnswerSet[skillNumber];
-	private final AdaptiveTests at;
+	private final AdaptiveTests_old at;
 	private final QuestionSet q;
 
 
@@ -71,7 +71,7 @@ public class NonAdaptiveTest {
 	private NonAdaptiveTest(int student) {
 		this.student = student;
 
-		at = new AdaptiveTests();
+		at = new AdaptiveTests_old();
 		q = new QuestionSet();
 		q.loadKeyList();
 
@@ -189,7 +189,7 @@ public class NonAdaptiveTest {
 				String line = scan.nextLine();
 				if (!remove.contains(rowNumber)) {
 					col = 0;
-					for (String element : line.split(",")) {
+					for (String element : line.split(" *,")) {
 						trueLevels[scount][col] = Integer.parseInt(element);
 						col++;
 					}
@@ -214,7 +214,7 @@ public class NonAdaptiveTest {
 				String line = scan.nextLine();
 				if (!remove.contains(rowNumber)) {
 					col = 0;
-					for (String element : line.split(",")) {
+					for (String element : line.split(" *,")) {
 						trueLevels2[scount][col] = Integer.parseInt(element);
 						col++;
 					}

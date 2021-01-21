@@ -48,7 +48,8 @@ class AnswerSet {
 		answers = new int[records.size()][];
 
 		for (int i = 0; i < records.size(); i++) {
-			String[] tokens = records.get(i).split(",");
+//			String[] tokens = records.get(i).split(",");
+			String[] tokens = records.get(i).split(" *,");
 			int answerNumber = tokens.length;
 
 			// -1 is to avoid id
