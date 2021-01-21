@@ -2,6 +2,8 @@ package ch.idsia.crema.adaptive;
 
 import com.google.common.math.Stats;
 import org.apache.commons.lang3.ArrayUtils;
+
+import java.io.File;
 import java.util.Random;
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -91,28 +93,39 @@ public class BNsAdaptiveSurveySimulation {
     }
 
     public static void main(String[] args) {
+
+        int numOfSimulations = 5;
+
         // for each student
         final int[][] profiles = new int[maxStudent][nSkillLevels];
 
         Quaternary quaternary = new Quaternary(nSkillLevels);
         quaternary.generate(profiles);
 
-        for (int student = minStudent; student < maxStudent; student++) {
-            try {
-                System.out.printf("Start for student %d with profile %s %n", student,
-                        ArrayUtils.toString(profiles[student]));
+        //  Loop that iterate over 5/10 simulations for each profile
+        for (int s = 0; s < numOfSimulations; s++) {
+            for (int student = minStudent; student < maxStudent; student++) {
+                try {
+                    System.out.printf("Start for student %d with profile %s %n", student,
+                            ArrayUtils.toString(profiles[student]));
 
-                //  FIXME add the loop to create 5/10 simulations for each profile
-                BNsAdaptiveSurveySimulation aslat = new BNsAdaptiveSurveySimulation(student, profiles[student]);
-                aslat.test();
+                    BNsAdaptiveSurveySimulation aslat = new BNsAdaptiveSurveySimulation(student, profiles[student]);
+                    aslat.test();
 
-                // Append to file the right and wrong answer count
-                final Path right_out_path = Paths.get("output/right_answers-profile_" + student + ".txt");
-                final Path wrong_out_path = Paths.get("output/wrong_answers-profile_" + student + ".txt");
+                    // Append to file the right and wrong answer count
+                    File right_dir = new File("output/right_answers/sim_" + s);
+                    right_dir.mkdirs();
 
-                appendToFile(aslat, right_out_path, wrong_out_path);
-            } catch (Exception e) {
-                e.printStackTrace();
+                    File wrong_dir = new File("output/wrong_answers/sim_" + s);
+                    wrong_dir.mkdirs();
+
+                    final Path right_out_path = Paths.get(right_dir + "/profile_" + student + ".txt");
+                    final Path wrong_out_path = Paths.get(wrong_dir + "/profile_" + student + ".txt");
+
+                    appendToFile(aslat, right_out_path, wrong_out_path);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
         }
     }
@@ -123,8 +136,9 @@ public class BNsAdaptiveSurveySimulation {
 
         } catch (IOException ignored) {
         }
+
         try (BufferedWriter bw = Files.newBufferedWriter(wrong_path, StandardOpenOption.CREATE, StandardOpenOption.APPEND)) {
-            bw.write(ArrayUtils.toString(aslat.rightQ) + "\n");
+            bw.write(ArrayUtils.toString(aslat.wrongQ) + "\n");
         } catch (IOException ignored) {
         }
     }
