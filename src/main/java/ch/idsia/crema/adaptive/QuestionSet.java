@@ -56,6 +56,10 @@ class QuestionSet {
         return questions.get(skill).get(level);
     }
 
+    int getQuestionNum() {
+        return questionNum;
+    }
+
     boolean isEmpty() {
         return questionNum == 0;
     }
