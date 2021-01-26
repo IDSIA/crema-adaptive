@@ -1,0 +1,3 @@
+###### Requirements without Version Specifiers ######
+
+numpy==1.19.5
