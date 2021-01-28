@@ -13,7 +13,7 @@ import java.util.Scanner;
  * Project: Credo3
  * Date:    21.02.2017 16:23
  */
-class AnswerSet {
+public class AnswerSet {
 
 	/**
 	 * answers foreach student
@@ -21,10 +21,10 @@ class AnswerSet {
 	private int[][] answers;
 	private int[] questionToIndex = null;
 
-	AnswerSet() {
+	public AnswerSet() {
 	}
 
-	AnswerSet load(String filename) {
+	public AnswerSet load(String filename) {
 		List<String> records = new ArrayList<>();
 
 		try (Scanner s = new Scanner(new File(filename))) {
@@ -63,7 +63,7 @@ class AnswerSet {
 		return this;
 	}
 
-	int getAnswer(int student, int question) {
+	public int getAnswer(int student, int question) {
 		int idx = ArrayUtils.indexOf(questionToIndex, question);
 		return answers[student][idx];
 	}
