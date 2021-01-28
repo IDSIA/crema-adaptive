@@ -13,6 +13,7 @@ import ch.idsia.crema.model.io.dot.DotSerialize;
 import ch.idsia.crema.preprocess.RemoveBarren;
 import ch.idsia.crema.search.ISearch;
 import ch.idsia.crema.search.impl.GreedyWithRandomRestart;
+import ch.idsia.crema.adaptive.old.AdaptiveFileTools;
 import gnu.trove.map.TIntIntMap;
 import gnu.trove.map.hash.TIntIntHashMap;
 

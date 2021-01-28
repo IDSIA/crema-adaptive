@@ -1,95 +1,80 @@
-1 a A2 Horen
-2 c A2 Horen 
-3 a A2 Horen
-4 a A2 Horen
-5 c A2 Horen
-6 b A2 Horen
-7 a A2 Horen
-8 c A2 Horen
-9 b A2 Horen
-10 b A2 Horen
-11 a B1 Horen
-12 b B1 Horen
-13 b B1 Horen
-14 a B1 Horen
-15 b B1 Horen
-16 b B1 Horen
-17 b B1 Horen
-18 a B1 Horen
-19 b B1 Horen
-20 a B1 Horen
-21 c B2 Horen
-22 b B2 Horen
-23 a B2 Horen
-24 b B2 Horen
-25 a B2 Horen
-26 b B2 Horen
-27 a B2 Horen
-28 b B2 Horen
-29 b B2 Horen
-30 c B2 Horen
-31 b A2 Lesen
-32 b A2 Lesen
-33 c A2 Lesen
-34 a A2 Lesen
-35 c A2 Lesen
-36 c B1 Lesen
-37 a B1 Lesen
-38 c B1 Lesen
-39 b B1 Lesen
-40 b B1 Lesen
-41 a B2 Lesen
-42 c B2 Lesen
-43 b B2 Lesen
-44 c B2 Lesen
-45 c B2 Lesen
-46 b A2 Wortschatz
-47 b A2 Wortschatz
-48 a A2 Wortschatz
-49 c A2 Wortschatz
-50 b A2 Wortschatz
-51 c A2 Wortschatz
-52 c B1 Wortschatz
-53 a B1 Wortschatz
-54 c B1 Wortschatz
-55 b B1 Wortschatz
-56 a B1 Wortschatz
-57 c B1 Wortschatz
-58 b B1 Wortschatz
-59 a B1 Wortschatz
-60 c B1 Wortschatz
-61 a B1 Wortschatz
-62 c B2 Wortschatz
-63 a B2 Wortschatz
-64 a B2 Wortschatz
-65 b B2 Wortschatz
-66 c B2 Wortschatz
-67 b B2 Wortschatz
-68 c B2 Wortschatz
-69 a B2 Wortschatz
-70 a B2 Wortschatz
-71 c B2 Wortschatz
-72 a A2 Kommunikation
-73 b A2 Kommunikation
-74 a A2 Kommunikation
-75 a A2 Kommunikation
-76 b A2 Kommunikation
-77 a A2 Kommunikation
-78 a A2 Kommunikation
-79 a A2 Kommunikation
-80 a B1 Kommunikation
-81 a B1 Kommunikation
-82 b B1 Kommunikation
-83 b B1 Kommunikation
-84 a B1 Kommunikation
-85 b B1 Kommunikation
-86 a B1 Kommunikation
-87 a B1 Kommunikation
-88 a B2 Kommunikation
-89 a B2 Kommunikation
-90 a B2 Kommunikation
-91 b B2 Kommunikation
-92 b B2 Kommunikation
-93 a B2 Kommunikation
-94 a B2 Kommunikation
-95 a B2 Kommunikation
+1 easy Horen
+2 easy Horen
+3 easy Horen
+4 easy Horen
+5 easy Horen
+6 easy Kommunikation
+7 easy Kommunikation
+8 easy Kommunikation
+9 easy Kommunikation
+10 easy Kommunikation
+11 easy Lesen
+12 easy Lesen
+13 easy Lesen
+14 easy Lesen
+15 easy Lesen
+16 easy Wortschatz
+17 easy Wortschatz
+18 easy Wortschatz
+19 easy Wortschatz
+20 easy Wortschatz
+21 medium-easy Horen
+22 medium-easy Horen
+23 medium-easy Horen
+24 medium-easy Horen
+25 medium-easy Horen
+26 medium-easy Kommunikation
+27 medium-easy Kommunikation
+28 medium-easy Kommunikation
+29 medium-easy Kommunikation
+30 medium-easy Kommunikation
+31 medium-easy Lesen
+32 medium-easy Lesen
+33 medium-easy Lesen
+34 medium-easy Lesen
+35 medium-easy Lesen
+36 medium-easy Wortschatz
+37 medium-easy Wortschatz
+38 medium-easy Wortschatz
+39 medium-easy Wortschatz
+40 medium-easy Wortschatz
+41 medium-hard Horen
+42 medium-hard Horen
+43 medium-hard Horen
+44 medium-hard Horen
+45 medium-hard Horen
+46 medium-hard Kommunikation
+47 medium-hard Kommunikation
+48 medium-hard Kommunikation
+49 medium-hard Kommunikation
+50 medium-hard Kommunikation
+51 medium-hard Lesen
+52 medium-hard Lesen
+53 medium-hard Lesen
+54 medium-hard Lesen
+55 medium-hard Lesen
+56 medium-hard Wortschatz
+57 medium-hard Wortschatz
+58 medium-hard Wortschatz
+59 medium-hard Wortschatz
+60 medium-hard Wortschatz
+61 hard Horen
+62 hard Horen
+63 hard Horen
+64 hard Horen
+65 hard Horen
+66 hard Kommunikation
+67 hard Kommunikation
+68 hard Kommunikation
+69 hard Kommunikation
+70 hard Kommunikation
+71 hard Lesen
+72 hard Lesen
+73 hard Lesen
+74 hard Lesen
+75 hard Lesen
+76 hard Wortschatz
+77 hard Wortschatz
+78 hard Wortschatz
+79 hard Wortschatz
+80 hard Wortschatz

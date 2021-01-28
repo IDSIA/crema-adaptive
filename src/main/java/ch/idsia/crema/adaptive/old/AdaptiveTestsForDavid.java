@@ -10,6 +10,7 @@ import ch.idsia.crema.preprocess.RemoveBarren;
 import ch.idsia.crema.search.ISearch;
 import ch.idsia.crema.search.impl.GreedyWithRandomRestart;
 import ch.idsia.crema.utility.ArraysUtil;
+import ch.idsia.crema.adaptive.old.AdaptiveFileTools;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
