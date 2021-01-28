@@ -1,5 +1,6 @@
 package ch.idsia.crema.adaptive;
 
+import ch.idsia.crema.adaptive.old.AdaptiveTests_old;
 import ch.idsia.crema.factor.credal.vertex.generator.CNGenerator;
 
 import java.io.BufferedWriter;
