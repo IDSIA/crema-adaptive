@@ -3,15 +3,17 @@ package ch.idsia.crema.adaptive;
 import com.google.common.math.Stats;
 import org.apache.commons.lang3.ArrayUtils;
 
-import java.io.File;
-import java.util.Random;
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Random;
 import java.util.stream.DoubleStream;
 
 /**
@@ -22,12 +24,6 @@ public class BNsAdaptiveSurveySimulation {
 
     // Adaptive configuration data -------------------------------------------------------------------------------------
     private static final String bayesianFileName = "adaptive/cnParametersBayes.txt";
-    private static final String[] dataset = {
-            "adaptive/Hören2015-16.csv",
-            "adaptive/Kommunikation2015-16.csv",
-            "adaptive/Lesen2015-16.csv",
-            "adaptive/Wortschatz und Strukturen2015-16.csv"
-    };
 
     private static final int nSkills = 4;
     private static final int nDifficultyLevels = 4;
@@ -49,8 +45,9 @@ public class BNsAdaptiveSurveySimulation {
 
     // List containing the number of right and wrong answer to the questions,
     // for each combination of skill and difficulty level
-    private final double[][] rightQ = new double[nSkills][nDifficultyLevels]; // {{0, 0, 0, 0}, {0, 0, 0, 0}, {0, 0, 0, 0}, {0, 0, 0, 0}}
-    private final double[][] wrongQ = new double[nSkills][nDifficultyLevels]; // {{0, 0, 0, 0}, {0, 0, 0, 0}, {0, 0, 0, 0}, {0, 0, 0, 0}}
+    // {{0, 0, 0, 0}, {0, 0, 0, 0}, {0, 0, 0, 0}, {0, 0, 0, 0}}
+    private final double[][] rightQ = new double[nSkills][nDifficultyLevels];
+    private final double[][] wrongQ = new double[nSkills][nDifficultyLevels];
 
     // Probabilities
     private final double[][][] priorResults = new double[nSkills][][];
@@ -61,10 +58,8 @@ public class BNsAdaptiveSurveySimulation {
 
     private final AdaptiveTests AdaptiveTests;
     private final AbellanEntropy abellanEntropy;
-    private static QuestionSet questionSet;
+    private final QuestionSet questionSet;
     private final Random random;
-
-    private int question = 0;
 
     /**
      * Create a survey test for a single student. Each students will have its lists of questions, its personal test,
@@ -86,62 +81,53 @@ public class BNsAdaptiveSurveySimulation {
 
         studentAnswers = new int[questionSet.getQuestionNum()];
         Arrays.fill(studentAnswers, -1);
-
-//        AnswerSet[] questionsPerSkill = new AnswerSet[nSkills];
-//        for (int i = 0; i < questionsPerSkill.length; i++) {
-//            questionsPerSkill[i] = new AnswerSet().load(dataset[i]);
-//        }
     }
 
     public static void main(String[] args) {
 
-        int numOfSimulations = 5;
+        final int numOfSimulations = 5;
 
         // for each student
         final int[][] profiles = new int[maxStudent][nSkillLevels];
 
-        Quaternary quaternary = new Quaternary(nSkillLevels);
+        final Quaternary quaternary = new Quaternary(nSkillLevels);
         quaternary.generate(profiles);
+
+        final List<int[]> profilesList = Arrays.asList(profiles);
 
         //  Loop that iterate over 5/10 simulations for each profile
         for (int s = 0; s < numOfSimulations; s++) {
-            for (int student = minStudent; student < maxStudent; student++) {
-                try {
-                    System.out.printf("Start for student %d with profile %s %n", student,
-                            ArrayUtils.toString(profiles[student]));
+            final File simDir = new File("output/sim_" + s);
+            simDir.mkdirs();
 
-                    BNsAdaptiveSurveySimulation aslat = new BNsAdaptiveSurveySimulation(student, profiles[student]);
+            final Path answersPath = Paths.get(simDir + "/answers.txt");
+            final Path initProfilePath = Paths.get(simDir + "/initial_profiles.txt");
+            final Path finalProfilePath = Paths.get(simDir + "/predicted_profiles.txt");
+
+            profilesList.parallelStream().forEach(profile -> {
+                try {
+                    int student = profilesList.indexOf(profile);
+                    System.out.printf("Start for student %d with profile %s %n", student,
+                            ArrayUtils.toString(profile));
+
+                    BNsAdaptiveSurveySimulation aslat = new BNsAdaptiveSurveySimulation(student, profile);
                     aslat.test();
 
                     // Append to file the right and wrong answer count
-                    File simDir = new File("output/sim_" + s);
-                    simDir.mkdirs();
-
-//                    File right_dir = new File("output/sim_" + s + "/right_answers");
-//                    right_dir.mkdirs();
-//
-//                    File wrong_dir = new File("output/sim_" + s + "/wrong_answers");
-//                    wrong_dir.mkdirs();
-//
-//                    final Path rightOutPath = Paths.get(right_dir + "/profile_" + student + ".txt");
-//                    final Path wrongOutPath = Paths.get(wrong_dir + "/profile_" + student + ".txt");
-
-                    final Path answersPath = Paths.get(simDir + "/answers.txt");
-                    final Path initProfilePath = Paths.get(simDir + "/initial_profiles.txt");
-                    final Path finalProfilePath = Paths.get(simDir + "/predicted_profiles.txt");
-
-                    appendToFile(ArrayUtils.toString(aslat.studentAnswers), answersPath);
-                    appendToFile(ArrayUtils.toString(profiles[student]), initProfilePath);
-                    appendToFile(ArrayUtils.toString(aslat.priorResults), finalProfilePath);
+                    synchronized (BNsAdaptiveSurveySimulation.class) {
+                        appendToFile(ArrayUtils.toString(aslat.studentAnswers), answersPath);
+                        appendToFile(ArrayUtils.toString(profile), initProfilePath);
+                        appendToFile(ArrayUtils.toString(aslat.priorResults), finalProfilePath);
+                    }
 
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
-            }
+            });
         }
     }
 
-    private static synchronized void appendToFile(String variable, Path outputPath) {
+    private static void appendToFile(String variable, Path outputPath) {
 
         try (BufferedWriter bw = Files.newBufferedWriter(outputPath, StandardOpenOption.CREATE, StandardOpenOption.APPEND)) {
             bw.write(variable + "\n");
