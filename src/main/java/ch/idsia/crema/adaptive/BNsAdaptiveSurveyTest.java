@@ -309,7 +309,7 @@ public class BNsAdaptiveSurveyTest {
 
             questionAnswered++;
             availableQuestions.remove(indexQ);
-            questionSet.revomeQuestion();
+            questionSet.removeQuestion();
 
             if (answer == 0) {
                 wrongQ[nextSkill][nextDifficultyLevel] += 1;

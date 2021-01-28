@@ -7,22 +7,20 @@ import java.io.FileNotFoundException;
 import java.util.*;
 
 /**
- * Author:  Claudio "Dna" Bonesana
- * Project: Credo3
- * Date:    22.02.2017 15:15
+ * Author:  Giorgia Adorni
+ * Date:    28.01.2020 14:00
  */
-class QuestionSet {
+public class QuestionSet {
 
-    private static final String[] levels = {"A1", "A2", "B1", "B2"};
+//    private static final String[] levels = {"A1", "A2", "B1", "B2"};
     private static final String[] skills = {"Horen", "Kommunikation", "Lesen", "Wortschatz"};
+    private static final String[] difficulties = {"easy", "medium-easy", "medium-hard", "hard"};
 
-    /**
-     * ID Skill -> ID Level -> Question
-     */
     private Map<Integer, Map<Integer, List<Integer>>> questions = null;
     private int questionNum = 0;
+    private int askedQuestion = 0;
 
-    void loadKeyList() {
+    public void loadKeyList() {
         questions = new HashMap<>();
 
         for (int s = 0; s < skills.length; s++) {
@@ -38,10 +36,10 @@ class QuestionSet {
                 String[] tokens = line.split(" ");
 
                 int id = Integer.parseInt(tokens[0]);
-                int lvl = ArrayUtils.indexOf(levels, tokens[2]);
-                int skill = ArrayUtils.indexOf(skills, tokens[3]);
+                int difficulty = ArrayUtils.indexOf(difficulties, tokens[1]);
+                int skill = ArrayUtils.indexOf(skills, tokens[2]);
 
-                questions.get(skill).get(lvl).add(id);
+                questions.get(skill).get(difficulty).add(id);
                 questionNum++;
             }
         } catch (FileNotFoundException e) {
@@ -49,22 +47,34 @@ class QuestionSet {
         }
     }
 
-    List<Integer> getQuestions(int skill, int level) {
+    public List<Integer> getQuestions(int skill, int difficulty) {
         if (questions == null) {
             loadKeyList();
         }
-        return questions.get(skill).get(level);
+        return questions.get(skill).get(difficulty);
     }
 
     int getQuestionNum() {
         return questionNum;
     }
 
-    boolean isEmpty() {
+    public boolean isEmpty() {
         return questionNum == 0;
     }
 
-    public void revomeQuestion() {
+    public void removeQuestion() {
         questionNum--;
+    }
+
+    public int getAskedQuestion() {
+        return askedQuestion;
+    }
+
+    public void setAskedQuestion(int askedQuestion) {
+        this.askedQuestion = askedQuestion;
+    }
+
+    public void addAskedQuestion() {
+        askedQuestion ++;
     }
 }
