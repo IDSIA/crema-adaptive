@@ -146,6 +146,8 @@ public class BNsAdaptiveSurveySimulation {
             double maxIG = 0.0;
             int nextSkill = -1;
             int nextDifficultyLevel = -1;
+            int[][] nextSkillAndLevelRank = new int[nSkills][nDifficultyLevels];
+            int incrementRank = 1;
 
             for (int s = 0; s < nSkills; s++) {
                 // Current prior
@@ -173,7 +175,9 @@ public class BNsAdaptiveSurveySimulation {
                     }
 
                     double[] HResults = new double[2];
-                    // in the first iteration of the loop simulate to answer wrong, in the secondo to answer right
+                    // simulate the two possible outcomes:
+                    // in the first iteration of the loop answer wrong,
+                    // in the second answer right
                     for (int answer = 0; answer < 2; answer++) {
                         if (answer == 0) {
                             wrongQ[s][dl] += 1;
@@ -219,9 +223,28 @@ public class BNsAdaptiveSurveySimulation {
 
                     if (ig > maxIG) {
                         maxIG = ig;
-                        nextSkill = s;
-                        nextDifficultyLevel = dl;
+                        nextSkillAndLevelRank[s][dl] += incrementRank;
+                        incrementRank++;
                     }
+                }
+            }
+
+            ArrayList<ArrayList<Integer>> nextSkillsAndLevels = new ArrayList<>();
+            boolean iterate = true;
+
+            while (iterate) {
+                Case highestValue = CaseUtils.findHighestValue(nextSkillAndLevelRank);
+
+                if (highestValue == null | highestValue.getValue() == 0) {
+                    iterate = false;
+                } else {
+                    ArrayList<Integer> nextSkillAndLevel = new ArrayList<>();
+
+                    nextSkillAndLevel.add(highestValue.getRow());
+                    nextSkillAndLevel.add(highestValue.getCol());
+                    nextSkillsAndLevels.add(nextSkillAndLevel);
+
+                    nextSkillAndLevelRank[highestValue.getRow()][highestValue.getCol()] = 0;
                 }
             }
 
@@ -230,28 +253,38 @@ public class BNsAdaptiveSurveySimulation {
                 break;
             }
 
-            // TODO:
-            //  Lets ask 40 questions,
-            //  10 easy, 10 medium-easy, 10 medium-hard, 10 hard
-            //  now we aske the same
-
-            // get available questions
-            List<Integer> availableQuestions;
+            //  Lets ask 80 questions:
+            //  5 questions for each skill and difficulty level,
+            //  in total, 20 easy, 20 medium-easy, 20 medium-hard, 20 hard
+            List<Integer> availableQuestions = null;
 
             try {
-                availableQuestions = questionSet.getQuestions(nextSkill, nextDifficultyLevel);
+                for (ArrayList<Integer> skillAndLevel : nextSkillsAndLevels) {
+                    nextSkill = skillAndLevel.get(0);
+                    nextDifficultyLevel = skillAndLevel.get(1);
+
+                    availableQuestions = questionSet.getQuestions(nextSkill, nextDifficultyLevel);
+
+                    assert availableQuestions != null;
+
+                    if (availableQuestions.size() > 0) {
+                        break;
+                    }
+                }
+                if (availableQuestions.size() <= 0) {
+                    break;
+                }
             } catch (NullPointerException e) {
                 System.out.print(questionSet);
-                System.out.println("NullPointerException Caught\n");
+                System.out.println("NullPointerException caught...\n");
                 System.out.println("No more answers available!\n");
+
                 break;
             }
 
-            assert availableQuestions != null;
             int indexQ = random.nextInt(availableQuestions.size());
 
             // Sample the answer
-            Random random = new Random();
             double rd = random.nextDouble();
 
             //  if the random double sampled 'rd' is higher than
@@ -262,14 +295,14 @@ public class BNsAdaptiveSurveySimulation {
                 answer = 1;
             }
 
-            studentAnswers[availableQuestions.get(indexQ) - 1] = answer;
+            // Save the answer of the student
+            int indexA = availableQuestions.get(indexQ);
+            studentAnswers[indexA] = answer;
 
-            System.out.printf("Asked question %d, answer %d%n next skill %d, " +
-                              "next difficulty level %d, (H=%.4f)%n", question, answer,
-                               nextSkill, nextDifficultyLevel, maxIG);
-
+            // Mark the question as answered and remove it from the list of available questions
             availableQuestions.remove(indexQ);
-            questionSet.revomeQuestion();
+            questionSet.removeQuestion();
+            questionSet.addAskedQuestion();
 
             if (answer == 0) {
                 wrongQ[nextSkill][nextDifficultyLevel] += 1;
@@ -277,6 +310,7 @@ public class BNsAdaptiveSurveySimulation {
                 rightQ[nextSkill][nextDifficultyLevel] += 1;
             }
 
+//            TODO: remove for the simulation  (fix also previous break)
             // stop criteria
             stop = true;
             for (int s = 0; s < nSkills; s++) {
@@ -294,20 +328,19 @@ public class BNsAdaptiveSurveySimulation {
                 double HS = H(posteriorResults[s][0]);
 
                 if (HS > STOP_THRESHOLD) {
-                    System.out.println("HS(s=" + s + ") = " + HS + ", HS > STOP_THRESHOLD, continue");
+//                    System.out.println("HS(s=" + s + ") = " + HS + ", HS > STOP_THRESHOLD, continue");
                     stop = false;
                     break;
-                } else {
-                    System.out.println("HS(s=" + s + ") = " + HS + ", HS < STOP_THRESHOLD");
                 }
+//                else {
+//                    System.out.println("HS(s=" + s + ") = " + HS + ", HS < STOP_THRESHOLD");
+//                }
             }
 
             if (questionSet.isEmpty()) {
                 System.out.println("All questions done!");
                 break;
             }
-
-            question++;
 
         } while (!stop);
         System.out.println("\n--------------------------------------------\n");
