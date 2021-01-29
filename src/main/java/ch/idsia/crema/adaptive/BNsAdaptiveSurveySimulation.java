@@ -1,6 +1,5 @@
 package ch.idsia.crema.adaptive;
 
-import com.google.common.math.Stats;
 import org.apache.commons.lang3.ArrayUtils;
 
 import java.io.BufferedWriter;
@@ -233,7 +232,7 @@ public class BNsAdaptiveSurveySimulation {
             boolean iterate = true;
 
             while (iterate) {
-                Case highestValue = CaseUtils.findHighestValue(nextSkillAndLevelRank);
+                Case highestValue = Case.CaseUtils.findHighestValue(nextSkillAndLevelRank);
 
                 if (highestValue == null | highestValue.getValue() == 0) {
                     iterate = false;
@@ -266,11 +265,11 @@ public class BNsAdaptiveSurveySimulation {
                     availableQuestions = questionSet.getQuestions(nextSkill, nextDifficultyLevel);
 
                     assert availableQuestions != null;
-
                     if (availableQuestions.size() > 0) {
                         break;
                     }
                 }
+                assert availableQuestions != null;
                 if (availableQuestions.size() <= 0) {
                     break;
                 }
@@ -338,36 +337,36 @@ public class BNsAdaptiveSurveySimulation {
             }
 
             if (questionSet.isEmpty()) {
-                System.out.println("All questions done!");
+//                System.out.println("All questions done!");
                 break;
             }
 
         } while (!stop);
-        System.out.println("\n--------------------------------------------\n");
-
-        System.out.printf("Skills probabilities %s%n", ArrayUtils.toString(priorResults));
-        System.out.printf("Right answers %s%n", ArrayUtils.toString(rightQ));
-        System.out.printf("Wrong answers %s%n", ArrayUtils.toString(wrongQ));
-
-        double[] rightA = new double[nSkills];
-        double[] totalA = new double[nSkills];
-        double[] rightAnswerPercentage = new double[nSkills];
-
-        for (int s = 0; s < nSkills; s++) {
-            for (int dl = 0; dl < nDifficultyLevels; dl++) {
-                rightA[s] += rightQ[s][dl];
-                totalA[s] += rightQ[s][dl] + wrongQ[s][dl];
-            }
-        }
-
-        for (int s = 0; s < nSkills; s++) {
-            rightAnswerPercentage[s] = rightA[s] / totalA[s];
-        }
-
-        System.out.printf("Total questions %s%n", ArrayUtils.toString(totalA));
-        System.out.printf("Percentage of correct answer %s%n", ArrayUtils.toString(rightAnswerPercentage));
-        System.out.printf("Average of correct answer %.2f%%%n", Stats.meanOf(rightAnswerPercentage));
-        System.out.println("\n--------------------------------------------\n");
+//        System.out.println("\n--------------------------------------------\n");
+//
+//        System.out.printf("Skills probabilities %s%n", ArrayUtils.toString(priorResults));
+//        System.out.printf("Right answers %s%n", ArrayUtils.toString(rightQ));
+//        System.out.printf("Wrong answers %s%n", ArrayUtils.toString(wrongQ));
+//
+//        double[] rightA = new double[nSkills];
+//        double[] totalA = new double[nSkills];
+//        double[] rightAnswerPercentage = new double[nSkills];
+//
+//        for (int s = 0; s < nSkills; s++) {
+//            for (int dl = 0; dl < nDifficultyLevels; dl++) {
+//                rightA[s] += rightQ[s][dl];
+//                totalA[s] += rightQ[s][dl] + wrongQ[s][dl];
+//            }
+//        }
+//
+//        for (int s = 0; s < nSkills; s++) {
+//            rightAnswerPercentage[s] = rightA[s] / totalA[s];
+//        }
+//
+//        System.out.printf("Total questions %s%n", ArrayUtils.toString(totalA));
+//        System.out.printf("Percentage of correct answer %s%n", ArrayUtils.toString(rightAnswerPercentage));
+//        System.out.printf("Average of correct answer %.2f%%%n", Stats.meanOf(rightAnswerPercentage));
+//        System.out.println("\n--------------------------------------------\n");
     }
 
     private void computeEntropy(double[][] results, double[] HResults, int r) {
@@ -396,70 +395,4 @@ public class BNsAdaptiveSurveySimulation {
         return student;
     }
 
-    /*
-    Source: https://codereview.stackexchange.com/a/195433
-    */
-    public static class Case {
-        private int row;
-        private int col;
-        private int value;
-
-        public Case(int row, int col, int value) {
-            this.row = row;
-            this.col = col;
-            this.value = value;
-        }
-
-        public int getRow() {
-            return row;
-        }
-
-        public void setRow(int row) {
-            this.row = row;
-        }
-
-        public int getCol() {
-            return col;
-        }
-
-        public void setCol(int col) {
-            this.col = col;
-        }
-
-        public int getValue() {
-            return value;
-        }
-
-        public void setValue(int value) {
-            this.value = value;
-        }
-
-    }
-
-    /*
-    Source: https://codereview.stackexchange.com/a/195433
-    */
-    public interface CaseUtils {
-
-        static Case findHighestValue(int[][] values) {
-            Case highestCase = new Case(-1, -1, Integer.MIN_VALUE);
-            Case initialHighestCase = highestCase;
-
-            for (int row = 0; row < values.length; row++) {
-                for (int col = 0; col < values[row].length; col++) {
-                    int value = values[row][col];
-                    if (value > highestCase.getValue()) {
-                        highestCase = new Case(row, col, value);
-                    }
-                }
-            }
-
-            if (highestCase == initialHighestCase) {
-                return null;
-            } else {
-                return highestCase;
-            }
-        }
-
-    }
 }

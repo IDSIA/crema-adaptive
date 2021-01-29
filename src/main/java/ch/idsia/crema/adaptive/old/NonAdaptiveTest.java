@@ -1,6 +1,9 @@
-package ch.idsia.crema.adaptive;
+package ch.idsia.crema.adaptive.old;
 
-import ch.idsia.crema.adaptive.old.AdaptiveTests_old;
+import ch.idsia.crema.adaptive.AdaptiveFileTools;
+import ch.idsia.crema.adaptive.AnswerSet;
+import ch.idsia.crema.adaptive.CredalClassifiersEvaluation;
+import ch.idsia.crema.adaptive.QuestionSet;
 import ch.idsia.crema.factor.credal.vertex.generator.CNGenerator;
 
 import java.io.BufferedWriter;

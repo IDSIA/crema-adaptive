@@ -1,4 +1,4 @@
-package ch.idsia.crema.adaptive;
+package ch.idsia.crema.adaptive.old;
 
 import com.joptimizer.functions.ConvexMultivariateRealFunction;
 import com.joptimizer.functions.LinearMultivariateRealFunction;
