@@ -287,29 +287,7 @@ public class BNsAdaptiveSurveyTest {
             }
 
             // stop criteria
-            stop = true;
-            for (int s = 0; s < nSkills; s++) {
-                Object[] output = AdaptiveTests.germanTest(bayesianFileName, s, rightQ, wrongQ);
-                posteriorResults[s] = (double[][]) output[0];
-
-                // entropy of the skill
-                for (int dl = 0; dl < nDifficultyLevels; dl++) {
-                    if (Math.abs(posteriorResults[s][0][dl] - posteriorResults[s][1][dl]) >= 0.000001) {
-                        System.err.println("Different lower and upper in posteriors!! " + posteriorResults[s][0][dl] +
-                                           ", " + posteriorResults[s][1][dl]);
-                        break;
-                    }
-                }
-                double HS = H(posteriorResults[s][0]);
-
-                if (HS > STOP_THRESHOLD) {
-                    System.out.println("HS(s=" + s + ") = " + HS + ", HS > STOP_THRESHOLD, continue");
-                    stop = false;
-                    break;
-                } else {
-                    System.out.println("HS(s=" + s + ") = " + HS + ", HS < STOP_THRESHOLD");
-                }
-            }
+            stop = stopCriteria();
 
             if (questionSet.isEmpty()) {
                 break;
@@ -385,6 +363,31 @@ public class BNsAdaptiveSurveyTest {
         }
 
         return -h;
+    }
+
+    private boolean stopCriteria() {
+        boolean stop;
+        stop = true;
+        for (int s = 0; s < nSkills; s++) {
+            Object[] output = AdaptiveTests.germanTest(bayesianFileName, s, rightQ, wrongQ);
+            posteriorResults[s] = (double[][]) output[0];
+
+            // entropy of the skill
+            for (int dl = 0; dl < nDifficultyLevels; dl++) {
+                if (Math.abs(posteriorResults[s][0][dl] - posteriorResults[s][1][dl]) >= 0.000001) {
+                    System.err.println("Different lower and upper in posteriors!! " + posteriorResults[s][0][dl] +
+                            ", " + posteriorResults[s][1][dl]);
+                    break;
+                }
+            }
+            double HS = H(posteriorResults[s][0]);
+
+            if (HS > STOP_THRESHOLD) {
+                stop = false;
+                break;
+            }
+        }
+        return stop;
     }
 
     private double[][][] getResults() {
