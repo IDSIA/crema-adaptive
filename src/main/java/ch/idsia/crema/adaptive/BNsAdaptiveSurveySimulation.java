@@ -31,7 +31,7 @@ public class BNsAdaptiveSurveySimulation {
     // Define 16 students that correspond to the 16 possible profiles, that are
     // the combination of the 4 nSkillLevels of each skill
     private final int student;
-    private static final int minStudent = 0;  // First id, inclusive
+    // First id, inclusive
     private static final int maxStudent = (int) Math.pow(nSkills, nDifficultyLevels); // Last id, exclusive
     private final int[] profile;
     private final int[] studentAnswers;
@@ -48,7 +48,6 @@ public class BNsAdaptiveSurveySimulation {
     // Probabilities
     private final double[][][] priorResults = new double[nSkills][][];
     private final double[][][] hypotheticalPosteriorResults = new double[nSkills][][];
-    private final double[][][] posteriorResults = new double[nSkills][][];
 
     private final double[][][][] answerLikelihood = new double[nSkills][][][];
 
@@ -91,11 +90,11 @@ public class BNsAdaptiveSurveySimulation {
 
         final List<int[]> profilesList = Arrays.asList(profiles);
 
-        final List<int[]> newProfilesList = profilesList.subList(0, 1);
+//        final List<int[]> newProfilesList = profilesList.subList(0, 1);
 
         //  Loop that iterate over 5/10 simulations for each profile
         for (int s = 0; s < numOfSimulations; s++) {
-            final File simDir = new File("output/sim_" + s);
+            final File simDir = new File("output/adaptive_entropy/sim_" + s);
             simDir.mkdirs();
 
             final Path answersPath = Paths.get(simDir + "/answers.txt");
@@ -103,9 +102,10 @@ public class BNsAdaptiveSurveySimulation {
             final Path finalProfilePath = Paths.get(simDir + "/predicted_profiles.txt");
             final Path posteriorProfilePath = Paths.get(simDir + "/posterior.txt");
 
-            newProfilesList.parallelStream().forEach(profile -> {
+            profilesList.parallelStream().forEach(profile -> {
                 try {
-                    int student = newProfilesList.indexOf(profile);
+                    int student = profilesList.indexOf(profile);
+                    long start = System.currentTimeMillis();
                     System.out.printf("Started for student %d with profile %s %n", student,
                             ArrayUtils.toString(profile));
 
@@ -149,6 +149,12 @@ public class BNsAdaptiveSurveySimulation {
                         appendToFile(finalProfile, finalProfilePath);
                         appendToFile(posteriorResults, posteriorProfilePath);
                     }
+                    long end = System.currentTimeMillis();
+                    float msec = end - start;
+                    float sec = msec/1000F;
+                    float minutes = sec/60F;
+
+                    System.out.printf("Finished for student %d%n in %.4f", student, minutes);
 
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -157,24 +163,11 @@ public class BNsAdaptiveSurveySimulation {
         }
     }
 
-    private static void appendToFile(String[] variable, Path outputPath) {
-
-        try (BufferedWriter bw = Files.newBufferedWriter(outputPath, StandardOpenOption.CREATE, StandardOpenOption.APPEND)) {
-            for (String item : variable){
-                bw.write(item + ", ");
-            }
-            bw.write( "\n");
-
-        } catch (IOException ignored) {
-        }
-    }
-
     /**
      * Perform the adaptive test with the initialized data.
      */
     private void test() {
-        boolean stop;
-        do {
+        while (true){
             // search for next question using
             double maxIG = 0.0;
             int nextSkill = -1;
@@ -247,12 +240,7 @@ public class BNsAdaptiveSurveySimulation {
 
                     double H = HResults[0] * wrongAnswerProbability + HResults[1] * rightAnswerProbability;
 
-                    double ig = HS - H; // infogain
-
-//                    if (ig < 0.000001) {
-//                        System.err.println("Negative information gain for skill " + s + " level " + dl +
-//                                ": \n IG = HS" + " - H = " + HS + " - " + H + "=" + ig);
-//                    }
+                    double ig = HS - H;
 
                     // Decide the optimal pair skill and level that will be used to choose the questions
                     if (ig > maxIG) {
@@ -299,24 +287,31 @@ public class BNsAdaptiveSurveySimulation {
 
                     availableQuestions = questionSet.getQuestions(nextSkill, nextDifficultyLevel);
 
-                    assert availableQuestions != null;
                     if (availableQuestions.size() > 0) {
                         break;
                     }
                 }
-                assert availableQuestions != null;
-                if (availableQuestions.size() <= 0) {
-                    break;
+                if (Objects.requireNonNull(availableQuestions).size() <= 0) {
+                    availableQuestions = questionSet.getRemainingQuestions();
                 }
             } catch (NullPointerException e) {
-                System.out.print(questionSet);
-                System.out.println("NullPointerException caught...\n");
-                System.out.println("No more answers available!\n");
-
-                break;
+                nextSkill = -1;
+                nextDifficultyLevel = -1;
+                availableQuestions = questionSet.getRemainingQuestions();
             }
 
             int indexQ = random.nextInt(availableQuestions.size());
+            int indexA = availableQuestions.get(indexQ);
+
+            ArrayList<Integer> nextSkillAndLevel = questionSet.getKeys(indexA);
+
+            if (nextSkill == -1 & nextDifficultyLevel == -1) {
+                nextSkill = nextSkillAndLevel.get(0);
+                nextDifficultyLevel = nextSkillAndLevel.get(1);
+            } else {
+                assert (nextSkill == nextSkillAndLevel.get(0));
+                assert (nextDifficultyLevel == nextSkillAndLevel.get(1));
+            }
 
             // Sample the answer
             double rd = random.nextDouble();
@@ -325,12 +320,12 @@ public class BNsAdaptiveSurveySimulation {
             //  answerLikelihood[nextSkill][nextDifficultyLevel][skillLevel][0]
             //  the answer to the question is true, else false
             int answer = 0;
+
             if (rd < answerLikelihood[nextSkill][nextDifficultyLevel][profile[nextSkill]][0]) {
                 answer = 1;
             }
 
             // Save the answer of the student
-            int indexA = availableQuestions.get(indexQ);
             studentAnswers[indexA] = answer;
 
             // Mark the question as answered and remove it from the list of available questions
@@ -344,35 +339,11 @@ public class BNsAdaptiveSurveySimulation {
                 rightQ[nextSkill][nextDifficultyLevel] += 1;
             }
 
-//            TODO: remove for the simulation  (fix also previous break)
-            // stop criteria
-            stop = true;
-            for (int s = 0; s < nSkills; s++) {
-                Object[] output = AdaptiveTests.germanTest(bayesianFileName, s, rightQ, wrongQ);
-                posteriorResults[s] = (double[][]) output[0];
-
-                // entropy of the skill
-                for (int dl = 0; dl < nDifficultyLevels; dl++) {
-                    if (Math.abs(posteriorResults[s][0][dl] - posteriorResults[s][1][dl]) >= 0.000001) {
-                        System.err.println("Different lower and upper in posteriors!! " + posteriorResults[s][0][dl] +
-                                ", " + posteriorResults[s][1][dl]);
-                        break;
-                    }
-                }
-                double HS = H(posteriorResults[s][0]);
-
-                if (HS > STOP_THRESHOLD) {
-                    stop = false;
-                    break;
-                }
-            }
-
             // All questions done
             if (questionSet.isEmpty()) {
                 break;
             }
-
-        } while (!stop);
+        }
     }
 
     private void computeEntropy(double[][] results, double[] HResults, int r) {
@@ -395,6 +366,18 @@ public class BNsAdaptiveSurveySimulation {
         }
 
         return -h;
+    }
+
+    private static void appendToFile(String[] variable, Path outputPath) {
+
+        try (BufferedWriter bw = Files.newBufferedWriter(outputPath, StandardOpenOption.CREATE, StandardOpenOption.APPEND)) {
+            for (String item : variable){
+                bw.write(item + ", ");
+            }
+            bw.write( "\n");
+
+        } catch (IOException ignored) {
+        }
     }
 
     public int getStudent() {
