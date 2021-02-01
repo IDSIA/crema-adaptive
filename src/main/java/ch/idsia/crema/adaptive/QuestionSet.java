@@ -25,8 +25,8 @@ public class QuestionSet {
 
         for (int s = 0; s < skills.length; s++) {
             questions.put(s, new HashMap<>());
-            for (int l = 0; l < skills.length; l++) {
-                questions.get(s).put(l, new ArrayList<>());
+            for (int d = 0; d < difficulties.length; d++) {
+                questions.get(s).put(d, new ArrayList<>());
             }
         }
 
@@ -52,6 +52,22 @@ public class QuestionSet {
             loadKeyList();
         }
         return questions.get(skill).get(difficulty);
+    }
+
+    public List<Integer> getRemainingQuestions() {
+        if (questions == null) {
+            loadKeyList();
+        }
+
+        List<Integer> remainingQuestions = new ArrayList<>();
+        for (int s = 0; s < skills.length; s++) {
+            for (int d = 0; d < difficulties.length; d++) {
+                if (questions.get(s).get(d).size() != 0) {
+                    remainingQuestions.addAll(questions.get(s).get(d));
+                }
+            }
+        }
+        return remainingQuestions;
     }
 
     int getQuestionNum() {
