@@ -41,7 +41,7 @@ public class Case {
 
     public interface CaseUtils {
 
-        static Case findHighestValue(int[][] values) {
+        static Case findHighestValue2D(int[][] values) {
             Case highestCase = new Case(-1, -1, Integer.MIN_VALUE);
             Case initialHighestCase = highestCase;
 
@@ -51,6 +51,24 @@ public class Case {
                     if (value > highestCase.getValue()) {
                         highestCase = new Case(row, col, value);
                     }
+                }
+            }
+
+            if (highestCase == initialHighestCase) {
+                return null;
+            } else {
+                return highestCase;
+            }
+        }
+
+        static Case findHighestValue1D(int[] values) {
+            Case highestCase = new Case(-1, -1, Integer.MIN_VALUE);
+            Case initialHighestCase = highestCase;
+
+            for (int row = 0; row < values.length; row++) {
+                int value = values[row];
+                if (value > highestCase.getValue()) {
+                    highestCase = new Case(row, 0, value);
                 }
             }
 

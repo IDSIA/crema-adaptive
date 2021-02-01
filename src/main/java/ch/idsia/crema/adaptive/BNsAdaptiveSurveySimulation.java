@@ -232,7 +232,7 @@ public class BNsAdaptiveSurveySimulation {
             boolean iterate = true;
 
             while (iterate) {
-                Case highestValue = Case.CaseUtils.findHighestValue(nextSkillAndLevelRank);
+                Case highestValue = Case.CaseUtils.findHighestValue2D(nextSkillAndLevelRank);
 
                 if (highestValue == null | highestValue.getValue() == 0) {
                     iterate = false;
