@@ -70,12 +70,34 @@ public class QuestionSet {
         return remainingQuestions;
     }
 
+    public ArrayList<Integer> getKeys(Integer value) {
+        if (questions == null) {
+            loadKeyList();
+        }
+        ArrayList<Integer> nextSkillAndLevel = new ArrayList<>();
+
+        for (int s = 0; s < skills.length; s++) {
+            for (int d = 0; d < difficulties.length; d++) {
+                for (Integer val : questions.get(s).get(d)) {
+                    if (val.equals(value)) {
+                        nextSkillAndLevel.add(s);
+                        nextSkillAndLevel.add(d);
+
+                        return nextSkillAndLevel;
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+
     int getQuestionNum() {
         return questionNum;
     }
 
     public boolean isEmpty() {
-        return questionNum == 0;
+        return getRemainingQuestions().size() == 0;
     }
 
     public void removeQuestion() {
