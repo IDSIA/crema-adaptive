@@ -80,7 +80,7 @@ public class BNsAdaptiveSurveySimulation {
 
     public static void main(String[] args) {
 
-        final int numOfSimulations = 5;
+        final int numOfSimulations = 1;
 
         // for each student
         final int[][] profiles = new int[maxStudent][nSkillLevels];
@@ -144,17 +144,17 @@ public class BNsAdaptiveSurveySimulation {
 
                     // Append the outputs to file
                     synchronized (BNsAdaptiveSurveySimulation.class) {
-                        appendToFile(studentAnswers, answersPath);
-                        appendToFile(initProfile, initProfilePath);
-                        appendToFile(finalProfile, finalProfilePath);
-                        appendToFile(posteriorResults, posteriorProfilePath);
+                        appendToFile(student, studentAnswers, answersPath);
+                        appendToFile(student, initProfile, initProfilePath);
+                        appendToFile(student, finalProfile, finalProfilePath);
+                        appendToFile(student, posteriorResults, posteriorProfilePath);
                     }
                     long end = System.currentTimeMillis();
                     float msec = end - start;
                     float sec = msec/1000F;
                     float minutes = sec/60F;
 
-                    System.out.printf("Finished for student %d%n in %.4f", student, minutes);
+                    System.out.printf("%-40sFinished for student %d in %.2f minutes%n", student, minutes);
 
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -368,9 +368,10 @@ public class BNsAdaptiveSurveySimulation {
         return -h;
     }
 
-    private static void appendToFile(String[] variable, Path outputPath) {
+    private static void appendToFile(int id, String[] variable, Path outputPath) {
 
         try (BufferedWriter bw = Files.newBufferedWriter(outputPath, StandardOpenOption.CREATE, StandardOpenOption.APPEND)) {
+            bw.write(id + ", ");
             for (String item : variable){
                 bw.write(item + ", ");
             }
