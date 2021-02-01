@@ -9,10 +9,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 import java.util.stream.DoubleStream;
 
 /**
@@ -112,11 +109,42 @@ public class BNsAdaptiveSurveySimulation {
                     BNsAdaptiveSurveySimulation aslat = new BNsAdaptiveSurveySimulation(student, profile);
                     aslat.test();
 
-                    // Append to file the right and wrong answer count
+                    // Parse the outputs of the test
+                    String[] studentAnswers = Arrays.stream(aslat.studentAnswers)
+                            .mapToObj(String::valueOf)
+                            .toArray(String[]::new);
+
+                    String[][] priorResultsS = new String[aslat.priorResults.length][];
+                    int[][] priorResultsD = new int[aslat.priorResults.length][];
+                    String[] finalProfile = new String[profile.length];
+
+                    for (int i = 0; i < priorResultsS.length; i++) {
+                        priorResultsS[i] = Arrays.stream(aslat.priorResults[i][0])
+                                .map(x -> Math.round(x * Math.pow(10,2)) / Math.pow(10,2))
+                                .mapToObj(String::valueOf)
+                                .toArray(String[]::new);
+
+                        priorResultsD[i] = Arrays.stream(aslat.priorResults[i][0])
+                                .map(x -> Math.round(x * Math.pow(10,2)))
+                                .mapToInt(x -> (int)x)
+                                .toArray();
+
+                        finalProfile[i] = Integer.toString(Objects.requireNonNull(
+                                Case.CaseUtils.findHighestValue1D(priorResultsD[i])).getRow());
+                    }
+
+                    String[] posteriorResults = Arrays.stream(priorResultsS)
+                            .flatMap(Arrays::stream)
+                            .toArray(String[]::new);
+
+                    String[] initProfile = Arrays.stream(profile).mapToObj(String::valueOf).toArray(String[]::new);
+
+                    // Append the outputs to file
                     synchronized (BNsAdaptiveSurveySimulation.class) {
-                        appendToFile(ArrayUtils.toString(aslat.studentAnswers), answersPath);
-                        appendToFile(ArrayUtils.toString(profile), initProfilePath);
-                        appendToFile(ArrayUtils.toString(aslat.priorResults), finalProfilePath);
+                        appendToFile(studentAnswers, answersPath);
+                        appendToFile(initProfile, initProfilePath);
+                        appendToFile(finalProfile, finalProfilePath);
+                        appendToFile(posteriorResults, posteriorProfilePath);
                     }
 
                 } catch (Exception e) {
@@ -126,10 +154,13 @@ public class BNsAdaptiveSurveySimulation {
         }
     }
 
-    private static void appendToFile(String variable, Path outputPath) {
+    private static void appendToFile(String[] variable, Path outputPath) {
 
         try (BufferedWriter bw = Files.newBufferedWriter(outputPath, StandardOpenOption.CREATE, StandardOpenOption.APPEND)) {
-            bw.write(variable + "\n");
+            for (String item : variable){
+                bw.write(item + ", ");
+            }
+            bw.write( "\n");
 
         } catch (IOException ignored) {
         }
