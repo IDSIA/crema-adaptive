@@ -3,12 +3,11 @@ from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_sc
 
 from src.analysis.multilabel_classification_metrics import brier_multicategory, hamming_distance, exact_match_ratio, \
     plot_confusion_matrix
-from src.analysis.parser import parse_predicted_probabilities, parse_profiles
 from src.analysis.utils import save_metrics, check_dir
 
 if __name__ == '__main__':
 
-    simulations = np.arange(4)
+    simulations = np.arange(1)
 
     global_brier_scores = []
     global_hamming_losses = []
@@ -21,19 +20,23 @@ if __name__ == '__main__':
 
     for sim in simulations:
 
-        in_file = open("../../output/sim_" + str(sim) + "/initial_profiles.txt", "r")
-        out_file = open("../../output/sim_" + str(sim) + "/predicted_profiles.txt", "r")
+        init_profiles = "../../output/adaptive_entropy/sim_" + str(sim) + "/initial_profiles.txt"
+        final_profiles = "../../output/adaptive_entropy/sim_" + str(sim) + "/predicted_profiles.txt"
+        posteriors = "../../output/adaptive_entropy/sim_" + str(sim) + "/posterior.txt"
 
-        predicted_probabilities = parse_predicted_probabilities(out_file)
-        predicted_classes = np.argmax(predicted_probabilities, axis=1)
+        predicted_probabilities = np.reshape(np.loadtxt(posteriors, delimiter=', ', usecols=np.arange(1, 17)),
+                                             (-1, 4, 4))
+        predicted_classes = np.argmax(predicted_probabilities, axis=2)
+        predicted_profiles = np.loadtxt(final_profiles, delimiter=', ', dtype=np.int32, usecols=np.arange(1, 5))
 
-        observed_classes = parse_profiles(in_file)
+        assert (np.allclose(predicted_classes, predicted_profiles))
+
+        observed_classes = np.loadtxt(init_profiles, delimiter=', ', dtype=np.int32, usecols=np.arange(1, 5))
 
         predictions.append(predicted_classes)
         observations.append(observed_classes)
 
         # Analysis
-        brier_scores = []
         hamming_losses = []
         hamming_distances = []
         accuracy_scores = []
@@ -41,10 +44,9 @@ if __name__ == '__main__':
         recall_scores = []
         f1_scores = []
 
-        for i in range(len(predicted_classes)):
-            brier_score = brier_multicategory(observed_classes[i], predicted_probabilities[i])
-            brier_scores.append(brier_score)
+        brier_scores = brier_multicategory(observed_classes, predicted_probabilities)
 
+        for i in range(len(predicted_classes)):
             hamming_loss, hamming_dist = hamming_distance(observed_classes[i], predicted_classes[i])
             hamming_losses.append(hamming_loss)
             hamming_distances.append(hamming_dist)
@@ -53,7 +55,6 @@ if __name__ == '__main__':
 
             accuracy_scores.append(accuracy)
 
-        brier_scores = np.array(brier_scores)
         hamming_losses = np.array(hamming_losses)
         hamming_distances = np.array(hamming_distances)
         accuracy_scores = np.array(accuracy_scores)

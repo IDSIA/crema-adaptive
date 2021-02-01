@@ -15,10 +15,10 @@ def brier_multicategory(targets, probs):
     :param probs:
     :return brier_score:
     """
-    n_classes = len(targets)
-    one_hot_targets = one_hot_encode(targets.astype(np.int), n_classes)
+    n_classes = targets.shape[1]
+    one_hot_targets = one_hot_encode(targets, n_classes)
 
-    brier_score = np.mean(np.sum((probs - one_hot_targets) ** 2, axis=1))
+    brier_score = np.mean(np.sum((probs - one_hot_targets) ** 2, axis=2), axis=1)/2
     return brier_score
 
 
