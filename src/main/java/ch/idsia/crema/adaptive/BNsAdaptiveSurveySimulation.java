@@ -91,6 +91,8 @@ public class BNsAdaptiveSurveySimulation {
 
         final List<int[]> profilesList = Arrays.asList(profiles);
 
+        final List<int[]> newProfilesList = profilesList.subList(0, 1);
+
         //  Loop that iterate over 5/10 simulations for each profile
         for (int s = 0; s < numOfSimulations; s++) {
             final File simDir = new File("output/sim_" + s);
@@ -99,11 +101,12 @@ public class BNsAdaptiveSurveySimulation {
             final Path answersPath = Paths.get(simDir + "/answers.txt");
             final Path initProfilePath = Paths.get(simDir + "/initial_profiles.txt");
             final Path finalProfilePath = Paths.get(simDir + "/predicted_profiles.txt");
+            final Path posteriorProfilePath = Paths.get(simDir + "/posterior.txt");
 
-            profilesList.parallelStream().forEach(profile -> {
+            newProfilesList.parallelStream().forEach(profile -> {
                 try {
-                    int student = profilesList.indexOf(profile);
-                    System.out.printf("Start for student %d with profile %s %n", student,
+                    int student = newProfilesList.indexOf(profile);
+                    System.out.printf("Started for student %d with profile %s %n", student,
                             ArrayUtils.toString(profile));
 
                     BNsAdaptiveSurveySimulation aslat = new BNsAdaptiveSurveySimulation(student, profile);
@@ -185,7 +188,6 @@ public class BNsAdaptiveSurveySimulation {
                 priorResults[s] = (double[][]) testOutput[0];
                 answerLikelihood[s] = (double[][][]) testOutput[1];
 
-                // Entropy of the skill
                 for (int dl = 0; dl < nDifficultyLevels; dl++) {
                     if (Math.abs(priorResults[s][0][dl] - priorResults[s][1][dl]) >= 0.000001) {
                         System.err.println("Different lower and upper in priors!! " + priorResults[s][0][dl] + ", " +
@@ -194,18 +196,19 @@ public class BNsAdaptiveSurveySimulation {
                     }
                 }
 
+                // Entropy of the skill
                 double HS = H(priorResults[s][0]);
 
                 for (int dl = 0; dl < nDifficultyLevels; dl++) {
                     List<Integer> availableQuestions = questionSet.getQuestions(s, dl);
 
-                    // compute entropy only if we have questions available
+                    // Compute entropy only if we have questions available
                     if (availableQuestions.size() == 0) {
                         continue;
                     }
 
                     double[] HResults = new double[2];
-                    // simulate the two possible outcomes:
+                    // Simulate the two possible outcomes:
                     // in the first iteration of the loop answer wrong,
                     // in the second answer right
                     for (int answer = 0; answer < 2; answer++) {
@@ -246,11 +249,12 @@ public class BNsAdaptiveSurveySimulation {
 
                     double ig = HS - H; // infogain
 
-                    if (ig < 0.000001) {
-                        System.err.println("Negative information gain for skill " + s + " level " + dl +
-                                ": \n IG = HS" + " - H = " + HS + " - " + H + "=" + ig);
-                    }
+//                    if (ig < 0.000001) {
+//                        System.err.println("Negative information gain for skill " + s + " level " + dl +
+//                                ": \n IG = HS" + " - H = " + HS + " - " + H + "=" + ig);
+//                    }
 
+                    // Decide the optimal pair skill and level that will be used to choose the questions
                     if (ig > maxIG) {
                         maxIG = ig;
                         nextSkillAndLevelRank[s][dl] += incrementRank;
@@ -358,46 +362,17 @@ public class BNsAdaptiveSurveySimulation {
                 double HS = H(posteriorResults[s][0]);
 
                 if (HS > STOP_THRESHOLD) {
-//                    System.out.println("HS(s=" + s + ") = " + HS + ", HS > STOP_THRESHOLD, continue");
                     stop = false;
                     break;
                 }
-//                else {
-//                    System.out.println("HS(s=" + s + ") = " + HS + ", HS < STOP_THRESHOLD");
-//                }
             }
 
+            // All questions done
             if (questionSet.isEmpty()) {
-//                System.out.println("All questions done!");
                 break;
             }
 
         } while (!stop);
-//        System.out.println("\n--------------------------------------------\n");
-//
-//        System.out.printf("Skills probabilities %s%n", ArrayUtils.toString(priorResults));
-//        System.out.printf("Right answers %s%n", ArrayUtils.toString(rightQ));
-//        System.out.printf("Wrong answers %s%n", ArrayUtils.toString(wrongQ));
-//
-//        double[] rightA = new double[nSkills];
-//        double[] totalA = new double[nSkills];
-//        double[] rightAnswerPercentage = new double[nSkills];
-//
-//        for (int s = 0; s < nSkills; s++) {
-//            for (int dl = 0; dl < nDifficultyLevels; dl++) {
-//                rightA[s] += rightQ[s][dl];
-//                totalA[s] += rightQ[s][dl] + wrongQ[s][dl];
-//            }
-//        }
-//
-//        for (int s = 0; s < nSkills; s++) {
-//            rightAnswerPercentage[s] = rightA[s] / totalA[s];
-//        }
-//
-//        System.out.printf("Total questions %s%n", ArrayUtils.toString(totalA));
-//        System.out.printf("Percentage of correct answer %s%n", ArrayUtils.toString(rightAnswerPercentage));
-//        System.out.printf("Average of correct answer %.2f%%%n", Stats.meanOf(rightAnswerPercentage));
-//        System.out.println("\n--------------------------------------------\n");
     }
 
     private void computeEntropy(double[][] results, double[] HResults, int r) {
