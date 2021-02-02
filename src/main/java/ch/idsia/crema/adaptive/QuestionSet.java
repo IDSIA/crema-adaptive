@@ -67,7 +67,17 @@ public class QuestionSet {
                 }
             }
         }
+
         return remainingQuestions;
+    }
+
+    public List<Integer> getQuestionsFromRemaining() {
+        List<Integer> remainingQuestions = getRemainingQuestions();
+
+        int nextSkill = getKeys(remainingQuestions.get(0)).get(0);
+        int nextDifficultyLevel = getKeys(remainingQuestions.get(0)).get(1);
+
+        return questions.get(nextSkill).get(nextDifficultyLevel);
     }
 
     public ArrayList<Integer> getKeys(Integer value) {
@@ -91,17 +101,17 @@ public class QuestionSet {
         return null;
     }
 
-
     int getQuestionNum() {
         return questionNum;
     }
 
     public boolean isEmpty() {
-        return getRemainingQuestions().size() == 0;
-    }
-
-    public void removeQuestion() {
-        questionNum--;
+        boolean empty = getRemainingQuestions().size() == 0;
+        boolean asked = getAskedQuestion() == 80;
+        if (empty != asked) {
+            System.err.println("Asked all the questions but some are still in the list ");
+        }
+        return empty;
     }
 
     public int getAskedQuestion() {

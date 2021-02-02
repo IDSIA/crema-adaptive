@@ -218,7 +218,7 @@ public class BNsAdaptiveSurveyTest {
             boolean iterate = true;
 
             while (iterate) {
-                Case highestValue = Case.CaseUtils.findHighestValue2D(nextSkillAndLevelRank);
+                Case highestValue = Case.findHighestValue2D(nextSkillAndLevelRank);
 
                 if (highestValue == null | Objects.requireNonNull(highestValue).getValue() == 0) {
                     iterate = false;
@@ -277,7 +277,6 @@ public class BNsAdaptiveSurveyTest {
 
             // Mark the question as answered and remove it from the list of available questions
             availableQuestions.remove(indexQ);
-            questionSet.removeQuestion();
             questionSet.addAskedQuestion();
 
             if (answer == 0) {

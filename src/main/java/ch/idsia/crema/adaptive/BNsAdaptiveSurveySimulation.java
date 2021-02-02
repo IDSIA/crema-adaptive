@@ -27,6 +27,7 @@ public class BNsAdaptiveSurveySimulation {
     private static final int states = nDifficultyLevels;
 
     private static final long randomSeed = 42;
+    private static final double scale = Math.pow(10,2);
 
     // Define 16 students that correspond to the 16 possible profiles, that are
     // the combination of the 4 nSkillLevels of each skill
@@ -48,6 +49,7 @@ public class BNsAdaptiveSurveySimulation {
     // Probabilities
     private final double[][][] priorResults = new double[nSkills][][];
     private final double[][][] hypotheticalPosteriorResults = new double[nSkills][][];
+    private final String[][][] posteriors;
 
     private final double[][][][] answerLikelihood = new double[nSkills][][][];
 
@@ -73,6 +75,7 @@ public class BNsAdaptiveSurveySimulation {
         abellanEntropy = new AbellanEntropy();
         questionSet = new QuestionSet();
         questionSet.loadKeyList();
+        posteriors = new String[questionSet.getQuestionNum()][nSkills][nDifficultyLevels];
 
         studentAnswers = new int[questionSet.getQuestionNum()];
         Arrays.fill(studentAnswers, -1);
@@ -90,7 +93,8 @@ public class BNsAdaptiveSurveySimulation {
 
         final List<int[]> profilesList = Arrays.asList(profiles);
 
-//        final List<int[]> newProfilesList = profilesList.subList(0, 1);
+//        FIXME
+//        final List<int[]> _profilesList = profilesList.subList(0, 1);
 
         //  Loop that iterate over 5/10 simulations for each profile
         for (int s = 0; s < numOfSimulations; s++) {
@@ -99,8 +103,9 @@ public class BNsAdaptiveSurveySimulation {
 
             final Path answersPath = Paths.get(simDir + "/answers.txt");
             final Path initProfilePath = Paths.get(simDir + "/initial_profiles.txt");
-            final Path finalProfilePath = Paths.get(simDir + "/predicted_profiles.txt");
-            final Path posteriorProfilePath = Paths.get(simDir + "/posterior.txt");
+//            final Path finalProfilePath = Paths.get(simDir + "/predicted_profiles.txt");
+            final Path finalPosteriorProfilePath = Paths.get(simDir + "/final_posterior.txt");
+            final Path posteriorsProfilePath = Paths.get(simDir + "/posteriors.txt");
 
             profilesList.parallelStream().forEach(profile -> {
                 try {
@@ -118,27 +123,28 @@ public class BNsAdaptiveSurveySimulation {
                             .toArray(String[]::new);
 
                     String[][] priorResultsS = new String[aslat.priorResults.length][];
-                    int[][] priorResultsD = new int[aslat.priorResults.length][];
-                    String[] finalProfile = new String[profile.length];
+//                    int[][] priorResultsD = new int[aslat.priorResults.length][];
+//                    String[] finalProfile = new String[profile.length];
 
-                    for (int i = 0; i < priorResultsS.length; i++) {
-                        priorResultsS[i] = Arrays.stream(aslat.priorResults[i][0])
-                                .map(x -> Math.round(x * Math.pow(10,2)) / Math.pow(10,2))
-                                .mapToObj(String::valueOf)
-                                .toArray(String[]::new);
+                    extractParsedPosteriors(priorResultsS, aslat.priorResults);
 
-                        priorResultsD[i] = Arrays.stream(aslat.priorResults[i][0])
-                                .map(x -> Math.round(x * Math.pow(10,2)))
-                                .mapToInt(x -> (int)x)
-                                .toArray();
+//                    for (int i = 0; i < priorResultsD.length; i++) {
+//                        priorResultsD[i] = Arrays.stream(aslat.priorResults[i][0])
+//                                                 .map(x -> Math.round(x * scale))
+//                                                 .mapToInt(x -> (int)x)
+//                                                 .toArray();
+//
+//                        finalProfile[i] = Integer.toString(Objects.requireNonNull(
+//                                Case.findHighestValue1D(priorResultsD[i])).getRow());
+//                    }
 
-                        finalProfile[i] = Integer.toString(Objects.requireNonNull(
-                                Case.CaseUtils.findHighestValue1D(priorResultsD[i])).getRow());
-                    }
+                    String[] finalPosteriorResults = Arrays.stream(priorResultsS)
+                                                      .flatMap(Arrays::stream)
+                                                      .toArray(String[]::new);
 
-                    String[] posteriorResults = Arrays.stream(priorResultsS)
-                            .flatMap(Arrays::stream)
-                            .toArray(String[]::new);
+                    String[] posteriorsResults = Arrays.stream(aslat.posteriors)
+                                                       .flatMap(x -> Arrays.stream(x).flatMap(Arrays::stream))
+                                                       .toArray(String[]::new);
 
                     String[] initProfile = Arrays.stream(profile).mapToObj(String::valueOf).toArray(String[]::new);
 
@@ -146,15 +152,16 @@ public class BNsAdaptiveSurveySimulation {
                     synchronized (BNsAdaptiveSurveySimulation.class) {
                         appendToFile(student, studentAnswers, answersPath);
                         appendToFile(student, initProfile, initProfilePath);
-                        appendToFile(student, finalProfile, finalProfilePath);
-                        appendToFile(student, posteriorResults, posteriorProfilePath);
+//                        appendToFile(student, finalProfile, finalProfilePath);
+                        appendToFile(student, finalPosteriorResults, finalPosteriorProfilePath);
+                        appendToFile(student, posteriorsResults, posteriorsProfilePath);
                     }
                     long end = System.currentTimeMillis();
                     float msec = end - start;
                     float sec = msec/1000F;
                     float minutes = sec/60F;
 
-                    System.out.printf("%-40sFinished for student %d in %.2f minutes%n", student, minutes);
+                    System.out.printf("%30s %d %s %.2f %s%n", "Finished for student", student, "in", minutes, "minutes");
 
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -167,7 +174,7 @@ public class BNsAdaptiveSurveySimulation {
      * Perform the adaptive test with the initialized data.
      */
     private void test() {
-        while (true){
+        while (true) {
             // search for next question using
             double maxIG = 0.0;
             int nextSkill = -1;
@@ -255,7 +262,7 @@ public class BNsAdaptiveSurveySimulation {
             boolean iterate = true;
 
             while (iterate) {
-                Case highestValue = Case.CaseUtils.findHighestValue2D(nextSkillAndLevelRank);
+                Case highestValue = Case.findHighestValue2D(nextSkillAndLevelRank);
 
                 if (highestValue == null | highestValue.getValue() == 0) {
                     iterate = false;
@@ -275,6 +282,11 @@ public class BNsAdaptiveSurveySimulation {
                 break;
             }
 
+            if (questionSet.getAskedQuestion() == 80) {
+                System.err.println("ma che cazz");
+            }
+            extractParsedPosteriors(posteriors[questionSet.getAskedQuestion()], priorResults);
+
             //  Lets ask 80 questions:
             //  5 questions for each skill and difficulty level,
             //  in total, 20 easy, 20 medium-easy, 20 medium-hard, 20 hard
@@ -292,12 +304,14 @@ public class BNsAdaptiveSurveySimulation {
                     }
                 }
                 if (Objects.requireNonNull(availableQuestions).size() <= 0) {
-                    availableQuestions = questionSet.getRemainingQuestions();
+                    availableQuestions = questionSet.getQuestionsFromRemaining();
+                    nextSkill = -1;
+                    nextDifficultyLevel = -1;
                 }
             } catch (NullPointerException e) {
+                availableQuestions = questionSet.getQuestionsFromRemaining();
                 nextSkill = -1;
                 nextDifficultyLevel = -1;
-                availableQuestions = questionSet.getRemainingQuestions();
             }
 
             int indexQ = random.nextInt(availableQuestions.size());
@@ -330,7 +344,12 @@ public class BNsAdaptiveSurveySimulation {
 
             // Mark the question as answered and remove it from the list of available questions
             availableQuestions.remove(indexQ);
-            questionSet.removeQuestion();
+            if (questionSet.getRemainingQuestions().contains(indexA)) {
+                System.err.println("BUG");
+            }
+            if (studentAnswers[indexA] == -1) {
+                System.err.println("BUG");
+            }
             questionSet.addAskedQuestion();
 
             if (answer == 0) {
@@ -343,6 +362,15 @@ public class BNsAdaptiveSurveySimulation {
             if (questionSet.isEmpty()) {
                 break;
             }
+        }
+    }
+
+    private static void extractParsedPosteriors(String[][] posteriorsArray, double[][][] priorsArray) {
+        for (int i = 0; i < posteriorsArray.length; i++) {
+            posteriorsArray[i] = Arrays.stream(priorsArray[i][0])
+                                       .map(x -> Math.round(x * BNsAdaptiveSurveySimulation.scale) / BNsAdaptiveSurveySimulation.scale)
+                                       .mapToObj(String::valueOf)
+                                       .toArray(String[]::new);
         }
     }
 

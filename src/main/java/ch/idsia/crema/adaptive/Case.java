@@ -39,44 +39,42 @@ public class Case {
         this.value = value;
     }
 
-    public interface CaseUtils {
+    static Case findHighestValue2D(int[][] values) {
+        Case highestCase = new Case(-1, -1, Integer.MIN_VALUE);
+        Case initialHighestCase = highestCase;
 
-        static Case findHighestValue2D(int[][] values) {
-            Case highestCase = new Case(-1, -1, Integer.MIN_VALUE);
-            Case initialHighestCase = highestCase;
-
-            for (int row = 0; row < values.length; row++) {
-                for (int col = 0; col < values[row].length; col++) {
-                    int value = values[row][col];
-                    if (value > highestCase.getValue()) {
-                        highestCase = new Case(row, col, value);
-                    }
-                }
-            }
-
-            if (highestCase == initialHighestCase) {
-                return null;
-            } else {
-                return highestCase;
-            }
-        }
-
-        static Case findHighestValue1D(int[] values) {
-            Case highestCase = new Case(-1, -1, Integer.MIN_VALUE);
-            Case initialHighestCase = highestCase;
-
-            for (int row = 0; row < values.length; row++) {
-                int value = values[row];
+        for (int row = 0; row < values.length; row++) {
+            for (int col = 0; col < values[row].length; col++) {
+                int value = values[row][col];
                 if (value > highestCase.getValue()) {
-                    highestCase = new Case(row, 0, value);
+                    highestCase = new Case(row, col, value);
                 }
             }
+        }
 
-            if (highestCase == initialHighestCase) {
-                return null;
-            } else {
-                return highestCase;
+        if (highestCase == initialHighestCase) {
+            return null;
+        } else {
+            return highestCase;
+        }
+    }
+
+    static Case findHighestValue1D(int[] values) {
+        Case highestCase = new Case(-1, -1, Integer.MIN_VALUE);
+        Case initialHighestCase = highestCase;
+
+        for (int row = 0; row < values.length; row++) {
+            int value = values[row];
+            if (value > highestCase.getValue()) {
+                highestCase = new Case(row, 0, value);
             }
         }
+
+        if (highestCase == initialHighestCase) {
+            return null;
+        } else {
+            return highestCase;
+        }
+
     }
 }

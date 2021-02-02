@@ -301,7 +301,6 @@ public class CNsAdaptiveSurveyTest {
 
             questionAnswered++;
             availableQuestions.remove(indexQ);
-            questionSet.removeQuestion();
 
             if (answer == 0) {
                 wrongQ[nextSkill][nextDifficultyLevel] += 1;
