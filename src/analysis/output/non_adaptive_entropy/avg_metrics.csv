@@ -1,0 +1,2 @@
+brier_scores, hamming_losses, hamming_distances, accuracy_scores, exact_match_ratio, macroavg_precision, macroavg_recall, macroavg_f1_score
+0.213481, 0.320312, 1.281250, 0.679688, 0.226562, 0.698187, 0.679688, 0.685709

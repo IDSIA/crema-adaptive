@@ -19,7 +19,7 @@ def save_metrics(out_file, metrics, header):
     :param metrics:
     :param header:
     """
-    np.savetxt(out_file, metrics, delimiter=',', fmt='%f', header=header)
+    np.savetxt(out_file, metrics, delimiter=', ', fmt='%f', header=header, comments='')
 
 
 def one_hot_encode(x, n_classes):
