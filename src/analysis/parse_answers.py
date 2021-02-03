@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+import re
 
 simulations = np.arange(1)
 
@@ -21,10 +22,12 @@ for sim in simulations:
     for skill in skills:
         skill_file = "../../adaptive/%s.csv" % skill
 
-        a = answers[:, np.array(question_skill_dict[skill], dtype=np.int32)]
+        a = answers[:, np.array(question_skill_dict[skill], dtype=np.int32)].astype(np.int32)
 
         header = np.char.add(np.array(['Q']),np.array(question_skill_dict[skill], dtype=str))
-        np.savetxt(skill_file, a, delimiter=',', newline='\n', header=header)
 
+        string_header = np.array2string(header)[2:-2]
+        string_header = re.compile(r"[\\]*'").sub("", string_header)
+        string_header = re.compile(r"\n").sub('', string_header).replace(' ', ', ')
 
-
+        np.savetxt(skill_file, a, delimiter=', ', newline='\n', header=string_header, fmt='%d', comments='')
