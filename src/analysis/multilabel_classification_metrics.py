@@ -6,7 +6,7 @@ import numpy as np
 from scipy.spatial.distance import hamming
 from sklearn.metrics import confusion_matrix
 
-from src.analysis.utils import save_visualisation, one_hot_encode
+from src.analysis.utils import one_hot_encode
 
 
 def brier_multicategory(targets, probs):

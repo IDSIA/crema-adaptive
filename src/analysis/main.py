@@ -6,7 +6,6 @@ from src.analysis.multilabel_classification_metrics import brier_multicategory, 
     plot_confusion_matrix, class_metrics_barplot, metric_per_question
 from src.analysis.utils import save_metrics, check_dir, save_visualisation
 
-
 if __name__ == '__main__':
 
     tests = ['adaptive_entropy', 'non_adaptive_entropy']
