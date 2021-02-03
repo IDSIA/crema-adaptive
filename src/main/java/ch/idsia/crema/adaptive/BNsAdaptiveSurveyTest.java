@@ -59,7 +59,7 @@ public class BNsAdaptiveSurveyTest {
 
     private final AnswerSet[] questionsPerSkill = new AnswerSet[nSkills];
 
-    private final AdaptiveTests AdaptiveTests;
+    private final Tests Tests;
     private final AbellanEntropy abellanEntropy;
     private final QuestionSet questionSet;
     private final Random random;
@@ -78,7 +78,7 @@ public class BNsAdaptiveSurveyTest {
 
         random = new Random(randomSeed + student);
 
-        AdaptiveTests = new AdaptiveTests();
+        Tests = new Tests();
         abellanEntropy = new AbellanEntropy();
         questionSet = new QuestionSet();
         questionSet.loadKeyList();
@@ -128,7 +128,7 @@ public class BNsAdaptiveSurveyTest {
 
             for (int s = 0; s < nSkills; s++) {
                 // Current prior
-                Object[] testOutput = AdaptiveTests.germanTest(bayesianFileName, s, rightQ, wrongQ);
+                Object[] testOutput = Tests.germanTest(bayesianFileName, s, rightQ, wrongQ);
                 priorResults[s] = (double[][]) testOutput[0];
                 answerLikelihood[s] = (double[][][]) testOutput[1];
 
@@ -163,7 +163,7 @@ public class BNsAdaptiveSurveyTest {
                             rightQ[s][dl] += 1;
                         }
 
-                        testOutput = AdaptiveTests.germanTest(bayesianFileName, s, rightQ, wrongQ);
+                        testOutput = Tests.germanTest(bayesianFileName, s, rightQ, wrongQ);
                         hypotheticalPosteriorResults[s] = (double[][]) testOutput[0];
 
                         if (answer == 0) {
@@ -368,7 +368,7 @@ public class BNsAdaptiveSurveyTest {
         boolean stop;
         stop = true;
         for (int s = 0; s < nSkills; s++) {
-            Object[] output = AdaptiveTests.germanTest(bayesianFileName, s, rightQ, wrongQ);
+            Object[] output = Tests.germanTest(bayesianFileName, s, rightQ, wrongQ);
             posteriorResults[s] = (double[][]) output[0];
 
             // entropy of the skill
@@ -395,7 +395,7 @@ public class BNsAdaptiveSurveyTest {
 
         for (int s = 0; s < nSkills; s++) {
 
-            testResult = AdaptiveTests.germanTest(bayesianFileName, s, rightQ, wrongQ);
+            testResult = Tests.germanTest(bayesianFileName, s, rightQ, wrongQ);
             result[s] = (double[][]) testResult[0];
         }
 

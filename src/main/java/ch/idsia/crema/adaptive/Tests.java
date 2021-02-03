@@ -20,7 +20,7 @@ import java.util.concurrent.TimeUnit;
  * Project: Crema
  * Date:    24.11.2020 11:40
  */
-public class AdaptiveTests {
+public class Tests {
 
     // Global variables
     public static final int nSkills = 4; // Number of skill variables
@@ -41,7 +41,7 @@ public class AdaptiveTests {
         double[][][] wrongQ = {{{0.0, 6.0, 5.0, 5.0}, {0.0, 4.0, 7.0, 3.0}, {0.0, 1.0, 2.0, 5.0}, {0.0, 5.0, 8.0, 9.0}}, {{0.0, 7.0, 4.0, 8.0}, {0.0, 4.0, 7.0, 7.0}, {0.0, 2.0, 3.0, 5.0}, {0.0, 4.0, 6.0, 6.0}}, {{0.0, 5.0, 10.0, 10.0}, {0.0, 7.0, 8.0, 8.0}, {0.0, 5.0, 5.0, 5.0}, {0.0, 6.0, 10.0, 10.0}}};
 
         // Initialise objects
-        AdaptiveTests myTest = new AdaptiveTests();
+        Tests myTest = new Tests();
 
         // Local variables
         double[][] results;

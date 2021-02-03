@@ -37,9 +37,6 @@ public class BNsAdaptiveSurveySimulation {
     private final int[] profile;
     private final int[] studentAnswers;
 
-    // Minimum value of entropy to stop the survey.
-    private static final double STOP_THRESHOLD = 0.25;
-
     // List containing the number of right and wrong answer to the questions,
     // for each combination of skill and difficulty level
     // {{0, 0, 0, 0}, {0, 0, 0, 0}, {0, 0, 0, 0}, {0, 0, 0, 0}}
@@ -53,7 +50,7 @@ public class BNsAdaptiveSurveySimulation {
 
     private final double[][][][] answerLikelihood = new double[nSkills][][][];
 
-    private final AdaptiveTests AdaptiveTests;
+    private final Tests Tests;
     private final AbellanEntropy abellanEntropy;
     private final QuestionSet questionSet;
     private final Random random;
@@ -71,7 +68,7 @@ public class BNsAdaptiveSurveySimulation {
 
         random = new Random(randomSeed + student);
 
-        AdaptiveTests = new AdaptiveTests();
+        Tests = new Tests();
         abellanEntropy = new AbellanEntropy();
         questionSet = new QuestionSet();
         questionSet.loadKeyList();
@@ -184,7 +181,7 @@ public class BNsAdaptiveSurveySimulation {
 
             for (int s = 0; s < nSkills; s++) {
                 // Current prior
-                Object[] testOutput = AdaptiveTests.germanTest(bayesianFileName, s, rightQ, wrongQ);
+                Object[] testOutput = Tests.germanTest(bayesianFileName, s, rightQ, wrongQ);
                 priorResults[s] = (double[][]) testOutput[0];
                 answerLikelihood[s] = (double[][][]) testOutput[1];
 
@@ -218,7 +215,7 @@ public class BNsAdaptiveSurveySimulation {
                             rightQ[s][dl] += 1;
                         }
 
-                        testOutput = AdaptiveTests.germanTest(bayesianFileName, s, rightQ, wrongQ);
+                        testOutput = Tests.germanTest(bayesianFileName, s, rightQ, wrongQ);
                         hypotheticalPosteriorResults[s] = (double[][]) testOutput[0];
 
                         computeEntropy(hypotheticalPosteriorResults[s], HResults, answer);
@@ -283,7 +280,7 @@ public class BNsAdaptiveSurveySimulation {
             }
 
             if (questionSet.getAskedQuestion() == 80) {
-                System.err.println("ma che cazz");
+                System.err.println("BUG");
             }
             extractParsedPosteriors(posteriors[questionSet.getAskedQuestion()], priorResults);
 
