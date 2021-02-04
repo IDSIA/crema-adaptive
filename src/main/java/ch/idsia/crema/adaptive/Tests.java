@@ -1,11 +1,11 @@
 package ch.idsia.crema.adaptive;
 
+import ch.idsia.crema.core.Strides;
 import ch.idsia.crema.factor.GenericFactor;
 import ch.idsia.crema.factor.bayesian.BayesianFactor;
 import ch.idsia.crema.factor.credal.linear.IntervalFactor;
 import ch.idsia.crema.inference.approxlp.Inference;
-import ch.idsia.crema.model.Strides;
-import ch.idsia.crema.model.graphical.SparseModel;
+import ch.idsia.crema.model.graphical.DAGModel;
 import ch.idsia.crema.preprocess.RemoveBarren;
 import ch.idsia.crema.search.ISearch;
 import ch.idsia.crema.search.impl.GreedyWithRandomRestart;
@@ -110,7 +110,7 @@ public class Tests {
         // Q0     Q1    Q2    Q3
 
         // Vertex Specification
-        SparseModel<GenericFactor> model = new SparseModel<>();
+        DAGModel<GenericFactor> model = new DAGModel<>();
 
         // Read probabilities from external file
         double[][] netPars = AdaptiveFileTools.readMyFile(fileName);

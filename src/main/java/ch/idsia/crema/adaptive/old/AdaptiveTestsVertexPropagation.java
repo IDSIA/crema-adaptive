@@ -195,7 +195,7 @@ public class AdaptiveTestsVertexPropagation {
 // Q0     Q1    Q2    Q3
 
 // Model (the whole network)
-//SparseModel<GenericFactor> model = new SparseModel<>();
+//DAGModel<GenericFactor> model = new DAGModel<>();
 
 //		String current;
 //		try {
