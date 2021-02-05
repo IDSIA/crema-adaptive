@@ -59,6 +59,7 @@ class Survey {
 
 	/**
 	 * @return return true if we need to stop, otherwise false
+	 * @throws Exception if inference goes wrong
 	 */
 	public boolean stop() throws Exception {
 		double mean = 0;
@@ -76,12 +77,18 @@ class Survey {
 		return mean < 0.2;
 	}
 
-	public double score(int skill, int q) throws Exception {
+	/**
+	 * @param skill    skill variable in the model
+	 * @param question question variable in the model
+	 * @return the score associated with the given question
+	 * @throws Exception if inference goes wrong
+	 */
+	public double score(int skill, int question) throws Exception {
 		// compute... something similar to a information gain
 		final double[] HSQs = new double[2];
 		for (int a = 0; a < 2; a++) {
 			TIntIntMap obs = new TIntIntHashMap(observations);
-			obs.put(q, a);
+			obs.put(question, a);
 
 			final IntervalFactor query = approx.query(model, skill, obs);
 			final double[] PSq = entropy.getMaxEntropy(query.getLower(), query.getUpper());
@@ -90,7 +97,7 @@ class Survey {
 			HSQs[a] = HSq;
 		}
 
-		final IntervalFactor pQ = approx.query(model, q, observations);
+		final IntervalFactor pQ = approx.query(model, question, observations);
 		final double[] lower = pQ.getLower();
 
 		final double score0 = lower[0] * HSQs[0] + (1 - lower[0]) * HSQs[1];
@@ -101,23 +108,26 @@ class Survey {
 
 	/**
 	 * @return the next question based on an entropy analysis, -1 if nothing is found
+	 * @throws Exception if inference goes wrong
 	 */
 	int next() throws Exception {
 		double maxIG = 0.;
 		int nextQuestion = -1;
 
 		// for each skill...
-		for (int skill = 0; skill < builder.varSkills.length; skill++) {
-			// ...for each question
-			for (int q : builder.varQuestions[skill]) {
-				if (questionsDone.contains(q))
-					continue;
+		for (int s = 0; s < builder.varSkills.length; s++) {
+			final int skill = builder.varSkills[s];
 
-				double score = score(skill, q);
+			// ...for each question
+			for (int question : builder.varQuestions[s]) {
+				if (questionsDone.contains(question))
+					continue; // skip
+
+				final double score = score(skill, question);
 
 				if (score > maxIG) {
 					maxIG = score;
-					nextQuestion = q;
+					nextQuestion = question;
 				}
 			}
 		}
