@@ -25,20 +25,23 @@ public class CredalSurveys {
 		final List<Callable<Void>> tasks = IntStream.range(0, N_STUDENTS)
 				.boxed()
 				.map(student -> (Callable<Void>) () -> {
-					final Survey survey = new Survey(student);
+					try {
+						final Survey survey = new Survey(student, new Credal1Skill1Difficulty1Question());
 
-					int q = -1;
-					while (survey.stop()) {
-						q = survey.next();
-						if (q < 0)
-							break;
+						int q;
+						while (survey.stop()) {
+							q = survey.next();
+							if (q < 0)
+								break;
 
-						final int x = rnd.nextInt(2);
-						survey.answer(q, x);
+							final int x = rnd.nextInt(2);
+							survey.answer(q, x);
+						}
+
+						System.out.println(survey.getNumberQuestionsDone());
+					} catch (Exception e) {
+						e.printStackTrace();
 					}
-
-					System.out.println(survey.getnQuestionsDone());
-
 					return null;
 				})
 				.collect(Collectors.toList());
