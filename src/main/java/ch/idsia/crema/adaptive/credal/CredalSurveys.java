@@ -28,7 +28,11 @@ public class CredalSurveys {
 					final Survey survey = new Survey(student);
 
 					int q = -1;
-					while ((q = survey.next()) >= 0) {
+					while (survey.stop()) {
+						q = survey.next();
+						if (q < 0)
+							break;
+
 						final int x = rnd.nextInt(2);
 						survey.answer(q, x);
 					}
