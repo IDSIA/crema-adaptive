@@ -26,7 +26,14 @@ public class CredalSurveys {
 				.boxed()
 				.map(student -> (Callable<Void>) () -> {
 					try {
-						final Survey survey = new Survey(student, new Credal1Skill1Difficulty1Question());
+						final Survey survey = new Survey(
+								student,
+								new Credal1Skill1Difficulty1Question(),
+
+								// these two can also be two lambdas :)
+								new ScoringFunctionInfoGain(),
+								new StoppingConditionEntropy()
+						);
 
 						int q;
 						while (survey.stop()) {
