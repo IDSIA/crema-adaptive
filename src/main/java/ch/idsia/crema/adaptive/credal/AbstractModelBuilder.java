@@ -8,16 +8,16 @@ import ch.idsia.crema.model.graphical.DAGModel;
  * Project: crema-adaptive
  * Date:    05.02.2021 13:44
  */
-public abstract class ModelBuilder<F extends GenericFactor> {
+public abstract class AbstractModelBuilder<F extends GenericFactor> {
 
 	DAGModel<F> model;
 
-	final int[] varSkills;
-	final int[][] varQuestions;
+	final int[] skills;
+	final int[][] questions;
 
-	public ModelBuilder(int skills, int questions) {
-		varSkills = new int[skills];
-		varQuestions = new int[skills][questions];
+	public AbstractModelBuilder(int nSkills, int nQuestions) {
+		this.skills = new int[nSkills];
+		this.questions = new int[nSkills][nQuestions];
 	}
 
 	public DAGModel<F> getModel() {

@@ -17,7 +17,7 @@ class Survey {
 
 	final int student;
 
-	private final ModelBuilder<? extends GenericFactor> builder;
+	private final AbstractModelBuilder<? extends GenericFactor> builder;
 	private final DAGModel<? extends GenericFactor> model;
 
 	private final TIntIntMap observations = new TIntIntHashMap();
@@ -27,7 +27,7 @@ class Survey {
 	private final ScoringFunction scoringFunction;
 	private final StoppingCondition stoppingCondition;
 
-	public Survey(int student, ModelBuilder<? extends GenericFactor> builder, ScoringFunction scoringFunction, StoppingCondition stoppingCondition) {
+	public Survey(int student, AbstractModelBuilder<? extends GenericFactor> builder, ScoringFunction scoringFunction, StoppingCondition stoppingCondition) {
 		this.builder = builder;
 		this.student = student;
 
@@ -56,7 +56,7 @@ class Survey {
 	 * @throws Exception if inference goes wrong
 	 */
 	public boolean stop() throws Exception {
-		return stoppingCondition.stop(model, builder.varSkills, observations);
+		return stoppingCondition.stop(model, builder.skills, observations);
 	}
 
 	/**
@@ -68,11 +68,11 @@ class Survey {
 		int nextQuestion = -1;
 
 		// for each skill...
-		for (int s = 0; s < builder.varSkills.length; s++) {
-			final int skill = builder.varSkills[s];
+		for (int s = 0; s < builder.skills.length; s++) {
+			final int skill = builder.skills[s];
 
 			// ...for each question
-			for (int question : builder.varQuestions[s]) {
+			for (int question : builder.questions[s]) {
 				if (questionsDone.contains(question))
 					continue; // skip
 

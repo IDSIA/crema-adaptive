@@ -9,9 +9,7 @@ import ch.idsia.crema.model.graphical.DAGModel;
  * Project: crema-adaptive
  * Date:    05.02.2021 13:45
  */
-public class Credal4Skill4Difficulty20QQuestion extends ModelBuilder<IntervalFactor> {
-
-	final DAGModel<IntervalFactor> model;
+public class Credal4Skill4Difficulty20Question extends AbstractModelBuilder<IntervalFactor> {
 
 	/**
 	 * The model is composed as following:
@@ -20,7 +18,7 @@ public class Credal4Skill4Difficulty20QQuestion extends ModelBuilder<IntervalFac
 	 * - questions have 2 states, and
 	 * - questions have 4 different CPTs
 	 */
-	public Credal4Skill4Difficulty20QQuestion() {
+	public Credal4Skill4Difficulty20Question() {
 		super(4, 4);
 		model = new DAGModel<>();
 
@@ -37,24 +35,16 @@ public class Credal4Skill4Difficulty20QQuestion extends ModelBuilder<IntervalFac
 		for (int s = S0; s <= S3; s++) {
 			// ...add question nodes
 			int x = 0;
-			varQuestions[s][x++] = addQuestionNodeEasy(model, s);
-			varQuestions[s][x++] = addQuestionNodeMediumEasy(model, s);
-			varQuestions[s][x++] = addQuestionNodeMediumHard(model, s);
-			varQuestions[s][x] = addQuestionNodeHard(model, s);
+			questions[s][x++] = addQuestionNodeEasy(model, s);
+			questions[s][x++] = addQuestionNodeMediumEasy(model, s);
+			questions[s][x++] = addQuestionNodeMediumHard(model, s);
+			questions[s][x] = addQuestionNodeHard(model, s);
 		}
 
-		varSkills[0] = S0;
-		varSkills[1] = S1;
-		varSkills[2] = S2;
-		varSkills[3] = S3;
-	}
-
-	/**
-	 * @return a new credal model defined with {@link IntervalFactor}s.
-	 */
-	@Override
-	public DAGModel<IntervalFactor> getModel() {
-		return model;
+		skills[0] = S0;
+		skills[1] = S1;
+		skills[2] = S2;
+		skills[3] = S3;
 	}
 
 	/**

@@ -9,16 +9,21 @@ import ch.idsia.crema.model.graphical.DAGModel;
  * Project: crema-adaptive
  * Date:    05.02.2021 13:45
  */
-public class Credal1Skill1Difficulty1Question extends ModelBuilder<IntervalFactor> {
+public class Credal1Skill1Difficulty1Question extends AbstractModelBuilder<IntervalFactor> {
 
-	final DAGModel<IntervalFactor> model;
-
+	/**
+	 * The model is composed as following:
+	 * - 4 skills with 4 states
+	 * - 20 questions for each skill, where
+	 * - questions have 2 states, and
+	 * - questions have 4 different definitions (based on 4 difficulty levels)
+	 */
 	public Credal1Skill1Difficulty1Question() {
 		super(1, 1);
 		model = new DAGModel<>();
 
-		final int q = model.addVariable(2);
 		final int s = model.addVariable(4);
+		final int q = model.addVariable(2);
 
 		model.addParent(q, s);
 
@@ -44,21 +49,7 @@ public class Credal1Skill1Difficulty1Question extends ModelBuilder<IntervalFacto
 
 		model.setFactor(q, fQ);
 
-		varSkills[0] = s;
-		varQuestions[0][0] = q;
-	}
-
-	/**
-	 * The model is composed as following:
-	 * - 4 skills with 4 states
-	 * - 20 questions for each skill, where
-	 * - questions have 2 states, and
-	 * - questions have 4 different definitions (based on 4 difficulty levels)
-	 *
-	 * @return a new credal model defined with {@link IntervalFactor}s.
-	 */
-	@Override
-	public DAGModel<IntervalFactor> getModel() {
-		return model;
+		skills[0] = s;
+		questions[0][0] = q;
 	}
 }
