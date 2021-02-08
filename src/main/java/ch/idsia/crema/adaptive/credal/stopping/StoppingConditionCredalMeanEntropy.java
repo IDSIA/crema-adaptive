@@ -15,14 +15,14 @@ import java.util.List;
  * Project: crema-adaptive
  * Date:    05.02.2021 15:51
  */
-public class StoppingConditionMeanEntropy implements StoppingCondition<IntervalFactor> {
+public class StoppingConditionCredalMeanEntropy implements StoppingCondition<IntervalFactor> {
 
 	private final AbellanEntropy entropy = new AbellanEntropy();
 	private final ApproxLP2 approx = new ApproxLP2();
 
 	private final double threshold;
 
-	public StoppingConditionMeanEntropy(double threshold) {
+	public StoppingConditionCredalMeanEntropy(double threshold) {
 		this.threshold = threshold;
 	}
 

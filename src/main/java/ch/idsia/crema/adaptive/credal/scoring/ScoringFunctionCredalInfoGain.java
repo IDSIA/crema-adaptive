@@ -15,7 +15,7 @@ import gnu.trove.map.hash.TIntIntHashMap;
  * Project: crema-adaptive
  * Date:    05.02.2021 15:49
  */
-public class ScoringFunctionInfoGain implements ScoringFunction<IntervalFactor> {
+public class ScoringFunctionCredalInfoGain implements ScoringFunction<IntervalFactor> {
 
 	private final AbellanEntropy entropy = new AbellanEntropy();
 	private final ApproxLP2 approx = new ApproxLP2();

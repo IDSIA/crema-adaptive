@@ -1,5 +1,6 @@
 package ch.idsia.crema.adaptive.credal;
 
+import ch.idsia.crema.adaptive.credal.answering.AnswerStrategyBayesianRandom;
 import ch.idsia.crema.adaptive.credal.model.BayesianMinimalistic;
 import ch.idsia.crema.adaptive.credal.scoring.ScoringFunctionBayesianInfoGain;
 import ch.idsia.crema.adaptive.credal.stopping.StoppingConditionBayesianMeanEntropy;
@@ -17,7 +18,7 @@ import java.util.stream.IntStream;
  * Project: crema-adaptive
  * Date:    04.02.2021 16:09
  */
-public class AdaptiveSurvey {
+public class AdaptiveSurveyBayesian {
 
 	static final int N_STUDENTS = 1;
 
@@ -29,7 +30,8 @@ public class AdaptiveSurvey {
 				.map(id -> (Callable<Void>) () -> {
 					try {
 						final AgentStudent<BayesianFactor> student = new AgentStudent<>(id,
-								new BayesianMinimalistic(5, .4, .6)
+								new BayesianMinimalistic(5, .4, .6),
+								new AnswerStrategyBayesianRandom(id)
 						);
 						final AgentTeacher<BayesianFactor> teacher = new AgentTeacher<>(
 								new BayesianMinimalistic(5, .4, .6),
@@ -37,9 +39,8 @@ public class AdaptiveSurvey {
 								new StoppingConditionBayesianMeanEntropy(.5)
 						);
 
-						Question q;
 						while (!teacher.stop()) {
-							q = teacher.next();
+							Question q = teacher.next();
 							if (q == null)
 								break;
 

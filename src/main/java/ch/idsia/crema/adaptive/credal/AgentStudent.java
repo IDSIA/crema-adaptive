@@ -1,10 +1,9 @@
 package ch.idsia.crema.adaptive.credal;
 
+import ch.idsia.crema.adaptive.credal.answering.AnswerStrategy;
 import ch.idsia.crema.adaptive.credal.model.AbstractModelBuilder;
 import ch.idsia.crema.factor.GenericFactor;
 import ch.idsia.crema.model.graphical.DAGModel;
-
-import java.util.Random;
 
 /**
  * Author:  Claudio "Dna" Bonesana
@@ -13,17 +12,18 @@ import java.util.Random;
  */
 public class AgentStudent<F extends GenericFactor> {
 
-	final Random random;
 	final int id;
 
 	final AbstractModelBuilder<F> builder;
 	final DAGModel<F> model;
 
-	public AgentStudent(int id, AbstractModelBuilder<F> builder) {
-		this.random = new Random(id);
+	final AnswerStrategy<F> answerStrategy;
+
+	public AgentStudent(int id, AbstractModelBuilder<F> builder, AnswerStrategy<F> strategy) {
 		this.id = id;
 		this.builder = builder;
 		this.model = builder.getModel();
+		this.answerStrategy = strategy;
 	}
 
 	/**
@@ -33,9 +33,7 @@ public class AgentStudent<F extends GenericFactor> {
 	 * @return 0 or 1 based on the question
 	 */
 	int answer(Question question) {
-		final int x = random.nextInt(2);
-		System.out.printf("AgentStudent:       question=%-3d answer=%d%n", question.id, x);
-		return x;
+		return answerStrategy.answer(model, question);
 	}
 
 }

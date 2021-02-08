@@ -23,7 +23,7 @@ public class CredalMinimalistic extends AbstractModelBuilder<IntervalFactor> {
 
 		for (int i = 0; i < nQuestions; i++) {
 			final int q = model.addVariable(2);
-			model.addParent(i, s);
+			model.addParent(q, s);
 			model.setFactor(q, new IntervalFactor(model.getDomain(q), model.getDomain(s),
 					new double[][]{
 							{l1, 1 - u1}, // lP(Q|S=0)
