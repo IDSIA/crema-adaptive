@@ -1,5 +1,7 @@
-package ch.idsia.crema.adaptive.credal;
+package ch.idsia.crema.adaptive.credal.model;
 
+import ch.idsia.crema.adaptive.credal.Question;
+import ch.idsia.crema.adaptive.credal.Skill;
 import ch.idsia.crema.core.Strides;
 import ch.idsia.crema.factor.credal.linear.IntervalFactor;
 import ch.idsia.crema.model.graphical.DAGModel;
@@ -9,7 +11,7 @@ import ch.idsia.crema.model.graphical.DAGModel;
  * Project: crema-adaptive
  * Date:    05.02.2021 13:45
  */
-public class Credal4Skill4Difficulty20Question extends AbstractModelBuilder<IntervalFactor> {
+public class Credal4Skill4Difficulty5Question extends AbstractModelBuilder<IntervalFactor> {
 
 	/**
 	 * The model is composed as following:
@@ -18,8 +20,7 @@ public class Credal4Skill4Difficulty20Question extends AbstractModelBuilder<Inte
 	 * - questions have 2 states, and
 	 * - questions have 4 different CPTs
 	 */
-	public Credal4Skill4Difficulty20Question() {
-		super(4, 4);
+	public Credal4Skill4Difficulty5Question() {
 		model = new DAGModel<>();
 
 		// skill-chain
@@ -32,19 +33,16 @@ public class Credal4Skill4Difficulty20Question extends AbstractModelBuilder<Inte
 		int S3 = addSkillNode(model, S2);
 
 		// for each skill...
+		int qid = 0;
 		for (int s = S0; s <= S3; s++) {
 			// ...add question nodes
-			int x = 0;
-			questions[s][x++] = addQuestionNodeEasy(model, s);
-			questions[s][x++] = addQuestionNodeMediumEasy(model, s);
-			questions[s][x++] = addQuestionNodeMediumHard(model, s);
-			questions[s][x] = addQuestionNodeHard(model, s);
+			for (int i = 0; i < 5; i++) {
+				addQuestionNodeEasy(model, s, qid, 10 * s + 1);
+				addQuestionNodeMediumEasy(model, s, qid, 10 * s + 2);
+				addQuestionNodeMediumHard(model, s, qid, 10 * s + 3);
+				addQuestionNodeHard(model, s, qid, 10 * s + 4);
+			}
 		}
-
-		skills[0] = S0;
-		skills[1] = S1;
-		skills[2] = S2;
-		skills[3] = S3;
 	}
 
 	/**
@@ -63,6 +61,9 @@ public class Credal4Skill4Difficulty20Question extends AbstractModelBuilder<Inte
 				.2, .4, .4, .2
 		});
 		model.setFactor(s, fS);
+
+		skills.add(new Skill(s));
+
 		return s;
 	}
 
@@ -97,9 +98,8 @@ public class Credal4Skill4Difficulty20Question extends AbstractModelBuilder<Inte
 	 *
 	 * @param model  add to this model
 	 * @param parent skill parent node
-	 * @return the new variable added
 	 */
-	public int addQuestionNodeEasy(DAGModel<IntervalFactor> model, int parent) {
+	public void addQuestionNodeEasy(DAGModel<IntervalFactor> model, int parent, int qid, int template) {
 		final int q = model.addVariable(2);
 		model.addParent(q, parent);
 		final IntervalFactor fQ = new IntervalFactor(model.getDomain(q), model.getDomain(parent));
@@ -115,7 +115,8 @@ public class Credal4Skill4Difficulty20Question extends AbstractModelBuilder<Inte
 		fQ.setUpper(new double[]{.975, .050}, 3); // uP(Q=right|S=3)
 
 		model.setFactor(q, fQ);
-		return q;
+
+		questions.add(new Question(qid, parent, q, template));
 	}
 
 	/**
@@ -123,9 +124,8 @@ public class Credal4Skill4Difficulty20Question extends AbstractModelBuilder<Inte
 	 *
 	 * @param model  add to this model
 	 * @param parent skill parent node
-	 * @return the new variable added
 	 */
-	public int addQuestionNodeMediumEasy(DAGModel<IntervalFactor> model, int parent) {
+	public void addQuestionNodeMediumEasy(DAGModel<IntervalFactor> model, int parent, int qid, int template) {
 		final int q = model.addVariable(2);
 		model.addParent(q, parent);
 		final IntervalFactor fQ = new IntervalFactor(model.getDomain(q), model.getDomain(parent));
@@ -141,7 +141,8 @@ public class Credal4Skill4Difficulty20Question extends AbstractModelBuilder<Inte
 		fQ.setUpper(new double[]{.875, .150}, 3); // uP(Q=right|S=3)
 
 		model.setFactor(q, fQ);
-		return q;
+
+		questions.add(new Question(qid, parent, q, template));
 	}
 
 	/**
@@ -149,9 +150,8 @@ public class Credal4Skill4Difficulty20Question extends AbstractModelBuilder<Inte
 	 *
 	 * @param model  add to this model
 	 * @param parent skill parent node
-	 * @return the new variable added
 	 */
-	public int addQuestionNodeMediumHard(DAGModel<IntervalFactor> model, int parent) {
+	public void addQuestionNodeMediumHard(DAGModel<IntervalFactor> model, int parent, int qid, int template) {
 		final int q = model.addVariable(2);
 		model.addParent(q, parent);
 		final IntervalFactor fQ = new IntervalFactor(model.getDomain(q), model.getDomain(parent));
@@ -167,7 +167,8 @@ public class Credal4Skill4Difficulty20Question extends AbstractModelBuilder<Inte
 		fQ.setUpper(new double[]{.775, .250}, 3); // uP(Q=right|S=3)
 
 		model.setFactor(q, fQ);
-		return q;
+
+		questions.add(new Question(qid, parent, q, template));
 	}
 
 	/**
@@ -175,9 +176,8 @@ public class Credal4Skill4Difficulty20Question extends AbstractModelBuilder<Inte
 	 *
 	 * @param model  add to this model
 	 * @param parent skill parent node
-	 * @return the new variable added
 	 */
-	public int addQuestionNodeHard(DAGModel<IntervalFactor> model, int parent) {
+	public void addQuestionNodeHard(DAGModel<IntervalFactor> model, int parent, int qid, int template) {
 		final int q = model.addVariable(2);
 		model.addParent(q, parent);
 		final IntervalFactor fQ = new IntervalFactor(model.getDomain(q), model.getDomain(parent));
@@ -193,6 +193,8 @@ public class Credal4Skill4Difficulty20Question extends AbstractModelBuilder<Inte
 		fQ.setUpper(new double[]{.625, .400}, 3); // uP(Q=right|S=3)
 
 		model.setFactor(q, fQ);
-		return q;
+
+		questions.add(new Question(qid, parent, q, template));
 	}
+
 }

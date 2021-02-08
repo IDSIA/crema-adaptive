@@ -1,5 +1,6 @@
-package ch.idsia.crema.adaptive.credal;
+package ch.idsia.crema.adaptive.credal.scoring;
 
+import ch.idsia.crema.adaptive.credal.Question;
 import ch.idsia.crema.factor.GenericFactor;
 import ch.idsia.crema.model.graphical.DAGModel;
 import gnu.trove.map.TIntIntMap;
@@ -9,16 +10,15 @@ import gnu.trove.map.TIntIntMap;
  * Project: crema-adaptive
  * Date:    05.02.2021 15:33
  */
-public interface ScoringFunction {
+public interface ScoringFunction<F extends GenericFactor> {
 
 	/**
 	 * @param model        model to work on
-	 * @param skill        skill variable in the model
-	 * @param question     question variable in the model
+	 * @param question     question to evaluate
 	 * @param observations evidence
 	 * @return the score associated with the given question
 	 * @throws Exception if something goes wrong
 	 */
-	double score(DAGModel<? extends GenericFactor> model, int skill, int question, TIntIntMap observations) throws Exception;
+	double score(DAGModel<F> model, Question question, TIntIntMap observations) throws Exception;
 
 }

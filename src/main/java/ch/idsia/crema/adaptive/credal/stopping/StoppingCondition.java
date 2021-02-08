@@ -1,15 +1,18 @@
-package ch.idsia.crema.adaptive.credal;
+package ch.idsia.crema.adaptive.credal.stopping;
 
+import ch.idsia.crema.adaptive.credal.Skill;
 import ch.idsia.crema.factor.GenericFactor;
 import ch.idsia.crema.model.graphical.DAGModel;
 import gnu.trove.map.TIntIntMap;
+
+import java.util.List;
 
 /**
  * Author:  Claudio "Dna" Bonesana
  * Project: crema-adaptive
  * Date:    05.02.2021 15:31
  */
-public interface StoppingCondition {
+public interface StoppingCondition<F extends GenericFactor> {
 
 	/**
 	 * @param model        model to work on
@@ -18,6 +21,6 @@ public interface StoppingCondition {
 	 * @return true if stop condition is reached, otherwise false
 	 * @throws Exception if something goes wrong
 	 */
-	boolean stop(DAGModel<? extends GenericFactor> model, int[] skills, TIntIntMap observations) throws Exception;
+	boolean stop(DAGModel<F> model, List<Skill> skills, TIntIntMap observations) throws Exception;
 
 }
