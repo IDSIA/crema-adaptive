@@ -95,7 +95,7 @@
 		<dependency>
 			<groupId>ch.idsia</groupId>
 			<artifactId>crema</artifactId>
-			<version>0.1.6.c</version>
+			<version>0.1.6.d</version>
 			<scope>compile</scope>
 		</dependency>
 	</dependencies>

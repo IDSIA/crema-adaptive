@@ -26,9 +26,10 @@ public class CredalSurveys {
 				.boxed()
 				.map(student -> (Callable<Void>) () -> {
 					try {
+						final AnswerFunction af = new AnswerFunctionRandom(student);
 						final Survey survey = new Survey(
 								student,
-								new Credal1Skill1Difficulty1Question(),
+								new Credal4Skill4Difficulty20Question(),
 
 								// these two can also be two lambdas :)
 								new ScoringFunctionInfoGain(),
@@ -41,7 +42,7 @@ public class CredalSurveys {
 							if (q < 0)
 								break;
 
-							final int x = rnd.nextInt(2);
+							final int x = af.answer(q);
 							survey.answer(q, x);
 						}
 
