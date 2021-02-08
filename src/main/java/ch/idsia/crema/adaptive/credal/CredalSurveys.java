@@ -1,7 +1,6 @@
 package ch.idsia.crema.adaptive.credal;
 
 import java.util.List;
-import java.util.Random;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -16,8 +15,6 @@ import java.util.stream.IntStream;
 public class CredalSurveys {
 
 	static final int N_STUDENTS = 1;
-
-	static final Random rnd = new Random(42);
 
 	public static void main(String[] args) throws Exception {
 		ExecutorService es = Executors.newFixedThreadPool(1); // TODO: add multiple threads
