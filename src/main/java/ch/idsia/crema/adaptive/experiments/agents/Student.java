@@ -1,5 +1,6 @@
-package ch.idsia.crema.adaptive.experiments;
+package ch.idsia.crema.adaptive.experiments.agents;
 
+import ch.idsia.crema.adaptive.experiments.Question;
 import ch.idsia.crema.adaptive.experiments.answering.AnswerStrategy;
 import ch.idsia.crema.adaptive.experiments.model.AbstractModelBuilder;
 import ch.idsia.crema.factor.GenericFactor;
@@ -10,7 +11,7 @@ import ch.idsia.crema.model.graphical.DAGModel;
  * Project: crema-adaptive
  * Date:    08.02.2021 15:58
  */
-public class AgentStudent<F extends GenericFactor> {
+public class Student<F extends GenericFactor> implements AgentStudent {
 
 	final int id;
 
@@ -19,7 +20,7 @@ public class AgentStudent<F extends GenericFactor> {
 
 	final AnswerStrategy<F> answerStrategy;
 
-	public AgentStudent(int id, AbstractModelBuilder<F> builder, AnswerStrategy<F> strategy) {
+	public Student(int id, AbstractModelBuilder<F> builder, AnswerStrategy<F> strategy) {
 		this.id = id;
 		this.builder = builder;
 		this.model = builder.getModel();
@@ -32,6 +33,7 @@ public class AgentStudent<F extends GenericFactor> {
 	 * @param question the question to answer to
 	 * @return 0 or 1 based on the question
 	 */
+	@Override
 	public int answer(Question question) {
 		return answerStrategy.answer(model, question);
 	}

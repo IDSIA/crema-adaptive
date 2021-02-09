@@ -1,5 +1,6 @@
-package ch.idsia.crema.adaptive.experiments;
+package ch.idsia.crema.adaptive.experiments.agents;
 
+import ch.idsia.crema.adaptive.experiments.Question;
 import ch.idsia.crema.adaptive.experiments.model.AbstractModelBuilder;
 import ch.idsia.crema.adaptive.experiments.scoring.ScoringFunction;
 import ch.idsia.crema.adaptive.experiments.stopping.StoppingCondition;
@@ -18,7 +19,7 @@ import java.util.Set;
  * Project: crema-adaptive
  * Date:    04.02.2021 17:25
  */
-public class AgentTeacher<F extends GenericFactor> {
+public class Teacher<F extends GenericFactor> implements AgentTeacher {
 
 	private final AbstractModelBuilder<F> builder;
 	private final DAGModel<F> model;
@@ -31,7 +32,7 @@ public class AgentTeacher<F extends GenericFactor> {
 	private final ScoringFunction<F> scoringFunction;
 	private final StoppingCondition<F> stoppingCondition;
 
-	public AgentTeacher(
+	public Teacher(
 			AbstractModelBuilder<F> builder,
 			ScoringFunction<F> scoringFunction,
 			StoppingCondition<F> stoppingCondition
@@ -46,6 +47,7 @@ public class AgentTeacher<F extends GenericFactor> {
 		this.questions = builder.questions;
 	}
 
+	@Override
 	public int getNumberQuestionsDone() {
 		return questionsDone.size();
 	}
@@ -54,7 +56,8 @@ public class AgentTeacher<F extends GenericFactor> {
 	 * @param question should be inside (5, 104)
 	 * @param answer   should be 0 or 1
 	 */
-	public void answer(Question question, int answer) {
+	@Override
+	public void check(Question question, int answer) {
 		observations.put(question.variable, answer);
 		questionsDone.add(question);
 	}
@@ -63,6 +66,7 @@ public class AgentTeacher<F extends GenericFactor> {
 	 * @return return true if we need to stop, otherwise false
 	 * @throws Exception if inference goes wrong
 	 */
+	@Override
 	public boolean stop() throws Exception {
 		return stoppingCondition.stop(model, builder.skills, observations);
 	}
@@ -71,6 +75,7 @@ public class AgentTeacher<F extends GenericFactor> {
 	 * @return the next question based on an entropy analysis, -1 if nothing is found
 	 * @throws Exception if inference goes wrong
 	 */
+	@Override
 	public Question next() throws Exception {
 		double maxIG = 0.;
 		Question nextQuestion = null;

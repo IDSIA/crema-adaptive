@@ -1,18 +1,19 @@
 package ch.idsia.crema.adaptive.experiments;
 
-import ch.idsia.crema.factor.GenericFactor;
+import ch.idsia.crema.adaptive.experiments.agents.AgentStudent;
+import ch.idsia.crema.adaptive.experiments.agents.AgentTeacher;
 
 /**
  * Author:  Claudio "Dna" Bonesana
  * Project: crema-adaptive
  * Date:    09.02.2021 08:45
  */
-public class Experiment<F extends GenericFactor> {
+public class Experiment {
 
-	private final AgentTeacher<F> teacher;
-	private final AgentStudent<F> student;
+	private final AgentTeacher teacher;
+	private final AgentStudent student;
 
-	public Experiment(AgentTeacher<F> teacher, AgentStudent<F> student) {
+	public Experiment(AgentTeacher teacher, AgentStudent student) {
 		this.teacher = teacher;
 		this.student = student;
 	}
@@ -24,7 +25,7 @@ public class Experiment<F extends GenericFactor> {
 				break;
 
 			final int x = student.answer(q);
-			teacher.answer(q, x);
+			teacher.check(q, x);
 		}
 
 		System.out.println(teacher.getNumberQuestionsDone());
