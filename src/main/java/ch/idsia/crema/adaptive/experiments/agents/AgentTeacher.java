@@ -11,10 +11,24 @@ public interface AgentTeacher {
 
 	int getNumberQuestionsDone();
 
+	/**
+	 * Checks the answer to the given question.
+	 *
+	 * @param question {@link Teacher}'s question
+	 * @param answer   {@link Student}'s answer
+	 */
 	void check(Question question, int answer);
 
+	/**
+	 * @return true if one the {@link ch.idsia.crema.adaptive.experiments.stopping.StoppingCondition} is meet, otherwise false.
+	 * @throws Exception it something really bad happens...
+	 */
 	boolean stop() throws Exception;
 
+	/**
+	 * @return the next {@link Question} found using the given {@link ch.idsia.crema.adaptive.experiments.scoring.ScoringFunction}.
+	 * @throws Exception is something not so good happens...
+	 */
 	Question next() throws Exception;
 
 }

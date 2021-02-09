@@ -1,17 +1,20 @@
 package ch.idsia.crema.adaptive.experiments.answering;
 
 import ch.idsia.crema.adaptive.experiments.Question;
-import ch.idsia.crema.factor.GenericFactor;
-import ch.idsia.crema.model.graphical.DAGModel;
-import gnu.trove.map.TIntIntMap;
+import ch.idsia.crema.adaptive.experiments.agents.AgentStudent;
 
 /**
  * Author:  Claudio "Dna" Bonesana
  * Project: crema-adaptive
  * Date:    08.02.2021 18:08
  */
-public interface AnswerStrategy<F extends GenericFactor> {
+public interface AnswerStrategy<F extends AgentStudent> {
 
-	int answer(DAGModel<F> model, Question question, TIntIntMap skills);
+	/**
+	 * @param student  who need to give the answer
+	 * @param question chosen by a {@link ch.idsia.crema.adaptive.experiments.agents.Teacher}
+	 * @return the answer found
+	 */
+	int answer(F student, Question question);
 
 }

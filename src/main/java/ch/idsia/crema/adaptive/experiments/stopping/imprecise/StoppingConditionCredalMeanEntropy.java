@@ -2,7 +2,7 @@ package ch.idsia.crema.adaptive.experiments.stopping.imprecise;
 
 import ch.idsia.crema.adaptive.experiments.Skill;
 import ch.idsia.crema.adaptive.experiments.Utils;
-import ch.idsia.crema.adaptive.experiments.stopping.StoppingCondition;
+import ch.idsia.crema.adaptive.experiments.stopping.StoppingConditionModel;
 import ch.idsia.crema.entropy.AbellanEntropy;
 import ch.idsia.crema.factor.credal.linear.IntervalFactor;
 import ch.idsia.crema.inference.approxlp2.ApproxLP2;
@@ -16,7 +16,7 @@ import java.util.List;
  * Project: crema-adaptive
  * Date:    05.02.2021 15:51
  */
-public class StoppingConditionCredalMeanEntropy implements StoppingCondition<IntervalFactor> {
+public class StoppingConditionCredalMeanEntropy implements StoppingConditionModel<IntervalFactor> {
 
 	private final AbellanEntropy entropy = new AbellanEntropy();
 	private final ApproxLP2 approx = new ApproxLP2();
@@ -27,6 +27,15 @@ public class StoppingConditionCredalMeanEntropy implements StoppingCondition<Int
 		this.threshold = threshold;
 	}
 
+	/**
+	 * Check if the mean entropy value of the skills is below the given threshold or not.
+	 *
+	 * @param model        model to work on
+	 * @param skills       list of skill variables in the model
+	 * @param observations evidence
+	 * @return true if stop condition is reached, otherwise false
+	 * @throws Exception if inference goes wrong
+	 */
 	@Override
 	public boolean stop(DAGModel<IntervalFactor> model, List<Skill> skills, TIntIntMap observations) throws Exception {
 		double mean = 0;

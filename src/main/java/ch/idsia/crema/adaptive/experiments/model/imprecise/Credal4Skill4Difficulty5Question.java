@@ -15,11 +15,8 @@ import ch.idsia.crema.model.graphical.DAGModel;
 public class Credal4Skill4Difficulty5Question extends AbstractModelBuilder<IntervalFactor> {
 
 	/**
-	 * The model is composed as following:
-	 * - 4 skills with 4 states
-	 * - 4 questions for each skill, where
-	 * - questions have 2 states, and
-	 * - questions have 4 different CPTs
+	 * Build a Credal model where we have 4 skills with 4 state each. Each skill has 4 templates of questions, each
+	 * template has 5 questions, and each question has 2 states. All the questions in a template have the same CPT.
 	 */
 	public Credal4Skill4Difficulty5Question() {
 		model = new DAGModel<>();

@@ -1,6 +1,7 @@
 package ch.idsia.crema.adaptive.experiments.agents;
 
 import ch.idsia.crema.adaptive.experiments.Question;
+import ch.idsia.crema.adaptive.experiments.Skill;
 import ch.idsia.crema.adaptive.experiments.model.AbstractModelBuilder;
 import ch.idsia.crema.adaptive.experiments.scoring.ScoringFunction;
 import ch.idsia.crema.adaptive.experiments.stopping.StoppingCondition;
@@ -18,36 +19,73 @@ import java.util.*;
  */
 public class Teacher<F extends GenericFactor> implements AgentTeacher {
 
+	/**
+	 * Object that is used to generate the model and store information like the questions of the survey and the skills.
+	 */
 	private final AbstractModelBuilder<F> builder;
+	/**
+	 * Model used to perform inferences.
+	 */
 	private final DAGModel<F> model;
 
+	/**
+	 * Answers from a {@link Student}.
+	 */
 	private final TIntIntMap observations = new TIntIntHashMap();
 
+	/**
+	 * List of all the questions.
+	 */
 	private final List<Question> questions;
+	/**
+	 * List of all the question that have an answer.
+	 */
 	private final List<Question> questionsDone = new ArrayList<>();
 
+	/**
+	 * Function used to give a score in the {@link #next()} method.
+	 */
 	private final ScoringFunction<F> scoringFunction;
-	private final List<StoppingCondition<F>> stoppingConditions;
+	/**
+	 * List of conditions tested in the {@link #stop()} method.
+	 */
+	private final List<StoppingCondition<Teacher<F>>> stoppingConditions;
 
+	/**
+	 * @param builder            used to generate the model and store information
+	 * @param scoringFunction    search strategy for the next question
+	 * @param stoppingConditions multiple stopping criteria
+	 */
 	@SafeVarargs
 	public Teacher(
 			AbstractModelBuilder<F> builder,
 			ScoringFunction<F> scoringFunction,
-			StoppingCondition<F>... stoppingConditions
+			StoppingCondition<Teacher<F>>... stoppingConditions
 	) {
 		this.builder = builder;
+		model = builder.getModel();
 
 		this.scoringFunction = scoringFunction;
 		this.stoppingConditions = Arrays.asList(stoppingConditions);
 
-		// model is defined there
-		model = builder.getModel();
 		this.questions = builder.questions;
 	}
 
 	@Override
 	public int getNumberQuestionsDone() {
 		return questionsDone.size();
+	}
+
+	public DAGModel<F> getModel() {
+		return model;
+	}
+
+	public TIntIntMap getObservations() {
+		return observations;
+	}
+
+	public List<Skill> getSkills() {
+		return builder.skills;
 	}
 
 	/**
@@ -66,8 +104,8 @@ public class Teacher<F extends GenericFactor> implements AgentTeacher {
 	 */
 	@Override
 	public boolean stop() throws Exception {
-		for (StoppingCondition<F> condition : stoppingConditions) {
-			if (condition.stop(model, builder.skills, observations))
+		for (StoppingCondition<Teacher<F>> condition : stoppingConditions) {
+			if (condition.stop(this))
 				return true;
 		}
 		return false;
@@ -90,7 +128,7 @@ public class Teacher<F extends GenericFactor> implements AgentTeacher {
 				continue; // question already done, skip
 
 			if (question.template > 0 && templates.contains(question.template))
-				continue; // template already done, skip
+				continue; // template already checked, skip
 
 			templates.add(question.template);
 
@@ -103,7 +141,7 @@ public class Teacher<F extends GenericFactor> implements AgentTeacher {
 		}
 
 		if (nextQuestion == null)
-			System.out.println("AgentTeacher:       no question found");
+			System.out.printf("AgentTeacher:       no question found%n");
 		else
 			System.out.printf("AgentTeacher:       next question=%-3d%n", nextQuestion.id);
 

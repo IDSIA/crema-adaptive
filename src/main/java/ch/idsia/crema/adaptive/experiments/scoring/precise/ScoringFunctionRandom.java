@@ -21,6 +21,15 @@ public class ScoringFunctionRandom implements ScoringFunction<BayesianFactor> {
 		this.random = new Random(seed);
 	}
 
+	/**
+	 * This scoring function can be used to propose answers in a pseudo-random order.
+	 *
+	 * @param model        model to work on
+	 * @param question     question to evaluate
+	 * @param observations evidence
+	 * @return a random number between 0 and 1
+	 * @throws Exception but should never happen...
+	 */
 	@Override
 	public double score(DAGModel<BayesianFactor> model, Question question, TIntIntMap observations) throws Exception {
 		return random.nextDouble();

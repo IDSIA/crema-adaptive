@@ -15,7 +15,9 @@ import ch.idsia.crema.model.graphical.DAGModel;
 public class CredalLanguage1Skill extends AbstractModelBuilder<IntervalFactor> {
 
 	/**
-	 * @param nQuestions number of questions for the skill, all questions will have the same template
+	 * A Credal model with one skill with four states and a given number of questions. All the questions have the same CPT.
+	 *
+	 * @param nQuestions number of questions in total, all questions will have the same template (value: 1).
 	 */
 	public CredalLanguage1Skill(int nQuestions) {
 		model = new DAGModel<>();

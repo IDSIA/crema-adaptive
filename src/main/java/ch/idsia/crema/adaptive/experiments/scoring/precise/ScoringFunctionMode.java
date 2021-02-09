@@ -19,6 +19,15 @@ public class ScoringFunctionMode implements ScoringFunction<BayesianFactor> {
 
 	private BeliefPropagation<BayesianFactor> inference;
 
+	/**
+	 * A {@link ScoringFunction} based on the mode of the probability to answer correctly.
+	 *
+	 * @param model        model to work on
+	 * @param question     question to evaluate
+	 * @param observations evidence
+	 * @return a score between 0 and 1
+	 * @throws Exception if something bad happens
+	 */
 	@Override
 	public double score(DAGModel<BayesianFactor> model, Question question, TIntIntMap observations) throws Exception {
 		if (inference == null)
@@ -49,7 +58,7 @@ public class ScoringFunctionMode implements ScoringFunction<BayesianFactor> {
 		return HSQ / 2;
 	}
 
-	double mode(BayesianFactor bf) {
+	private double mode(BayesianFactor bf) {
 		final double[] data = bf.getData();
 		return Utils.argmax(data);
 	}

@@ -14,6 +14,16 @@ import ch.idsia.crema.model.graphical.DAGModel;
  */
 public class CredalMinimalistic extends AbstractModelBuilder<IntervalFactor> {
 
+	/**
+	 * A Bayesian model with one skill with two states and a given number of questions. All the questions have the same
+	 * CPT that is built from the given lower and upper parameters.
+	 *
+	 * @param nQuestions number of questions in total, all questions will have the same template (value: 1).
+	 * @param l0         lower probability to know the answer given that it has the skill
+	 * @param l1         lower probability to know the answer given that it has not the skill
+	 * @param u0         upper probability to know the answer given that it has the skill
+	 * @param u1         upper probability to know the answer given that it has not the skill
+	 */
 	public CredalMinimalistic(int nQuestions, double l0, double l1, double u0, double u1) {
 		model = new DAGModel<>();
 

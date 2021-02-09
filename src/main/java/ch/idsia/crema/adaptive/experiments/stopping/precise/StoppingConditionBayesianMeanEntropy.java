@@ -1,7 +1,7 @@
 package ch.idsia.crema.adaptive.experiments.stopping.precise;
 
 import ch.idsia.crema.adaptive.experiments.Skill;
-import ch.idsia.crema.adaptive.experiments.stopping.StoppingCondition;
+import ch.idsia.crema.adaptive.experiments.stopping.StoppingConditionModel;
 import ch.idsia.crema.entropy.BayesianEntropy;
 import ch.idsia.crema.factor.bayesian.BayesianFactor;
 import ch.idsia.crema.inference.bp.BeliefPropagation;
@@ -15,7 +15,7 @@ import java.util.List;
  * Project: crema-adaptive
  * Date:    05.02.2021 15:51
  */
-public class StoppingConditionBayesianMeanEntropy implements StoppingCondition<BayesianFactor> {
+public class StoppingConditionBayesianMeanEntropy implements StoppingConditionModel<BayesianFactor> {
 
 	private BeliefPropagation<BayesianFactor> inference;
 
@@ -25,6 +25,15 @@ public class StoppingConditionBayesianMeanEntropy implements StoppingCondition<B
 		this.threshold = threshold;
 	}
 
+	/**
+	 * Check if the mean entropy value of the skills is below the given threshold or not.
+	 *
+	 * @param model        model to work on
+	 * @param skills       list of skill variables in the model
+	 * @param observations evidence
+	 * @return true if stop condition is reached, otherwise false
+	 * @throws Exception if inference goes wrong
+	 */
 	@Override
 	public boolean stop(DAGModel<BayesianFactor> model, List<Skill> skills, TIntIntMap observations) throws Exception {
 		if (inference == null)

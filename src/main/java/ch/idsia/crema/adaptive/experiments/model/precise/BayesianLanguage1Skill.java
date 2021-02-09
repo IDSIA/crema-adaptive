@@ -14,7 +14,10 @@ import ch.idsia.crema.model.graphical.DAGModel;
 public class BayesianLanguage1Skill extends AbstractModelBuilder<BayesianFactor> {
 
 	/**
-	 * @param nQuestions number of questions for the skill, all questions will have the same template
+	 * A Bayesian model with one skill with four states and a given number of questions. All the questions have the
+	 * same CPT.
+	 *
+	 * @param nQuestions number of questions in total, all questions will have the same template (value: 1).
 	 */
 	public BayesianLanguage1Skill(int nQuestions) {
 		model = new DAGModel<>();
@@ -29,15 +32,13 @@ public class BayesianLanguage1Skill extends AbstractModelBuilder<BayesianFactor>
 			model.addParent(q, s);
 
 			final BayesianFactor fQ = new BayesianFactor(model.getDomain(s, q), new double[]{
-					.600, .400,
-					.750, .250,
-					.850, .150,
-					.950, .050
+					.600, .750, .850, .950,
+					.400, .250, .150, .050
 			});
-			// TODO: check correctness!
 
 			model.setFactor(q, fQ);
 			questions.add(new Question(i, s, q, 1));
 		}
 	}
+
 }

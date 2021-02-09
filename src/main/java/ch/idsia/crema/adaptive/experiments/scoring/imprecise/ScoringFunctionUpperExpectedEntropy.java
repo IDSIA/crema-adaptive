@@ -21,6 +21,15 @@ public class ScoringFunctionUpperExpectedEntropy implements ScoringFunction<Inte
 	private final AbellanEntropy entropy = new AbellanEntropy();
 	private final ApproxLP2 approx = new ApproxLP2();
 
+	/**
+	 * A {@link ScoringFunction} based on the expected mean upper entropy change from the answer.
+	 *
+	 * @param model        model to work on
+	 * @param question     question to evaluate
+	 * @param observations evidence
+	 * @return a score between 0 and 1
+	 * @throws Exception if something bad happens
+	 */
 	@Override
 	public double score(DAGModel<IntervalFactor> model, Question question, TIntIntMap observations) throws Exception {
 		final double[] HSQs = new double[2];

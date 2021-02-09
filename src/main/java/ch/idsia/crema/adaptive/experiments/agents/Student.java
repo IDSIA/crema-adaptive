@@ -16,19 +16,43 @@ import gnu.trove.map.hash.TIntIntHashMap;
  */
 public class Student<F extends GenericFactor> implements AgentStudent {
 
+	/**
+	 * Unique id of the student
+	 */
 	final int id;
 
+	/**
+	 * Object that is used to generate the model and store information like the questions of the survey and the skills.
+	 */
 	final AbstractModelBuilder<F> builder;
+	/**
+	 * Model used to perform inferences.
+	 */
 	final DAGModel<F> model;
 
-	final AnswerStrategy<F> answerStrategy;
+	/**
+	 * Which kind of strategy will be used to answer. This can be set to null if the method
+	 * {@link #setAnswers(TIntIntMap)} is used.
+	 */
+	final AnswerStrategy<Student<F>> answerStrategy;
 
-	final TIntIntMap states = new TIntIntHashMap();
+	/**
+	 * Internal states of the skills relative to this student.
+	 */
+	final TIntIntMap skills = new TIntIntHashMap();
+	/**
+	 * Internal map of already available answers.
+	 */
 	final TIntIntMap answers = new TIntIntHashMap();
 
-	// TODO: observations on skills as a sample
+	// TODO: generator of students
 
-	public Student(int id, AbstractModelBuilder<F> builder, AnswerStrategy<F> strategy) {
+	/**
+	 * @param id       unique identifier of this student
+	 * @param builder  used to generate the model and store model related information
+	 * @param strategy which kind of strategy will be used to answer
+	 */
+	public Student(int id, AbstractModelBuilder<F> builder, AnswerStrategy<Student<F>> strategy) {
 		this.id = id;
 		this.builder = builder;
 		this.model = builder.getModel();
@@ -36,30 +60,70 @@ public class Student<F extends GenericFactor> implements AgentStudent {
 	}
 
 	/**
+	 * @param id      unique identifier of this student
+	 * @param answers map of already available answers where the key is the unique id of a {@link Question}, value is
+	 *                the answer
+	 */
+	public Student(int id, TIntIntMap answers) {
+		this.id = id;
+		this.builder = null;
+		this.model = null;
+		this.answerStrategy = null;
+		setAnswers(answers);
+	}
+
+	public DAGModel<F> getModel() {
+		return model;
+	}
+
+	public TIntIntMap getSkills() {
+		return skills;
+	}
+
+	/**
 	 * Set a precise state for the given {@link Skill}. If the {@link AnswerStrategy} supports it, all the answers will
-	 * be based ont these set of skills. Set the skill before calling the {@link #generateAnswers(int, int)} method to
+	 * be based ont these set of skills. Set the skill before calling the {@link #generateAnswers()} method to
 	 * obtain a valid answer list.
 	 *
 	 * @param skill for this skill
 	 * @param state set this state
 	 */
 	public Student<F> setSkill(Skill skill, int state) {
-		states.put(skill.variable, state);
+		skills.put(skill.variable, state);
+		return this;
+	}
+
+	/**
+	 * An alternative method to {@link #generateAnswers()} that use a pre-loaded {@link TIntIntMap} to fill the internal
+	 * answer collection.
+	 *
+	 * @param answers a map where the key is the id of a {@link Question} and the value is the state of the answer.
+	 */
+	public Student<F> setAnswers(TIntIntMap answers) {
+		this.answers.putAll(answers);
 		return this;
 	}
 
 	/**
 	 * Generate a list of answers to all questions using the stored {@link #model}, {@link #answerStrategy}, and
-	 * {@link #states}.
+	 * {@link #skills}. Remember to fill the skills with {@link #setSkill(Skill, int)} before use this method.
+	 * <p>
+	 * As an alternative, it is possible to use the {@link #setAnswers(TIntIntMap)} method.
 	 */
-	public void generateAnswers(int skill, int state) {
+	public Student<F> generateAnswers() {
+		if (answerStrategy == null)
+			throw new IllegalStateException("No answer strategy defined.");
+
 		for (Question question : builder.questions) {
-			answers.put(question.id, answerStrategy.answer(model, question, states));
+			answers.put(question.id, answerStrategy.answer(this, question));
 		}
+		return this;
 	}
 
 	/**
-	 * Generates an answer for the given question.
+	 * This method will return the saved answer if the field {@link #answers} already contains an answer for the given
+	 * {@link Question}, otherwise it will use the {@link #answerStrategy} object to generate a new one. In order to
+	 * pre-load all the possible answers, use the {@link #generateAnswers()} method.
 	 *
 	 * @param question the question to answer to
 	 * @return 0 or 1 based on the question
@@ -69,7 +133,7 @@ public class Student<F extends GenericFactor> implements AgentStudent {
 		if (answers.containsKey(question.id))
 			return answers.get(question.id);
 
-		return answerStrategy.answer(model, question, states);
+		return answerStrategy.answer(this, question);
 	}
 
 }

@@ -4,18 +4,16 @@ import ch.idsia.crema.adaptive.experiments.agents.AgentStudent;
 import ch.idsia.crema.adaptive.experiments.agents.AgentTeacher;
 import ch.idsia.crema.adaptive.experiments.agents.Student;
 import ch.idsia.crema.adaptive.experiments.agents.Teacher;
-import ch.idsia.crema.adaptive.experiments.answering.imprecise.AnswerStrategyCredalRandom;
-import ch.idsia.crema.adaptive.experiments.answering.precise.AnswerStrategyBayesianRandom;
+import ch.idsia.crema.adaptive.experiments.answering.AnswerStrategyRandom;
 import ch.idsia.crema.adaptive.experiments.answering.precise.AnswerStrategyBayesianStandard;
 import ch.idsia.crema.adaptive.experiments.model.imprecise.CredalMinimalistic;
 import ch.idsia.crema.adaptive.experiments.model.precise.BayesianMinimalistic;
 import ch.idsia.crema.adaptive.experiments.scoring.imprecise.ScoringFunctionUpperExpectedEntropy;
 import ch.idsia.crema.adaptive.experiments.scoring.precise.ScoringFunctionExpectedEntropy;
 import ch.idsia.crema.adaptive.experiments.scoring.precise.ScoringFunctionRandom;
+import ch.idsia.crema.adaptive.experiments.stopping.StoppingConditionQuestionNumber;
 import ch.idsia.crema.adaptive.experiments.stopping.imprecise.StoppingConditionCredalMeanEntropy;
-import ch.idsia.crema.adaptive.experiments.stopping.imprecise.StoppingConditionCredalQuestionNumber;
 import ch.idsia.crema.adaptive.experiments.stopping.precise.StoppingConditionBayesianMeanEntropy;
-import ch.idsia.crema.adaptive.experiments.stopping.precise.StoppingConditionBayesianQuestionNumber;
 
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -62,12 +60,12 @@ public class AdaptiveSurvey {
 					try {
 						final AgentStudent student = new Student<>(id,
 								new BayesianMinimalistic(5, .4, .6),
-								new AnswerStrategyBayesianRandom(id)
+								new AnswerStrategyRandom<>(id)
 						);
 						final AgentTeacher teacher = new Teacher<>(
 								new BayesianMinimalistic(5, .4, .6),
 								new ScoringFunctionRandom(id),
-								new StoppingConditionBayesianQuestionNumber(3)
+								new StoppingConditionQuestionNumber<>(3)
 						);
 
 						new Experiment(teacher, student).run();
@@ -97,7 +95,7 @@ public class AdaptiveSurvey {
 								new BayesianMinimalistic(5, .4, .6),
 								new ScoringFunctionExpectedEntropy(),
 								new StoppingConditionBayesianMeanEntropy(.5),
-								new StoppingConditionBayesianQuestionNumber(5)
+								new StoppingConditionQuestionNumber<>(5)
 						);
 
 						new Experiment(teacher, student).run();
@@ -121,13 +119,13 @@ public class AdaptiveSurvey {
 					try {
 						final AgentStudent student = new Student<>(id,
 								new CredalMinimalistic(5, .4, .4, .6, .6),
-								new AnswerStrategyCredalRandom(id)
+								new AnswerStrategyRandom<>(id)
 						);
 						final AgentTeacher teacher = new Teacher<>(
 								new CredalMinimalistic(5, .4, .4, .6, .6),
 								new ScoringFunctionUpperExpectedEntropy(),
 								new StoppingConditionCredalMeanEntropy(.5),
-								new StoppingConditionCredalQuestionNumber(5)
+								new StoppingConditionQuestionNumber<>(5)
 						);
 
 						new Experiment(teacher, student).run();
