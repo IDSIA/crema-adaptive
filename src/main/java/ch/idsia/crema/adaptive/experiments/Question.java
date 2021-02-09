@@ -26,4 +26,13 @@ public class Question {
 		this.template = 0;
 	}
 
+	@Override
+	public String toString() {
+		return "Question{" +
+				"id=" + id +
+				", skill=" + skill +
+				", template=" + template +
+				", variable=" + variable +
+				'}';
+	}
 }

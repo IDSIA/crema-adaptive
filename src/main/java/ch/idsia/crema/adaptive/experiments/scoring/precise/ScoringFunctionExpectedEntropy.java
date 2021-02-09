@@ -26,7 +26,6 @@ public class ScoringFunctionExpectedEntropy implements ScoringFunction<BayesianF
 
 		final BayesianFactor PQ = inference.query(question.skill, observations);
 
-		// compute... something similar to a information gain
 		double HSQ = 0;
 		for (int a = 0; a < 2; a++) {
 			TIntIntMap obs = new TIntIntHashMap(observations);

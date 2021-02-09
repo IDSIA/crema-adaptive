@@ -1,12 +1,14 @@
 package ch.idsia.crema.adaptive.experiments.scoring.precise;
 
 import ch.idsia.crema.adaptive.experiments.Question;
+import ch.idsia.crema.adaptive.experiments.Utils;
 import ch.idsia.crema.adaptive.experiments.scoring.ScoringFunction;
 import ch.idsia.crema.factor.bayesian.BayesianFactor;
 import ch.idsia.crema.inference.bp.BeliefPropagation;
 import ch.idsia.crema.model.graphical.DAGModel;
 import gnu.trove.map.TIntIntMap;
 import gnu.trove.map.hash.TIntIntHashMap;
+import org.apache.commons.math3.util.Precision;
 
 /**
  * Author:  Claudio "Dna" Bonesana
@@ -24,7 +26,8 @@ public class ScoringFunctionMode implements ScoringFunction<BayesianFactor> {
 
 		final BayesianFactor PQ = inference.query(question.skill, observations);
 
-		// compute... something similar to a information gain
+		double[] modes = new double[2];
+
 		double HSQ = 0;
 		for (int a = 0; a < 2; a++) {
 			TIntIntMap obs = new TIntIntHashMap(observations);
@@ -33,29 +36,22 @@ public class ScoringFunctionMode implements ScoringFunction<BayesianFactor> {
 			final BayesianFactor bf = inference.query(question.skill, obs);
 			final double Pqi = PQ.getValue(a);
 
-			final double[] data = bf.getData();
-			final double mode = argmax(data);
-
-			// TODO: track when mode have the same index, then raise warning
+			final double mode = mode(bf);
+			modes[a] = mode;
 
 			HSQ += mode * Pqi;
+		}
+
+		if (Precision.equals(modes[0], modes[1], 1e-6)) {
+			System.err.printf("ScoringFunctionMode: Found question with same mode=%f %s %n", modes[0], question);
 		}
 
 		return HSQ / 2;
 	}
 
-	// TODO: move to utils, add mode()
-	int argmax(double[] data) {
-		double v = data[0];
-		int maxI = 0;
-
-		for (int i = 1; i < data.length; i++) {
-			if (data[i] > v) {
-				v = data[i];
-				maxI = i;
-			}
-		}
-
-		return maxI;
+	double mode(BayesianFactor bf) {
+		final double[] data = bf.getData();
+		return Utils.argmax(data);
 	}
+
 }

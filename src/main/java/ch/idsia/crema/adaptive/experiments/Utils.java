@@ -19,4 +19,17 @@ public class Utils {
 		return -h;
 	}
 
+	public static int argmax(double[] values) {
+		double v = values[0];
+		int maxI = 0;
+
+		for (int i = 1; i < values.length; i++) {
+			if (values[i] > v) {
+				v = values[i];
+				maxI = i;
+			}
+		}
+
+		return maxI;
+	}
 }

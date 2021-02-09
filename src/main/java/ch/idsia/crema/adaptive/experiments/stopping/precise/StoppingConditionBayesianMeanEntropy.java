@@ -25,8 +25,6 @@ public class StoppingConditionBayesianMeanEntropy implements StoppingCondition<B
 		this.threshold = threshold;
 	}
 
-	// TODO: add stopping condition on number of questions
-
 	@Override
 	public boolean stop(DAGModel<BayesianFactor> model, List<Skill> skills, TIntIntMap observations) throws Exception {
 		if (inference == null)
