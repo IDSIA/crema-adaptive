@@ -1,7 +1,8 @@
-package ch.idsia.crema.adaptive.experiments.stopping;
+package ch.idsia.crema.adaptive.experiments.stopping.imprecise;
 
 import ch.idsia.crema.adaptive.experiments.Skill;
 import ch.idsia.crema.adaptive.experiments.Utils;
+import ch.idsia.crema.adaptive.experiments.stopping.StoppingCondition;
 import ch.idsia.crema.entropy.AbellanEntropy;
 import ch.idsia.crema.factor.credal.linear.IntervalFactor;
 import ch.idsia.crema.inference.approxlp2.ApproxLP2;

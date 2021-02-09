@@ -15,7 +15,7 @@ import java.util.List;
  */
 public abstract class AbstractModelBuilder<F extends GenericFactor> {
 
-	DAGModel<F> model;
+	protected DAGModel<F> model;
 	public final List<Skill> skills = new ArrayList<>();
 	public final List<Question> questions = new ArrayList<>();
 

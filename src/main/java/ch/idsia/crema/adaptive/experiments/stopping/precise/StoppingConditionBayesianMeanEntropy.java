@@ -1,6 +1,7 @@
-package ch.idsia.crema.adaptive.experiments.stopping;
+package ch.idsia.crema.adaptive.experiments.stopping.precise;
 
 import ch.idsia.crema.adaptive.experiments.Skill;
+import ch.idsia.crema.adaptive.experiments.stopping.StoppingCondition;
 import ch.idsia.crema.entropy.BayesianEntropy;
 import ch.idsia.crema.factor.bayesian.BayesianFactor;
 import ch.idsia.crema.inference.bp.BeliefPropagation;

@@ -1,6 +1,7 @@
-package ch.idsia.crema.adaptive.experiments.scoring;
+package ch.idsia.crema.adaptive.experiments.scoring.imprecise;
 
 import ch.idsia.crema.adaptive.experiments.Question;
+import ch.idsia.crema.adaptive.experiments.scoring.ScoringFunction;
 import ch.idsia.crema.factor.credal.linear.IntervalFactor;
 import ch.idsia.crema.model.graphical.DAGModel;
 import gnu.trove.map.TIntIntMap;

@@ -1,7 +1,8 @@
-package ch.idsia.crema.adaptive.experiments.model;
+package ch.idsia.crema.adaptive.experiments.model.imprecise;
 
 import ch.idsia.crema.adaptive.experiments.Question;
 import ch.idsia.crema.adaptive.experiments.Skill;
+import ch.idsia.crema.adaptive.experiments.model.AbstractModelBuilder;
 import ch.idsia.crema.core.Strides;
 import ch.idsia.crema.factor.credal.linear.IntervalFactor;
 import ch.idsia.crema.model.graphical.DAGModel;

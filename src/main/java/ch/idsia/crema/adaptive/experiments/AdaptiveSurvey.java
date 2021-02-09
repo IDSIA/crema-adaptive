@@ -6,12 +6,12 @@ import ch.idsia.crema.adaptive.experiments.agents.Student;
 import ch.idsia.crema.adaptive.experiments.agents.Teacher;
 import ch.idsia.crema.adaptive.experiments.answering.AnswerStrategyBayesianRandom;
 import ch.idsia.crema.adaptive.experiments.answering.AnswerStrategyCredalRandom;
-import ch.idsia.crema.adaptive.experiments.model.BayesianMinimalistic;
-import ch.idsia.crema.adaptive.experiments.model.CredalMinimalistic;
-import ch.idsia.crema.adaptive.experiments.scoring.ScoringFunctionExpectedEntropy;
-import ch.idsia.crema.adaptive.experiments.scoring.ScoringFunctionUpperExpectedEntropy;
-import ch.idsia.crema.adaptive.experiments.stopping.StoppingConditionBayesianMeanEntropy;
-import ch.idsia.crema.adaptive.experiments.stopping.StoppingConditionCredalMeanEntropy;
+import ch.idsia.crema.adaptive.experiments.model.imprecise.CredalMinimalistic;
+import ch.idsia.crema.adaptive.experiments.model.precise.BayesianMinimalistic;
+import ch.idsia.crema.adaptive.experiments.scoring.imprecise.ScoringFunctionUpperExpectedEntropy;
+import ch.idsia.crema.adaptive.experiments.scoring.precise.ScoringFunctionExpectedEntropy;
+import ch.idsia.crema.adaptive.experiments.stopping.imprecise.StoppingConditionCredalMeanEntropy;
+import ch.idsia.crema.adaptive.experiments.stopping.precise.StoppingConditionBayesianMeanEntropy;
 
 import java.util.List;
 import java.util.concurrent.Callable;

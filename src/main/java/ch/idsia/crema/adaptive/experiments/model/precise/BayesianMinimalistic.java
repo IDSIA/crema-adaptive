@@ -1,7 +1,8 @@
-package ch.idsia.crema.adaptive.experiments.model;
+package ch.idsia.crema.adaptive.experiments.model.precise;
 
 import ch.idsia.crema.adaptive.experiments.Question;
 import ch.idsia.crema.adaptive.experiments.Skill;
+import ch.idsia.crema.adaptive.experiments.model.AbstractModelBuilder;
 import ch.idsia.crema.factor.bayesian.BayesianFactor;
 import ch.idsia.crema.model.graphical.DAGModel;
 

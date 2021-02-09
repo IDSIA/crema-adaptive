@@ -1,6 +1,7 @@
-package ch.idsia.crema.adaptive.experiments.scoring;
+package ch.idsia.crema.adaptive.experiments.scoring.precise;
 
 import ch.idsia.crema.adaptive.experiments.Question;
+import ch.idsia.crema.adaptive.experiments.scoring.ScoringFunction;
 import ch.idsia.crema.factor.bayesian.BayesianFactor;
 import ch.idsia.crema.inference.bp.BeliefPropagation;
 import ch.idsia.crema.model.graphical.DAGModel;
