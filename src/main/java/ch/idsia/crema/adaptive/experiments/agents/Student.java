@@ -20,11 +20,15 @@ public class Student<F extends GenericFactor> implements AgentStudent {
 
 	final AnswerStrategy<F> answerStrategy;
 
+	// TODO: observations on skills as a sample
+
 	public Student(int id, AbstractModelBuilder<F> builder, AnswerStrategy<F> strategy) {
 		this.id = id;
 		this.builder = builder;
 		this.model = builder.getModel();
 		this.answerStrategy = strategy;
+
+		// TODO: generate list of all answers
 	}
 
 	/**
@@ -35,6 +39,7 @@ public class Student<F extends GenericFactor> implements AgentStudent {
 	 */
 	@Override
 	public int answer(Question question) {
+		// TODO: add noisy version of answerStrategy
 		return answerStrategy.answer(model, question);
 	}
 

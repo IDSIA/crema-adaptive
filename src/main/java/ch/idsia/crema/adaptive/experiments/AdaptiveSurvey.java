@@ -8,8 +8,8 @@ import ch.idsia.crema.adaptive.experiments.answering.AnswerStrategyBayesianRando
 import ch.idsia.crema.adaptive.experiments.answering.AnswerStrategyCredalRandom;
 import ch.idsia.crema.adaptive.experiments.model.BayesianMinimalistic;
 import ch.idsia.crema.adaptive.experiments.model.CredalMinimalistic;
-import ch.idsia.crema.adaptive.experiments.scoring.ScoringFunctionBayesianInfoGain;
-import ch.idsia.crema.adaptive.experiments.scoring.ScoringFunctionCredalInfoGain;
+import ch.idsia.crema.adaptive.experiments.scoring.ScoringFunctionExpectedEntropy;
+import ch.idsia.crema.adaptive.experiments.scoring.ScoringFunctionUpperExpectedEntropy;
 import ch.idsia.crema.adaptive.experiments.stopping.StoppingConditionBayesianMeanEntropy;
 import ch.idsia.crema.adaptive.experiments.stopping.StoppingConditionCredalMeanEntropy;
 
@@ -54,7 +54,7 @@ public class AdaptiveSurvey {
 						);
 						final AgentTeacher teacher = new Teacher<>(
 								new BayesianMinimalistic(5, .4, .6),
-								new ScoringFunctionBayesianInfoGain(),
+								new ScoringFunctionExpectedEntropy(),
 								new StoppingConditionBayesianMeanEntropy(.5)
 						);
 
@@ -83,7 +83,7 @@ public class AdaptiveSurvey {
 						);
 						final AgentTeacher teacher = new Teacher<>(
 								new CredalMinimalistic(5, .4, .4, .6, .6),
-								new ScoringFunctionCredalInfoGain(),
+								new ScoringFunctionUpperExpectedEntropy(),
 								new StoppingConditionCredalMeanEntropy(.5)
 						);
 
