@@ -3,6 +3,7 @@ package ch.idsia.crema.adaptive.experiments.answering;
 import ch.idsia.crema.adaptive.experiments.Question;
 import ch.idsia.crema.factor.GenericFactor;
 import ch.idsia.crema.model.graphical.DAGModel;
+import gnu.trove.map.TIntIntMap;
 
 /**
  * Author:  Claudio "Dna" Bonesana
@@ -11,6 +12,6 @@ import ch.idsia.crema.model.graphical.DAGModel;
  */
 public interface AnswerStrategy<F extends GenericFactor> {
 
-	int answer(DAGModel<F> model, Question question);
+	int answer(DAGModel<F> model, Question question, TIntIntMap skills);
 
 }

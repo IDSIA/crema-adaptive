@@ -4,8 +4,9 @@ import ch.idsia.crema.adaptive.experiments.agents.AgentStudent;
 import ch.idsia.crema.adaptive.experiments.agents.AgentTeacher;
 import ch.idsia.crema.adaptive.experiments.agents.Student;
 import ch.idsia.crema.adaptive.experiments.agents.Teacher;
-import ch.idsia.crema.adaptive.experiments.answering.AnswerStrategyBayesianRandom;
-import ch.idsia.crema.adaptive.experiments.answering.AnswerStrategyCredalRandom;
+import ch.idsia.crema.adaptive.experiments.answering.imprecise.AnswerStrategyCredalRandom;
+import ch.idsia.crema.adaptive.experiments.answering.precise.AnswerStrategyBayesianRandom;
+import ch.idsia.crema.adaptive.experiments.answering.precise.AnswerStrategyBayesianStandard;
 import ch.idsia.crema.adaptive.experiments.model.imprecise.CredalMinimalistic;
 import ch.idsia.crema.adaptive.experiments.model.precise.BayesianMinimalistic;
 import ch.idsia.crema.adaptive.experiments.scoring.imprecise.ScoringFunctionUpperExpectedEntropy;
@@ -90,8 +91,8 @@ public class AdaptiveSurvey {
 					try {
 						final AgentStudent student = new Student<>(id,
 								new BayesianMinimalistic(5, .4, .6),
-								new AnswerStrategyBayesianRandom(id)
-						);
+								new AnswerStrategyBayesianStandard(id)
+						).setSkill(new Skill(0), 1);
 						final AgentTeacher teacher = new Teacher<>(
 								new BayesianMinimalistic(5, .4, .6),
 								new ScoringFunctionExpectedEntropy(),
