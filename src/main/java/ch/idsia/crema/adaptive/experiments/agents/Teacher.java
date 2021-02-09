@@ -9,10 +9,7 @@ import ch.idsia.crema.model.graphical.DAGModel;
 import gnu.trove.map.TIntIntMap;
 import gnu.trove.map.hash.TIntIntHashMap;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Author:  Claudio "Dna" Bonesana
@@ -30,17 +27,18 @@ public class Teacher<F extends GenericFactor> implements AgentTeacher {
 	private final List<Question> questionsDone = new ArrayList<>();
 
 	private final ScoringFunction<F> scoringFunction;
-	private final StoppingCondition<F> stoppingCondition;
+	private final List<StoppingCondition<F>> stoppingConditions;
 
+	@SafeVarargs
 	public Teacher(
 			AbstractModelBuilder<F> builder,
 			ScoringFunction<F> scoringFunction,
-			StoppingCondition<F> stoppingCondition
+			StoppingCondition<F>... stoppingConditions
 	) {
 		this.builder = builder;
 
 		this.scoringFunction = scoringFunction;
-		this.stoppingCondition = stoppingCondition;
+		this.stoppingConditions = Arrays.asList(stoppingConditions);
 
 		// model is defined there
 		model = builder.getModel();
@@ -68,11 +66,15 @@ public class Teacher<F extends GenericFactor> implements AgentTeacher {
 	 */
 	@Override
 	public boolean stop() throws Exception {
-		return stoppingCondition.stop(model, builder.skills, observations);
+		for (StoppingCondition<F> condition : stoppingConditions) {
+			if (condition.stop(model, builder.skills, observations))
+				return true;
+		}
+		return false;
 	}
 
 	/**
-	 * @return the next question based on an entropy analysis, -1 if nothing is found
+	 * @return the next question based on the defined {@link #scoringFunction}, null if nothing is found
 	 * @throws Exception if inference goes wrong
 	 */
 	@Override
