@@ -72,6 +72,11 @@ public class Student<F extends GenericFactor> implements AgentStudent {
 		setAnswers(answers);
 	}
 
+	@Override
+	public int getId() {
+		return id;
+	}
+
 	public DAGModel<F> getModel() {
 		return model;
 	}

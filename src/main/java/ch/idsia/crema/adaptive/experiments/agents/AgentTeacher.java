@@ -31,4 +31,9 @@ public interface AgentTeacher {
 	 */
 	Question next() throws Exception;
 
+	/**
+	 * @return a comma separated row of all the posterior probability; these probabilities are collected each time a
+	 * {@link ch.idsia.crema.adaptive.experiments.stopping.StoppingCondition} is called (so we have nQuestion+1 outputs)
+	 */
+	String getResults();
 }

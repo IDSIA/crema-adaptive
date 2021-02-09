@@ -10,6 +10,11 @@ import ch.idsia.crema.adaptive.experiments.Question;
 public interface AgentStudent {
 
 	/**
+	 * @return id of the student
+	 */
+	int getId();
+
+	/**
 	 * @param question a {@link Teacher}'s question
 	 * @return a value that represent the state of the answer
 	 */

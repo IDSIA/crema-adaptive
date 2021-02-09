@@ -18,7 +18,7 @@ public class BayesianMinimalistic extends AbstractModelBuilder<BayesianFactor> {
 	 * CPT that is built from the given <code>p1</code> and <code>p0</code> parameters.
 	 *
 	 * @param nQuestions number of questions in total, all questions will have the same template (value: 1).
-	 * @param p1         probability to know the answer given that it has the skill
+	 * @param p1         probability to know the answer given that it has the skill (must be greater than p0)
 	 * @param p0         probability to know the answer given that it has not the skill
 	 */
 	public BayesianMinimalistic(int nQuestions, double p1, double p0) {
@@ -32,7 +32,7 @@ public class BayesianMinimalistic extends AbstractModelBuilder<BayesianFactor> {
 		for (int i = 0; i < nQuestions; i++) {
 			final int q = model.addVariable(2);
 			model.addParent(q, s);
-			model.setFactor(q, new BayesianFactor(model.getDomain(s, q), new double[]{p1, 1 - p1, p0, 1 - p0}));
+			model.setFactor(q, new BayesianFactor(model.getDomain(s, q), new double[]{p1, p0, 1 - p1, 1 - p0}));
 
 			questions.add(new Question(i, s, q, 1));
 		}

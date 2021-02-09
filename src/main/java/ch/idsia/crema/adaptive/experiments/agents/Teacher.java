@@ -3,6 +3,8 @@ package ch.idsia.crema.adaptive.experiments.agents;
 import ch.idsia.crema.adaptive.experiments.Question;
 import ch.idsia.crema.adaptive.experiments.Skill;
 import ch.idsia.crema.adaptive.experiments.model.AbstractModelBuilder;
+import ch.idsia.crema.adaptive.experiments.persistence.Output;
+import ch.idsia.crema.adaptive.experiments.persistence.Persist;
 import ch.idsia.crema.adaptive.experiments.scoring.ScoringFunction;
 import ch.idsia.crema.adaptive.experiments.stopping.StoppingCondition;
 import ch.idsia.crema.factor.GenericFactor;
@@ -11,6 +13,7 @@ import gnu.trove.map.TIntIntMap;
 import gnu.trove.map.hash.TIntIntHashMap;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Author:  Claudio "Dna" Bonesana
@@ -51,6 +54,10 @@ public class Teacher<F extends GenericFactor> implements AgentTeacher {
 	 */
 	private final List<StoppingCondition<Teacher<F>>> stoppingConditions;
 
+	private Persist<F> persist;
+
+	private final List<Output<F>> outputs = new ArrayList<>();
+
 	/**
 	 * @param builder            used to generate the model and store information
 	 * @param scoringFunction    search strategy for the next question
@@ -63,12 +70,17 @@ public class Teacher<F extends GenericFactor> implements AgentTeacher {
 			StoppingCondition<Teacher<F>>... stoppingConditions
 	) {
 		this.builder = builder;
-		model = builder.getModel();
+		this.model = builder.getModel();
 
 		this.scoringFunction = scoringFunction;
 		this.stoppingConditions = Arrays.asList(stoppingConditions);
 
 		this.questions = builder.questions;
+	}
+
+	public Teacher<F> setPersist(Persist<F> persist) {
+		this.persist = persist;
+		return this;
 	}
 
 	@Override
@@ -104,6 +116,9 @@ public class Teacher<F extends GenericFactor> implements AgentTeacher {
 	 */
 	@Override
 	public boolean stop() throws Exception {
+		if (persist != null)
+			outputs.add(persist.register(this));
+
 		for (StoppingCondition<Teacher<F>> condition : stoppingConditions) {
 			if (condition.stop(this))
 				return true;
@@ -148,4 +163,8 @@ public class Teacher<F extends GenericFactor> implements AgentTeacher {
 		return nextQuestion;
 	}
 
+	@Override
+	public String getResults() {
+		return outputs.stream().map(Output::serialize).collect(Collectors.joining(","));
+	}
 }

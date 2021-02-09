@@ -29,6 +29,9 @@ public class Experiment {
 		}
 
 		System.out.println(teacher.getNumberQuestionsDone());
+		System.out.println(student.getId() + "," + teacher.getResults());
+
+		// TODO: save results to file
 	}
 
 }
