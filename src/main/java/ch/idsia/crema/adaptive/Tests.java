@@ -190,12 +190,9 @@ public class Tests {
             double[][] lP = new double[skillLevels][2];
             double[][] uP = new double[skillLevels][2];
 
-//			Computing the entropy
+  			// Computing the entropy
             for (int sl = 0; sl < skillLevels; sl++) { // livelli skill
                 for (int dl = 0; dl < difficultyLevels; dl++) { // livelli di difficoltá
-//                    FIXME: altra cosa che non torna, nel codice in BNsAdaptiveSurvey rightQ é chiamato
-//                     askedQuestion mentre wrongQ rightQuestion. Quindi non capisco la corrispondenza tra le due
-//                     cose...
                     myLogs[sl][0] += Math.log(questionsCPT[dl][sl][0]) * rightQ[s][dl];
                     myLogs[sl][1] += Math.log(questionsCPT[dl][sl][1]) * rightQ[s][dl];
                     myLogs[sl][0] += Math.log(1.0 - questionsCPT[dl][sl][1]) * wrongQ[s][dl];
@@ -203,11 +200,9 @@ public class Tests {
                 }
             }
 
-            // FIXME likelihood??
             double[][] probs = fromLogsToProbs(myLogs);
 
             for (int skillLevel = 0; skillLevel < skillLevels; skillLevel++) {
-                //  FIXME perchè nel lower usa prima [skillLevel][0] e poi [skillLevel][1] ???? é giusto?
                 lP[skillLevel][0] = probs[skillLevel][0];
                 lP[skillLevel][1] = 1.0 - probs[skillLevel][1];
 
@@ -217,7 +212,7 @@ public class Tests {
                 qFact[s].setLower(lP[skillLevel].clone(), skillLevel);
                 qFact[s].setUpper(uP[skillLevel].clone(), skillLevel);
             }
-            // FIXME likelihood??
+
             model.setFactor(question[s], qFact[s]);
         }
 
@@ -259,6 +254,9 @@ public class Tests {
             double[][] posteriors = new double[2][skillLevels];
             posteriors[0] = resultsALP.getLower();
             posteriors[1] = resultsALP.getUpper();
+
+            // TODO: ritornare anche la probabilitá di rispondere giusto/sbagliato
+            
 
             // Return, in addition to the probability of the skill (posterior or the updated prior), the
             // probability of the answer given the skill, used in BNsAdaptiveSurvey to compute the probability of the

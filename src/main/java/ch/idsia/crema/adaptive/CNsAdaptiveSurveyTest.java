@@ -237,7 +237,6 @@ public class CNsAdaptiveSurveyTest {
 
                     // FIXME
                     for (int sl = 0; sl < nSkillLevels; sl++) {
-                        // answerLikelihood[s][dl][sl][0] not 0
                         rightAnswerProbability += answerLikelihood[s][dl][sl][0] * priorResults[s][0][sl];
                         wrongAnswerProbability += (1 - answerLikelihood[s][dl][sl][0]) * priorResults[s][0][sl];
                     }
