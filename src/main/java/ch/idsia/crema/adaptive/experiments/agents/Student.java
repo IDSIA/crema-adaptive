@@ -1,7 +1,6 @@
 package ch.idsia.crema.adaptive.experiments.agents;
 
 import ch.idsia.crema.adaptive.experiments.Question;
-import ch.idsia.crema.adaptive.experiments.Skill;
 import ch.idsia.crema.adaptive.experiments.answering.AnswerStrategy;
 import ch.idsia.crema.adaptive.experiments.model.AbstractModelBuilder;
 import ch.idsia.crema.factor.GenericFactor;
@@ -86,15 +85,15 @@ public class Student<F extends GenericFactor> implements AgentStudent {
 	}
 
 	/**
-	 * Set a precise state for the given {@link Skill}. If the {@link AnswerStrategy} supports it, all the answers will
+	 * Set a precise state for the given skill. If the {@link AnswerStrategy} supports it, all the answers will
 	 * be based ont these set of skills. Set the skill before calling the {@link #generateAnswers()} method to
 	 * obtain a valid answer list.
 	 *
-	 * @param skill for this skill
+	 * @param skill variable index for the skill
 	 * @param state set this state
 	 */
-	public Student<F> setSkill(Skill skill, int state) {
-		skills.put(skill.variable, state);
+	public Student<F> setSkill(int skill, int state) {
+		skills.put(skill, state);
 		return this;
 	}
 
@@ -111,7 +110,7 @@ public class Student<F extends GenericFactor> implements AgentStudent {
 
 	/**
 	 * Generate a list of answers to all questions using the stored {@link #model}, {@link #answerStrategy}, and
-	 * {@link #skills}. Remember to fill the skills with {@link #setSkill(Skill, int)} before use this method.
+	 * {@link #skills}. Remember to fill the skills with {@link #setSkill(int, int)} before use this method.
 	 * <p>
 	 * As an alternative, it is possible to use the {@link #setAnswers(TIntIntMap)} method.
 	 */
@@ -120,7 +119,7 @@ public class Student<F extends GenericFactor> implements AgentStudent {
 			throw new IllegalStateException("No answer strategy defined.");
 
 		for (Question question : builder.questions) {
-			answers.put(question.id, answerStrategy.answer(this, question));
+			answers.put(question.variable, answerStrategy.answer(this, question));
 		}
 		return this;
 	}
@@ -135,8 +134,8 @@ public class Student<F extends GenericFactor> implements AgentStudent {
 	 */
 	@Override
 	public int answer(Question question) {
-		if (answers.containsKey(question.id))
-			return answers.get(question.id);
+		if (answers.containsKey(question.variable))
+			return answers.get(question.variable);
 
 		return answerStrategy.answer(this, question);
 	}

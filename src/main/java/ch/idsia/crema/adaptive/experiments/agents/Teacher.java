@@ -1,7 +1,6 @@
 package ch.idsia.crema.adaptive.experiments.agents;
 
 import ch.idsia.crema.adaptive.experiments.Question;
-import ch.idsia.crema.adaptive.experiments.Skill;
 import ch.idsia.crema.adaptive.experiments.model.AbstractModelBuilder;
 import ch.idsia.crema.adaptive.experiments.persistence.Output;
 import ch.idsia.crema.adaptive.experiments.persistence.Persist;
@@ -9,6 +8,7 @@ import ch.idsia.crema.adaptive.experiments.scoring.ScoringFunction;
 import ch.idsia.crema.adaptive.experiments.stopping.StoppingCondition;
 import ch.idsia.crema.factor.GenericFactor;
 import ch.idsia.crema.model.graphical.DAGModel;
+import gnu.trove.list.TIntList;
 import gnu.trove.map.TIntIntMap;
 import gnu.trove.map.hash.TIntIntHashMap;
 
@@ -96,7 +96,7 @@ public class Teacher<F extends GenericFactor> implements AgentTeacher {
 		return observations;
 	}
 
-	public List<Skill> getSkills() {
+	public TIntList getSkills() {
 		return builder.skills;
 	}
 
@@ -155,10 +155,10 @@ public class Teacher<F extends GenericFactor> implements AgentTeacher {
 			}
 		}
 
-		if (nextQuestion == null)
-			System.out.printf("AgentTeacher:       no question found%n");
-		else
-			System.out.printf("AgentTeacher:       next question=%-3d%n", nextQuestion.id);
+//		if (nextQuestion == null)
+//			System.out.printf("AgentTeacher:       no question found%n");
+//		else
+//			System.out.printf("AgentTeacher:       next question=%-3d%n", nextQuestion.id);
 
 		return nextQuestion;
 	}

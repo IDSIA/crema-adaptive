@@ -1,9 +1,9 @@
 package ch.idsia.crema.adaptive.experiments.persistence;
 
-import ch.idsia.crema.adaptive.experiments.Skill;
 import ch.idsia.crema.adaptive.experiments.agents.Teacher;
 import ch.idsia.crema.factor.bayesian.BayesianFactor;
 import ch.idsia.crema.inference.bp.BeliefPropagation;
+import gnu.trove.list.TIntList;
 
 /**
  * Author:  Claudio "Dna" Bonesana
@@ -21,8 +21,11 @@ public class PersistBayesian implements Persist<BayesianFactor> {
 
 		final OutputBayesian output = new OutputBayesian();
 
-		for (Skill skill : teacher.getSkills()) {
-			final BayesianFactor query = inference.query(skill.variable, teacher.getObservations());
+		final TIntList skills = teacher.getSkills();
+
+		for (int s = 0; s < skills.size(); s++) {
+			int skill = skills.get(s);
+			final BayesianFactor query = inference.query(skill, teacher.getObservations());
 
 			output.skills.add(skill);
 			output.factors.add(query);

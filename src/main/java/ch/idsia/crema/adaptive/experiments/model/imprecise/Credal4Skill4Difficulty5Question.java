@@ -1,7 +1,6 @@
 package ch.idsia.crema.adaptive.experiments.model.imprecise;
 
 import ch.idsia.crema.adaptive.experiments.Question;
-import ch.idsia.crema.adaptive.experiments.Skill;
 import ch.idsia.crema.adaptive.experiments.model.AbstractModelBuilder;
 import ch.idsia.crema.core.Strides;
 import ch.idsia.crema.factor.credal.linear.IntervalFactor;
@@ -35,10 +34,10 @@ public class Credal4Skill4Difficulty5Question extends AbstractModelBuilder<Inter
 		for (int s = S0; s <= S3; s++) {
 			// ...add question nodes
 			for (int i = 0; i < 5; i++) {
-				addQuestionNodeEasy(model, s, qid, 10 * s + 1);
-				addQuestionNodeMediumEasy(model, s, qid, 10 * s + 2);
-				addQuestionNodeMediumHard(model, s, qid, 10 * s + 3);
-				addQuestionNodeHard(model, s, qid, 10 * s + 4);
+				addQuestionNodeEasy(model, s, 10 * s + 1);
+				addQuestionNodeMediumEasy(model, s, 10 * s + 2);
+				addQuestionNodeMediumHard(model, s, 10 * s + 3);
+				addQuestionNodeHard(model, s, 10 * s + 4);
 			}
 		}
 	}
@@ -60,7 +59,7 @@ public class Credal4Skill4Difficulty5Question extends AbstractModelBuilder<Inter
 		});
 		model.setFactor(s, fS);
 
-		skills.add(new Skill(s));
+		skills.add(s);
 
 		return s;
 	}
@@ -97,7 +96,7 @@ public class Credal4Skill4Difficulty5Question extends AbstractModelBuilder<Inter
 	 * @param model  add to this model
 	 * @param parent skill parent node
 	 */
-	public void addQuestionNodeEasy(DAGModel<IntervalFactor> model, int parent, int qid, int template) {
+	public void addQuestionNodeEasy(DAGModel<IntervalFactor> model, int parent, int template) {
 		final int q = model.addVariable(2);
 		model.addParent(q, parent);
 		final IntervalFactor fQ = new IntervalFactor(model.getDomain(q), model.getDomain(parent));
@@ -114,7 +113,7 @@ public class Credal4Skill4Difficulty5Question extends AbstractModelBuilder<Inter
 
 		model.setFactor(q, fQ);
 
-		questions.add(new Question(qid, parent, q, template));
+		questions.add(new Question(parent, q, template));
 	}
 
 	/**
@@ -123,7 +122,7 @@ public class Credal4Skill4Difficulty5Question extends AbstractModelBuilder<Inter
 	 * @param model  add to this model
 	 * @param parent skill parent node
 	 */
-	public void addQuestionNodeMediumEasy(DAGModel<IntervalFactor> model, int parent, int qid, int template) {
+	public void addQuestionNodeMediumEasy(DAGModel<IntervalFactor> model, int parent, int template) {
 		final int q = model.addVariable(2);
 		model.addParent(q, parent);
 		final IntervalFactor fQ = new IntervalFactor(model.getDomain(q), model.getDomain(parent));
@@ -140,7 +139,7 @@ public class Credal4Skill4Difficulty5Question extends AbstractModelBuilder<Inter
 
 		model.setFactor(q, fQ);
 
-		questions.add(new Question(qid, parent, q, template));
+		questions.add(new Question(parent, q, template));
 	}
 
 	/**
@@ -149,7 +148,7 @@ public class Credal4Skill4Difficulty5Question extends AbstractModelBuilder<Inter
 	 * @param model  add to this model
 	 * @param parent skill parent node
 	 */
-	public void addQuestionNodeMediumHard(DAGModel<IntervalFactor> model, int parent, int qid, int template) {
+	public void addQuestionNodeMediumHard(DAGModel<IntervalFactor> model, int parent, int template) {
 		final int q = model.addVariable(2);
 		model.addParent(q, parent);
 		final IntervalFactor fQ = new IntervalFactor(model.getDomain(q), model.getDomain(parent));
@@ -166,7 +165,7 @@ public class Credal4Skill4Difficulty5Question extends AbstractModelBuilder<Inter
 
 		model.setFactor(q, fQ);
 
-		questions.add(new Question(qid, parent, q, template));
+		questions.add(new Question(parent, q, template));
 	}
 
 	/**
@@ -175,7 +174,7 @@ public class Credal4Skill4Difficulty5Question extends AbstractModelBuilder<Inter
 	 * @param model  add to this model
 	 * @param parent skill parent node
 	 */
-	public void addQuestionNodeHard(DAGModel<IntervalFactor> model, int parent, int qid, int template) {
+	public void addQuestionNodeHard(DAGModel<IntervalFactor> model, int parent, int template) {
 		final int q = model.addVariable(2);
 		model.addParent(q, parent);
 		final IntervalFactor fQ = new IntervalFactor(model.getDomain(q), model.getDomain(parent));
@@ -192,7 +191,7 @@ public class Credal4Skill4Difficulty5Question extends AbstractModelBuilder<Inter
 
 		model.setFactor(q, fQ);
 
-		questions.add(new Question(qid, parent, q, template));
+		questions.add(new Question(parent, q, template));
 	}
 
 }

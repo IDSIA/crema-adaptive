@@ -1,12 +1,10 @@
 package ch.idsia.crema.adaptive.experiments.stopping;
 
-import ch.idsia.crema.adaptive.experiments.Skill;
 import ch.idsia.crema.adaptive.experiments.agents.Teacher;
 import ch.idsia.crema.factor.GenericFactor;
 import ch.idsia.crema.model.graphical.DAGModel;
+import gnu.trove.list.TIntList;
 import gnu.trove.map.TIntIntMap;
-
-import java.util.List;
 
 /**
  * Author:  Claudio "Dna" Bonesana
@@ -22,10 +20,10 @@ public interface StoppingConditionModel<F extends GenericFactor> extends Stoppin
 	 * @return true if stop condition is reached, otherwise false
 	 * @throws Exception if something goes wrong
 	 */
-	boolean stop(DAGModel<F> model, List<Skill> skills, TIntIntMap observations) throws Exception;
+	boolean stop(DAGModel<F> model, TIntList skills, TIntIntMap observations) throws Exception;
 
 	/**
-	 * The default implementation is a wrapper of the {@link #stop(DAGModel, List, TIntIntMap)} method;
+	 * The default implementation is a wrapper of the {@link #stop(DAGModel, TIntList, TIntIntMap)} method;
 	 *
 	 * @param teacher who need to check for the stop
 	 * @return true if stop condition is reached, otherwise false

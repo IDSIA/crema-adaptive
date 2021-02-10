@@ -26,7 +26,7 @@ public class AnswerStrategyRandom<F extends AgentStudent> implements AnswerStrat
 	@Override
 	public int answer(F student, Question question) {
 		final int x = random.nextInt(2);
-		System.out.printf("AgentStudent:       question=%-3d answer=%d%n", question.id, x);
+		System.out.printf("AgentStudent:       question=%-3d answer=%d%n", question.variable, x);
 		return x;
 	}
 }

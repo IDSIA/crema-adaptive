@@ -1,7 +1,6 @@
 package ch.idsia.crema.adaptive.experiments.model.precise;
 
 import ch.idsia.crema.adaptive.experiments.Question;
-import ch.idsia.crema.adaptive.experiments.Skill;
 import ch.idsia.crema.adaptive.experiments.model.AbstractModelBuilder;
 import ch.idsia.crema.factor.bayesian.BayesianFactor;
 import ch.idsia.crema.model.graphical.DAGModel;
@@ -25,7 +24,7 @@ public class BayesianLanguage1Skill extends AbstractModelBuilder<BayesianFactor>
 		final int s = model.addVariable(4);
 		final BayesianFactor fS = new BayesianFactor(model.getDomain(s), new double[]{.15, .35, .35, .15});
 		model.setFactor(s, fS);
-		skills.add(new Skill(s));
+		skills.add(s);
 
 		for (int i = 0; i < nQuestions; i++) {
 			final int q = model.addVariable(2);
@@ -37,7 +36,7 @@ public class BayesianLanguage1Skill extends AbstractModelBuilder<BayesianFactor>
 			});
 
 			model.setFactor(q, fQ);
-			questions.add(new Question(i, s, q, 1));
+			questions.add(new Question(s, q, 1));
 		}
 	}
 

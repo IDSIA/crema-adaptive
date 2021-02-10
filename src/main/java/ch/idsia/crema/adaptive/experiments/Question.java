@@ -8,10 +8,6 @@ package ch.idsia.crema.adaptive.experiments;
 public class Question {
 
 	/**
-	 * Unique identifier of the question
-	 */
-	public final int id;
-	/**
 	 * Variable index in the model.
 	 */
 	public final int skill;
@@ -25,25 +21,21 @@ public class Question {
 	public final int template;
 
 	/**
-	 * @param id       unique identifier
 	 * @param skill    variable index
 	 * @param variable skill variable
 	 * @param template template index value
 	 */
-	public Question(int id, int skill, int variable, int template) {
-		this.id = id;
+	public Question(int skill, int variable, int template) {
 		this.skill = skill;
 		this.variable = variable;
 		this.template = template;
 	}
 
 	/**
-	 * @param id       unique identifier
 	 * @param skill    variable index
 	 * @param variable skill variable
 	 */
-	public Question(int id, int skill, int variable) {
-		this.id = id;
+	public Question(int skill, int variable) {
 		this.skill = skill;
 		this.variable = variable;
 		this.template = 0;
@@ -52,8 +44,7 @@ public class Question {
 	@Override
 	public String toString() {
 		return "Question{" +
-				"id=" + id +
-				", skill=" + skill +
+				"skill=" + skill +
 				", template=" + template +
 				", variable=" + variable +
 				'}';

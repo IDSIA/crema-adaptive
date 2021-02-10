@@ -1,7 +1,6 @@
 package ch.idsia.crema.adaptive.experiments.model.imprecise;
 
 import ch.idsia.crema.adaptive.experiments.Question;
-import ch.idsia.crema.adaptive.experiments.Skill;
 import ch.idsia.crema.adaptive.experiments.model.AbstractModelBuilder;
 import ch.idsia.crema.core.Strides;
 import ch.idsia.crema.factor.credal.linear.IntervalFactor;
@@ -30,7 +29,7 @@ public class CredalMinimalistic extends AbstractModelBuilder<IntervalFactor> {
 		int s = model.addVariable(2);
 		model.setFactor(s, new IntervalFactor(model.getDomain(s), Strides.EMPTY, new double[][]{{.45, .45}}, new double[][]{{.55, .55}}));
 
-		skills.add(new Skill(s));
+		skills.add(s);
 
 		for (int i = 0; i < nQuestions; i++) {
 			final int q = model.addVariable(2);
@@ -46,7 +45,7 @@ public class CredalMinimalistic extends AbstractModelBuilder<IntervalFactor> {
 					}
 			));
 
-			questions.add(new Question(i, s, q, 1));
+			questions.add(new Question(s, q, 1));
 		}
 	}
 

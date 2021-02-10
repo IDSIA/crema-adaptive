@@ -1,15 +1,13 @@
 package ch.idsia.crema.adaptive.experiments.stopping.imprecise;
 
-import ch.idsia.crema.adaptive.experiments.Skill;
 import ch.idsia.crema.adaptive.experiments.Utils;
 import ch.idsia.crema.adaptive.experiments.stopping.StoppingConditionModel;
 import ch.idsia.crema.entropy.AbellanEntropy;
 import ch.idsia.crema.factor.credal.linear.IntervalFactor;
 import ch.idsia.crema.inference.approxlp2.ApproxLP2;
 import ch.idsia.crema.model.graphical.DAGModel;
+import gnu.trove.list.TIntList;
 import gnu.trove.map.TIntIntMap;
-
-import java.util.List;
 
 /**
  * Author:  Claudio "Dna" Bonesana
@@ -37,18 +35,18 @@ public class StoppingConditionCredalMeanEntropy implements StoppingConditionMode
 	 * @throws Exception if inference goes wrong
 	 */
 	@Override
-	public boolean stop(DAGModel<IntervalFactor> model, List<Skill> skills, TIntIntMap observations) throws Exception {
+	public boolean stop(DAGModel<IntervalFactor> model, TIntList skills, TIntIntMap observations) throws Exception {
 		double mean = 0;
 
-		for (Skill skill : skills) {
-			final int s = skill.variable;
-			final IntervalFactor res = approx.query(model, s, observations);
+		for (int s = 0; s < skills.size(); s++) {
+			int skill = skills.get(s);
+			final IntervalFactor res = approx.query(model, skill, observations);
 
 			// compute entropy of the current skill
 			final double[] PS = entropy.getMaxEntropy(res.getLower(), res.getUpper());
 			final double HS = Utils.H(PS);
 
-			mean += HS / model.getSize(s);
+			mean += HS / model.getSize(skill);
 		}
 
 		return mean < threshold;
