@@ -7,17 +7,23 @@ import ch.idsia.crema.factor.credal.linear.IntervalFactor;
 import ch.idsia.crema.model.graphical.DAGModel;
 
 /**
- * Author:  Claudio "Dna" Bonesana
- * Project: crema-adaptive
- * Date:    05.02.2021 13:45
+ * Author:  		Claudio "Dna" Bonesana
+ * Contributions: 	Giorgia Adorni
+ * Project: 		crema-adaptive
+ * Date:   			05.02.2021 13:45
  */
 public class Credal4Skill4Difficulty5Question extends AbstractModelBuilder<IntervalFactor> {
 
 	/**
-	 * Build a Credal model where we have 4 skills with 4 state each. Each skill has 4 templates of questions, each
-	 * template has 5 questions, and each question has 2 states. All the questions in a template have the same CPT.
+	 * Build a Credal model where we have 4 skills with 4 states each.
+	 * Each skill has 4 templates of questions, each template has nQuestions
+	 * questions, and each question has 2 states.
+	 * All the questions in a template have the same CPT.
+	 *
+	 * @param nQuestions number of questions in total, all the questions in a
+	 *                   template have the same CPT.
 	 */
-	public Credal4Skill4Difficulty5Question() {
+	public Credal4Skill4Difficulty5Question(int nQuestions) {
 		model = new DAGModel<>();
 
 		// skill-chain
@@ -33,7 +39,7 @@ public class Credal4Skill4Difficulty5Question extends AbstractModelBuilder<Inter
 		int qid = 0;
 		for (int s = S0; s <= S3; s++) {
 			// ...add question nodes
-			for (int i = 0; i < 5; i++) {
+			for (int i = 0; i < nQuestions; i++) {
 				addQuestionNodeEasy(model, s, 10 * s + 1);
 				addQuestionNodeMediumEasy(model, s, 10 * s + 2);
 				addQuestionNodeMediumHard(model, s, 10 * s + 3);
