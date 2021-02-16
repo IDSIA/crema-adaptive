@@ -36,7 +36,6 @@ public class Credal4Skill4Difficulty5Question extends AbstractModelBuilder<Inter
 		int S3 = addSkillNode(model, S2);
 
 		// for each skill...
-		int qid = 0;
 		for (int s = S0; s <= S3; s++) {
 			// ...add question nodes
 			for (int i = 0; i < nQuestions; i++) {
@@ -63,10 +62,9 @@ public class Credal4Skill4Difficulty5Question extends AbstractModelBuilder<Inter
 		fS.setUpper(new double[]{
 				.2, .4, .4, .2
 		});
+
 		model.setFactor(s, fS);
-
 		skills.add(s);
-
 		return s;
 	}
 
@@ -87,12 +85,13 @@ public class Credal4Skill4Difficulty5Question extends AbstractModelBuilder<Inter
 		fS.setLower(new double[]{.10, .20, .30, .20}, 2); // lP(S1|S0=2)
 		fS.setLower(new double[]{.01, .10, .20, .30}, 3); // lP(S1|S0=3)
 
-		fS.setUpper(new double[]{.40, .30, .20, .10}, 0);   // uP(S1|S0=0)
+		fS.setUpper(new double[]{.40, .30, .30, .20}, 0);   // uP(S1|S0=0)
 		fS.setUpper(new double[]{.30, .40, .30, .20}, 1);   // uP(S1|S0=1)
 		fS.setUpper(new double[]{.20, .30, .40, .30}, 2);   // uP(S1|S0=2)
-		fS.setUpper(new double[]{.10, .20, .30, .40}, 3);   // uP(S1|S0=3)
+		fS.setUpper(new double[]{.20, .30, .30, .40}, 3);   // uP(S1|S0=3)
 
 		model.setFactor(s, fS);
+		skills.add(s);
 		return s;
 	}
 
@@ -136,12 +135,12 @@ public class Credal4Skill4Difficulty5Question extends AbstractModelBuilder<Inter
 		fQ.setLower(new double[]{.325, .650}, 0);// lP(Q=right|S=0)
 		fQ.setLower(new double[]{.600, .375}, 1);// lP(Q=right|S=1)
 		fQ.setLower(new double[]{.750, .225}, 2);// lP(Q=right|S=2)
-		fQ.setLower(new double[]{.850, .175}, 3);// lP(Q=right|S=3)
+		fQ.setLower(new double[]{.850, .150}, 3);// lP(Q=right|S=3)
 
 		fQ.setUpper(new double[]{.350, .675}, 0); // uP(Q=right|S=0)
 		fQ.setUpper(new double[]{.625, .400}, 1); // uP(Q=right|S=1)
 		fQ.setUpper(new double[]{.775, .250}, 2); // uP(Q=right|S=2)
-		fQ.setUpper(new double[]{.875, .150}, 3); // uP(Q=right|S=3)
+		fQ.setUpper(new double[]{.875, .175}, 3); // uP(Q=right|S=3)
 
 		model.setFactor(q, fQ);
 
