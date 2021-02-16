@@ -7,6 +7,9 @@ import ch.idsia.crema.factor.GenericFactor;
 import ch.idsia.crema.model.graphical.DAGModel;
 import gnu.trove.map.TIntIntMap;
 import gnu.trove.map.hash.TIntIntHashMap;
+import org.apache.commons.lang3.StringUtils;
+
+import java.util.Arrays;
 
 /**
  * Author:  Claudio "Dna" Bonesana
@@ -140,4 +143,15 @@ public class Student<F extends GenericFactor> implements AgentStudent {
 		return answerStrategy.answer(this, question);
 	}
 
+	@Override
+	public String getAnswers() {
+		int [] answersList = Arrays.copyOfRange(Arrays.stream(answers.values()).toArray(), 0, 80);
+		return StringUtils.join(answersList, ',');
+	}
+
+	@Override
+	public String getProfiles() {
+		int [] profilesList = Arrays.copyOfRange(Arrays.stream(answers.values()).toArray(), 80, answers.values().length);
+		return StringUtils.join(profilesList, ',');
+	}
 }

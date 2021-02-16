@@ -20,4 +20,14 @@ public interface AgentStudent {
 	 */
 	int answer(Question question);
 
+	/**
+	 * @return a comma separated row of all the answers;
+	 */
+	String getAnswers();
+
+	/**
+	 * @return a comma separated row of the profiles;
+	 */
+	String getProfiles();
+
 }
