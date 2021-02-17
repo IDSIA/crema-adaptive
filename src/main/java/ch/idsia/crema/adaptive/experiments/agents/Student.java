@@ -144,14 +144,14 @@ public class Student<F extends GenericFactor> implements AgentStudent {
 	}
 
 	@Override
-	public String getAnswers() {
-		int [] answersList = Arrays.copyOfRange(Arrays.stream(answers.values()).toArray(), 0, 80);
+	public String getAnswers(int numQuestions) {
+		int [] answersList = Arrays.copyOfRange(Arrays.stream(answers.values()).toArray(), 0, numQuestions);
 		return StringUtils.join(answersList, ',');
 	}
 
 	@Override
-	public String getProfiles() {
-		int [] profilesList = Arrays.copyOfRange(Arrays.stream(answers.values()).toArray(), 80, answers.values().length);
+	public String getProfiles(int numQuestions) {
+		int [] profilesList = Arrays.copyOfRange(Arrays.stream(answers.values()).toArray(), numQuestions, answers.values().length);
 		return StringUtils.join(profilesList, ',');
 	}
 }

@@ -10,7 +10,7 @@ import ch.idsia.crema.adaptive.experiments.Question;
 public interface AgentTeacher {
 
 	int getNumberQuestionsDone();
-
+	int getTotalNumberQuestions();
 	/**
 	 * Checks the answer to the given question.
 	 *

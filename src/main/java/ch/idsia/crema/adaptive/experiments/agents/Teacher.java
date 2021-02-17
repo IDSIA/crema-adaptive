@@ -88,6 +88,11 @@ public class Teacher<F extends GenericFactor> implements AgentTeacher {
 		return questionsDone.size();
 	}
 
+	@Override
+	public int getTotalNumberQuestions() {
+		return  questions.size();
+	}
+
 	public DAGModel<F> getModel() {
 		return model;
 	}
