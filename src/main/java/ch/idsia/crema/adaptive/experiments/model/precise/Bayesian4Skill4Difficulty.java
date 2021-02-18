@@ -75,12 +75,15 @@ public class Bayesian4Skill4Difficulty extends AbstractModelBuilder<BayesianFact
         model.addParent(s, parent);
 
         final BayesianFactor bF = new BayesianFactor(model.getDomain(s, parent),
-                                                     new double[]{.40, .30, .20, .10,   // P(S1|S0=0)
-                                                                  .25, .35, .25, .15,   // P(S1|S0=1)
-                                                                  .15, .25, .35, .25,   // P(S1|S0=2)
-                                                                  .10, .20, .30, .40}); // P(S1|S0=3)
+                new double[]{.40, .30, .20, .10,   // P(S1|S0=0)
+                        .25, .35, .25, .15,   // P(S1|S0=1)
+                        .15, .25, .35, .25,   // P(S1|S0=2)
+                        .10, .20, .30, .40}); // P(S1|S0=3)
 
         model.setFactor(s, bF);
+
+        skills.add(s);
+
         return s;
     }
 

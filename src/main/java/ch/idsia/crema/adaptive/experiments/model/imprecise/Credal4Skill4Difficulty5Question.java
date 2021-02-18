@@ -135,12 +135,12 @@ public class Credal4Skill4Difficulty5Question extends AbstractModelBuilder<Inter
 		fQ.setLower(new double[]{.325, .650}, 0);// lP(Q=right|S=0)
 		fQ.setLower(new double[]{.600, .375}, 1);// lP(Q=right|S=1)
 		fQ.setLower(new double[]{.750, .225}, 2);// lP(Q=right|S=2)
-		fQ.setLower(new double[]{.850, .150}, 3);// lP(Q=right|S=3)
+		fQ.setLower(new double[]{.850, .125}, 3);// lP(Q=right|S=3)
 
 		fQ.setUpper(new double[]{.350, .675}, 0); // uP(Q=right|S=0)
 		fQ.setUpper(new double[]{.625, .400}, 1); // uP(Q=right|S=1)
 		fQ.setUpper(new double[]{.775, .250}, 2); // uP(Q=right|S=2)
-		fQ.setUpper(new double[]{.875, .175}, 3); // uP(Q=right|S=3)
+		fQ.setUpper(new double[]{.875, .150}, 3); // uP(Q=right|S=3)
 
 		model.setFactor(q, fQ);
 
