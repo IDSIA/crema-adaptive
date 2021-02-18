@@ -4,19 +4,18 @@ from typing import List
 import matplotlib.pyplot as plt
 import numpy as np
 from scipy.spatial.distance import hamming
-from sklearn.metrics import confusion_matrix
 
 from src.analysis.utils import one_hot_encode
 
 
-def brier_multicategory(targets, probs):
+def brier_multicategory(targets, probs, n_classes):
     """
     (reference: https://en.wikipedia.org/wiki/Brier_score)
     :param targets:
     :param probs:
+    :param n_classes
     :return brier_score:
     """
-    n_classes = targets.shape[1]
     one_hot_targets = one_hot_encode(targets, n_classes)
 
     brier_score = np.mean(np.sum((probs - one_hot_targets) ** 2, axis=2), axis=1)/2
@@ -31,7 +30,9 @@ def hamming_distance(observations, predictions):
     :return hamming_loss, hamming_distance:
     """
     hamming_loss = hamming(observations, predictions)
-    hamming_distance = hamming_loss * len(observations)
+    hamming_distance = hamming_loss * observations.size
+    # FIXME
+    # hamming_distance = hamming_loss * len(observations)
 
     return hamming_loss, hamming_distance
 
@@ -61,24 +62,19 @@ def exact_match_ratio(observations, predictions):
     return np.all(predictions == observations, axis=1).mean()
 
 
-def plot_confusion_matrix(ax, observations, predictions, labels, title):
+def plot_confusion_matrix(ax, cm, labels, title):
     """
     This function prints and plots the confusion matrix.
     Normalization can be applied by setting `normalize=True`.
-    :param observations:
-    :param predictions:
+    :param ax
+    :param cm
     :param labels:
     :param title:
     :return cm, img:
     """
-    cm = confusion_matrix(observations, predictions, labels=labels)
     np.set_printoptions(precision=2)
 
     cmap = plt.cm.Blues
-    normalize = False
-
-    if normalize:
-        cm = cm.astype('float') / cm.sum(axis=1)[:, np.newaxis]
 
     ax.set_title(title)
 
@@ -87,7 +83,7 @@ def plot_confusion_matrix(ax, observations, predictions, labels, title):
     ax.set_yticks(labels)
     ax.tick_params(labelrotation=45)
 
-    fmt = '.2f' if normalize else 'd'
+    fmt = 'd'
     thresh = cm.max() / 2.
     for i, j in itertools.product(range(cm.shape[0]), range(cm.shape[1])):
         ax.text(j, i, format(cm[i, j], fmt),
@@ -98,7 +94,7 @@ def plot_confusion_matrix(ax, observations, predictions, labels, title):
         ax.set_ylabel('Observed label')
     ax.set_xlabel('Predicted label')
 
-    return cm, img
+    return img
 
 
 def grouped_barplot(ax: plt.Axes, runs: List[str], metrics, keys, title=None, legend=True):
@@ -143,38 +139,22 @@ def grouped_barplot(ax: plt.Axes, runs: List[str], metrics, keys, title=None, le
     ax.set_xticklabels(xticklabels)
 
 
-def class_metrics_barplot(runs, metrics):
+def class_metrics_barplot(runs, metrics, labels):
     """
     :param runs:
     :param metrics:
     :return:
     """
     fig, (ax1, ax2, ax3, ax4) = plt.subplots(1, 4, figsize=(18, 4))
-    grouped_barplot(ax1, runs, metrics, dict(X0='accuracy/X0',
-                                             X1='accuracy/X1',
-                                             X2='accuracy/X2',
-                                             X3='accuracy/X3'),
-                    title='Accuracy')
-    grouped_barplot(ax2, runs, metrics, dict(X0='precision/X0',
-                                             X1='precision/X1',
-                                             X2='precision/X2',
-                                             X3='precision/X3'),
-                    title='Precision', legend=False)
-    grouped_barplot(ax3, runs, metrics, dict(X0='recall/X0',
-                                             X1='recall/X1',
-                                             X2='recall/X2',
-                                             X3='recall/X3'),
-                    title='Recall', legend=False)
-    grouped_barplot(ax4, runs, metrics, dict(X0='f1_score/X0',
-                                             X1='f1_score/X1',
-                                             X2='f1_score/X2',
-                                             X3='f1_score/X3'),
-                    title='F1 score', legend=False)
+    grouped_barplot(ax1, runs, metrics, labels[0], title='Accuracy')
+    grouped_barplot(ax2, runs, metrics, labels[1], title='Precision', legend=False)
+    grouped_barplot(ax3, runs, metrics, labels[2], title='Recall', legend=False)
+    grouped_barplot(ax4, runs, metrics, labels[3], title='F1 score', legend=False)
     fig.legend(loc='lower center', ncol=2)
     fig.subplots_adjust(bottom=0.25)
 
 
-def metric_per_question(avg_metric, metric, tests, xytext):
+def metric_per_question(n_questions, avg_metric, metric, tests, xytext):
     """
 
     :param avg_metric:
@@ -182,28 +162,28 @@ def metric_per_question(avg_metric, metric, tests, xytext):
     :return:
     """
     plt.plot(avg_metric[0], color='C0', label=tests[0])
-    plt.plot(np.arange(80)[::10][1:], avg_metric[0][::10][1:], 'o', color='C0')
-    for x, y in zip(np.arange(80)[::10][1:], avg_metric[0][::10][1:]):
-        label = "{:.2f}".format(y)
-
-        plt.annotate(label,  # this is the text
-                     (x, y),  # this is the point to label
-                     textcoords="offset points",  # how to position the text
-                     xytext=xytext[0],  # distance from text to points (x,y)
-                     ha='center')
+    plt.plot(np.arange(n_questions)[::10][1:], avg_metric[0][::10][1:], 'o', color='C0')
+    # for x, y in zip(np.arange(n_questions)[::10][1:], avg_metric[0][::10][1:]):
+    #     label = "{:.2f}".format(y)
+    #
+    #     plt.annotate(label,  # this is the text
+    #                  (x, y),  # this is the point to label
+    #                  textcoords="offset points",  # how to position the text
+    #                  xytext=xytext[0],  # distance from text to points (x,y)
+    #                  ha='center')
     plt.plot(avg_metric[1], '--', color='C1', label=tests[1])
-    plt.plot(np.arange(80)[::10][1:], avg_metric[1][::10][1:], 's', color='C1')
-    for x, y in zip(np.arange(80)[::10][1:], avg_metric[1][::10][1:]):
-        label = "{:.2f}".format(y)
-
-        plt.annotate(label,  # this is the text
-                     (x, y),  # this is the point to label
-                     textcoords="offset points",  # how to position the text
-                     xytext=xytext[1],  # distance from text to points (x,y)
-                     ha='center')
+    plt.plot(np.arange(n_questions)[::10][1:], avg_metric[1][::10][1:], 's', color='C1')
+    # for x, y in zip(np.arange(n_questions)[::10][1:], avg_metric[1][::10][1:]):
+    #     label = "{:.2f}".format(y)
+    #
+    #     plt.annotate(label,  # this is the text
+    #                  (x, y),  # this is the point to label
+    #                  textcoords="offset points",  # how to position the text
+    #                  xytext=xytext[1],  # distance from text to points (x,y)
+    #                  ha='center')
     plt.xlabel('Number of questions')
     plt.ylabel(metric)
-    plt.xlim(0, 80)
+    plt.xlim(0, n_questions)
     plt.ylim(0, 1)
     plt.legend()
     plt.grid()
