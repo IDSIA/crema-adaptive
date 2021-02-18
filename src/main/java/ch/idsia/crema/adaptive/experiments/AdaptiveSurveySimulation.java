@@ -12,7 +12,6 @@ import ch.idsia.crema.adaptive.experiments.persistence.PersistCredal;
 import ch.idsia.crema.adaptive.experiments.scoring.imprecise.ScoringFunctionUpperExpectedEntropy;
 import ch.idsia.crema.adaptive.experiments.scoring.precise.ScoringFunctionExpectedEntropy;
 import ch.idsia.crema.adaptive.experiments.scoring.precise.ScoringFunctionRandom;
-import ch.idsia.crema.adaptive.experiments.stopping.StoppingConditionQuestionNumber;
 import ch.idsia.crema.factor.bayesian.BayesianFactor;
 import ch.idsia.crema.inference.sampling.BayesianNetworkSampling;
 import ch.idsia.crema.utility.RandomUtil;
@@ -40,7 +39,7 @@ public class AdaptiveSurveySimulation {
 	// we will generate samples up to 256 students
 	static final int N_STUDENTS = 256;
 	// we are going to use a model with 20 questions: each template has 5 questions
-	static final int N_QUESTIONS = 5;
+	static final int N_QUESTIONS = 20;
 	// since we are using an ExecutorService, we will run 16 tests in parallel
 	static final int PARALLEL_COUNT = 3;
 
@@ -86,8 +85,7 @@ public class AdaptiveSurveySimulation {
 
 						final AgentTeacher teacher = new Teacher<>(
 								new Bayesian4Skill4Difficulty(N_QUESTIONS),
-								new ScoringFunctionRandom(student.getId()),
-								new StoppingConditionQuestionNumber<>(20)
+								new ScoringFunctionRandom(student.getId())
 						)
 								.setPersist(new PersistBayesian());
 
@@ -113,8 +111,7 @@ public class AdaptiveSurveySimulation {
 
 						final AgentTeacher teacher = new Teacher<>(
 								new BayesianMinimalistic(N_QUESTIONS, .4, .6),
-								new ScoringFunctionRandom(student.getId()),
-								new StoppingConditionQuestionNumber<>(20)
+								new ScoringFunctionRandom(student.getId())
 						)
 								.setPersist(new PersistBayesian());
 
@@ -146,11 +143,11 @@ public class AdaptiveSurveySimulation {
 								// model to use for the question choice
 								new Bayesian4Skill4Difficulty(N_QUESTIONS),
 								// scoring function used to select the next question
-								new ScoringFunctionExpectedEntropy(),
+								new ScoringFunctionExpectedEntropy()
 								// first stopping criteria: check for mean bayesian entropy of skills
 //								new StoppingConditionBayesianMeanEntropy(.3),
 								// second stopping criteria: stop after 10 questions
-								new StoppingConditionQuestionNumber<>(20)
+//								new StoppingConditionQuestionNumber<>(20)
 						)
 								// we want to save the results and they are of bayesian type
 								.setPersist(new PersistBayesian());
@@ -185,11 +182,11 @@ public class AdaptiveSurveySimulation {
 								// model to use for the question choice
 								new BayesianMinimalistic(N_QUESTIONS, .4, .6),
 								// scoring function used to select the next question
-								new ScoringFunctionExpectedEntropy(),
+								new ScoringFunctionExpectedEntropy()
 								// first stopping criteria: check for mean bayesian entropy of skills
 //								new StoppingConditionBayesianMeanEntropy(.3),
 								// second stopping criteria: stop after 10 questions
-								new StoppingConditionQuestionNumber<>(20)
+//								new StoppingConditionQuestionNumber<>(20)
 						)
 								// we want to save the results and they are of bayesian type
 								.setPersist(new PersistBayesian());
@@ -219,9 +216,9 @@ public class AdaptiveSurveySimulation {
 
 						final AgentTeacher teacher = new Teacher<>(
 								new Credal4Skill4Difficulty5Question(N_QUESTIONS),
-								new ScoringFunctionUpperExpectedEntropy(),
+								new ScoringFunctionUpperExpectedEntropy()
 //								new StoppingConditionCredalMeanEntropy(.5),
-								new StoppingConditionQuestionNumber<>(20)
+//								new StoppingConditionQuestionNumber<>(20)
 						)
 								.setPersist(new PersistCredal());
 
@@ -246,9 +243,9 @@ public class AdaptiveSurveySimulation {
 
 						final AgentTeacher teacher = new Teacher<>(
 								new CredalMinimalistic(N_QUESTIONS, .4, .4, .6, .6),
-								new ScoringFunctionUpperExpectedEntropy(),
+								new ScoringFunctionUpperExpectedEntropy()
 //								new StoppingConditionCredalMeanEntropy(.5),
-								new StoppingConditionQuestionNumber<>(20)
+//								new StoppingConditionQuestionNumber<>(20)
 						)
 								.setPersist(new PersistCredal());
 
@@ -280,14 +277,11 @@ public class AdaptiveSurveySimulation {
 		es.shutdown();
 
 		// write the output to file
-		String path = "output/";
-		writeToFile(path, "bayesProfiles", results4x4NonAdaptiveBayesian, 2);
-		writeToFile(path, "minimalisticProfiles", resultsMinimalisticNonAdaptiveBayesian, 2);
-
-		String Bayesian4x4Path = path + "Bayesian4x4/";
-		writeToFile(Bayesian4x4Path, "posteriors.non-adaptive", results4x4NonAdaptiveBayesian, 0);
-		writeToFile(Bayesian4x4Path, "answers.non-adaptive", results4x4NonAdaptiveBayesian, 1);
-
+		String Bayesian4x4Path = "output/Bayesian4x4/";
+		writeToFile(Bayesian4x4Path, "profiles", results4x4NonAdaptiveBayesian, 2);
+		writeToFile(Bayesian4x4Path, "posteriors.bayesian-non-adaptive", results4x4NonAdaptiveBayesian, 0);
+		writeToFile(Bayesian4x4Path, "answers.bayesian-non-adaptive", results4x4NonAdaptiveBayesian, 1);
+//
 		writeToFile(Bayesian4x4Path, "posteriors.bayesian-adaptive", results4x4AdaptiveBayesian, 0);
 		writeToFile(Bayesian4x4Path, "answers.bayesian-adaptive", results4x4AdaptiveBayesian, 1);
 
@@ -295,10 +289,10 @@ public class AdaptiveSurveySimulation {
 //		writeToFile(Bayesian4x4Path, "answers.credal-adaptive", results4x4AdaptiveCredal, 1);
 
 
-		String Minimalistic = path + "Minimalistic/";
-
-		writeToFile(Minimalistic, "posteriors.non-adaptive", resultsMinimalisticNonAdaptiveBayesian, 0);
-		writeToFile(Minimalistic, "answers.non-adaptive", resultsMinimalisticNonAdaptiveBayesian, 1);
+		String Minimalistic = "output/Minimalistic/";
+		writeToFile(Minimalistic, "profiles", resultsMinimalisticNonAdaptiveBayesian, 2);
+		writeToFile(Minimalistic, "posteriors.bayesian-non-adaptive", resultsMinimalisticNonAdaptiveBayesian, 0);
+		writeToFile(Minimalistic, "answers.bayesian-non-adaptive", resultsMinimalisticNonAdaptiveBayesian, 1);
 
 		writeToFile(Minimalistic, "posteriors.bayesian-adaptive", resultsMinimalisticAdaptiveBayesian, 0);
 		writeToFile(Minimalistic, "answers.bayesian-adaptive", resultsMinimalisticAdaptiveBayesian, 1);
