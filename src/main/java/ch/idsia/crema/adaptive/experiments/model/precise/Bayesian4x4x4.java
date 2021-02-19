@@ -10,7 +10,7 @@ import ch.idsia.crema.model.graphical.DAGModel;
  * Project: crema-adaptive
  * Date:    11.02.2021 17:00
  */
-public class Bayesian4Skill4Difficulty extends AbstractModelBuilder<BayesianFactor> {
+public class Bayesian4x4x4 extends AbstractModelBuilder<BayesianFactor> {
 
     /**
      * Build a Bayesian model where we have 4 skills with 4 states each.
@@ -21,7 +21,7 @@ public class Bayesian4Skill4Difficulty extends AbstractModelBuilder<BayesianFact
      * @param nQuestions number of questions in total, all the questions in a
      *                   template have the same CPT.
      */
-    public Bayesian4Skill4Difficulty(int nQuestions) {
+    public Bayesian4x4x4(int nQuestions) {
 
         model = new DAGModel<>();
 
@@ -99,7 +99,7 @@ public class Bayesian4Skill4Difficulty extends AbstractModelBuilder<BayesianFact
         
         final BayesianFactor fQ = new BayesianFactor(model.getDomain(parent, q), new double[]{
                 .6125, .7625, .8625, .9625,
-                .3875, .2375, .1375, .3750
+                .3875, .2375, .1375, .0375
         });
         
         model.setFactor(q, fQ);

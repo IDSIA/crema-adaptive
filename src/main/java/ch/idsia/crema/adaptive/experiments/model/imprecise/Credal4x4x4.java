@@ -12,7 +12,7 @@ import ch.idsia.crema.model.graphical.DAGModel;
  * Project: 		crema-adaptive
  * Date:   			05.02.2021 13:45
  */
-public class Credal4Skill4Difficulty5Question extends AbstractModelBuilder<IntervalFactor> {
+public class Credal4x4x4 extends AbstractModelBuilder<IntervalFactor> {
 
 	/**
 	 * Build a Credal model where we have 4 skills with 4 states each.
@@ -23,7 +23,7 @@ public class Credal4Skill4Difficulty5Question extends AbstractModelBuilder<Inter
 	 * @param nQuestions number of questions in total, all the questions in a
 	 *                   template have the same CPT.
 	 */
-	public Credal4Skill4Difficulty5Question(int nQuestions) {
+	public Credal4x4x4(int nQuestions) {
 		model = new DAGModel<>();
 
 		// skill-chain
