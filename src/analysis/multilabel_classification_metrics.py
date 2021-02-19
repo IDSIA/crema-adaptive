@@ -62,7 +62,7 @@ def exact_match_ratio(observations, predictions):
     return np.all(predictions == observations, axis=1).mean()
 
 
-def plot_confusion_matrix(ax, cm, labels, title):
+def plot_confusion_matrix(ax, cm, labels, title, y_label=True):
     """
     This function prints and plots the confusion matrix.
     Normalization can be applied by setting `normalize=True`.
@@ -70,6 +70,7 @@ def plot_confusion_matrix(ax, cm, labels, title):
     :param cm
     :param labels:
     :param title:
+    :param: y_label
     :return cm, img:
     """
     np.set_printoptions(precision=2)
@@ -90,9 +91,9 @@ def plot_confusion_matrix(ax, cm, labels, title):
                  horizontalalignment="center",
                  color="white" if cm[i, j] > thresh else "black")
 
-    if title == 'adaptive_entropy':
-        ax.set_ylabel('Observed label')
-    ax.set_xlabel('Predicted label')
+    if y_label:
+        ax.set_ylabel('Groundtruth')
+    ax.set_xlabel('Prediction')
 
     return img
 
@@ -157,9 +158,10 @@ def class_metrics_barplot(runs, metrics, labels):
 def metric_per_question(n_questions, avg_metric, metric, tests, xytext):
     """
 
+    :param n_questions:
     :param avg_metric:
     :param metric:
-    :return:
+    :param xytext:
     """
     plt.plot(avg_metric[0], color='C0', label=tests[0])
     plt.plot(np.arange(n_questions)[::10][1:], avg_metric[0][::10][1:], 'o', color='C0')
