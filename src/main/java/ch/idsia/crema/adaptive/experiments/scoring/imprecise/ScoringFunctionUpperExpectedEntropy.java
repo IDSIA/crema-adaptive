@@ -9,6 +9,7 @@ import ch.idsia.crema.inference.approxlp2.ApproxLP2;
 import ch.idsia.crema.model.graphical.DAGModel;
 import gnu.trove.map.TIntIntMap;
 import gnu.trove.map.hash.TIntIntHashMap;
+import org.apache.commons.math3.optim.linear.NoFeasibleSolutionException;
 
 
 /**
@@ -37,20 +38,31 @@ public class ScoringFunctionUpperExpectedEntropy implements ScoringFunction<Inte
 		for (int a = 0; a < 2; a++) {
 			TIntIntMap obs = new TIntIntHashMap(observations);
 			obs.put(question.variable, a);
+			double HSq;
 
-			final IntervalFactor query = approx.query(model, question.skill, obs);
-			final double[] PSq = entropy.getMaxEntropy(query.getLower(), query.getUpper());
-			final double HSq = Utils.H(PSq);
+			try {
+				final IntervalFactor query = approx.query(model, question.skill, obs); // TODO: bring outside
+				final double[] PSq = entropy.getMaxEntropy(query.getLower(), query.getUpper());
+				HSq = Utils.H(PSq);
+			} catch (NoFeasibleSolutionException e) {
+				System.err.printf("No Feasible Solution for HSq: question=%d skill=%d state=%d obs=%s %n", question.variable, question.skill, a, obs);
+				HSq = .0;
+			}
 
 			HSQs[a] = HSq;
 		}
 
-		final IntervalFactor pQ = approx.query(model, question.variable, observations);
-		final double[] lower = pQ.getLower();
+		try {
+			final IntervalFactor PQ = approx.query(model, question.variable, observations);
+			final double[] lower = PQ.getLower();
 
-		final double score0 = lower[0] * HSQs[0] + (1 - lower[0]) * HSQs[1];
-		final double score1 = lower[1] * HSQs[1] + (1 - lower[1]) * HSQs[0];
+			final double score0 = lower[0] * HSQs[0] + (1 - lower[0]) * HSQs[1];
+			final double score1 = lower[1] * HSQs[1] + (1 - lower[1]) * HSQs[0];
 
-		return Math.max(score0, score1);
+			return Math.max(score0, score1);
+		} catch (NoFeasibleSolutionException e) {
+			System.err.printf("No Feasible Solution for PQ: question=%d obs=%s %n", question.variable, observations);
+			return 0.0;
+		}
 	}
 }

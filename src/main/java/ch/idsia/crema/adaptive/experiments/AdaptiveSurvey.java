@@ -7,7 +7,7 @@ import ch.idsia.crema.adaptive.experiments.model.imprecise.CredalMinimalistic;
 import ch.idsia.crema.adaptive.experiments.model.precise.BayesianMinimalistic;
 import ch.idsia.crema.adaptive.experiments.persistence.PersistBayesian;
 import ch.idsia.crema.adaptive.experiments.persistence.PersistCredal;
-import ch.idsia.crema.adaptive.experiments.scoring.imprecise.ScoringFunctionUpperExpectedEntropy;
+import ch.idsia.crema.adaptive.experiments.scoring.imprecise.ScoringFunctionCredalMode;
 import ch.idsia.crema.adaptive.experiments.scoring.precise.ScoringFunctionExpectedEntropy;
 import ch.idsia.crema.adaptive.experiments.scoring.precise.ScoringFunctionRandom;
 import ch.idsia.crema.adaptive.experiments.stopping.StoppingConditionQuestionNumber;
@@ -128,7 +128,7 @@ public class AdaptiveSurvey {
 
 						final AgentTeacher teacher = new Teacher<>(
 								new CredalMinimalistic(N_QUESTIONS, .4, .4, .6, .6),
-								new ScoringFunctionUpperExpectedEntropy(),
+								new ScoringFunctionCredalMode(),
 								new StoppingConditionCredalMeanEntropy(.5),
 								new StoppingConditionQuestionNumber<>(10)
 						)

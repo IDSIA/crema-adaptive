@@ -16,6 +16,18 @@ public class ScoringFunctionUpperLowerProbabilityOfRight implements ScoringFunct
 
 	private final ApproxLP2 approx = new ApproxLP2();
 
+	private boolean useUpper = true;
+
+	public ScoringFunctionUpperLowerProbabilityOfRight useUpper() {
+		useUpper = true;
+		return this;
+	}
+
+	public ScoringFunctionUpperLowerProbabilityOfRight useLower() {
+		useUpper = false;
+		return this;
+	}
+
 	/**
 	 * A {@link ScoringFunction} based on the upper probability of answer correctly.
 	 *
@@ -29,8 +41,14 @@ public class ScoringFunctionUpperLowerProbabilityOfRight implements ScoringFunct
 	public double score(DAGModel<IntervalFactor> model, Question question, TIntIntMap observations) throws Exception {
 		final IntervalFactor pQ = approx.query(model, question.variable, observations);
 
-		final double[] upper = pQ.getUpper();
+		double[] values;
 
-		return 1. - Math.abs(upper[0] - 0.5);
+		if (useUpper) {
+			values = pQ.getUpper();
+		} else {
+			values = pQ.getLower();
+		}
+
+		return 1. - Math.abs(values[0] - 0.5);
 	}
 }

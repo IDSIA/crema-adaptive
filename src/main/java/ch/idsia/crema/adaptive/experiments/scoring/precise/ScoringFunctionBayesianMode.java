@@ -15,7 +15,7 @@ import org.apache.commons.math3.util.Precision;
  * Project: crema-adaptive
  * Date:    08.02.2021 15:23
  */
-public class ScoringFunctionMode implements ScoringFunction<BayesianFactor> {
+public class ScoringFunctionBayesianMode implements ScoringFunction<BayesianFactor> {
 
 	private BeliefPropagation<BayesianFactor> inference;
 

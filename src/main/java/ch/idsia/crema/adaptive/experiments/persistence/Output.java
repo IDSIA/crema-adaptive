@@ -16,16 +16,15 @@ import java.util.Locale;
  */
 public abstract class Output<F extends GenericFactor> {
 
-	protected final NumberFormat nf;
+	protected static final NumberFormat nf = NumberFormat.getNumberInstance(Locale.ROOT);
 
-	public TIntList skills = new TIntArrayList();
-	public List<F> factors = new ArrayList<>();
-
-	public Output() {
-		nf = NumberFormat.getNumberInstance(Locale.ROOT);
+	static {
 		nf.setMaximumFractionDigits(4);
 		nf.setMinimumFractionDigits(4);
 	}
+
+	public TIntList skills = new TIntArrayList();
+	public List<F> factors = new ArrayList<>();
 
 	public abstract String serialize();
 

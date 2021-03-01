@@ -20,14 +20,20 @@ import java.util.List;
  * Project: crema-adaptive
  * Date:    08.02.2021 15:23
  */
-public class ScoringFunctionUpperMode implements ScoringFunction<IntervalFactor> {
+public class ScoringFunctionCredalMode implements ScoringFunction<IntervalFactor> {
 
 	private final ApproxLP2 approx = new ApproxLP2();
 
 	private GoalType goalType = GoalType.MINIMIZE;
 
-	public void setGoalType(GoalType goalType) {
-		this.goalType = goalType;
+	public ScoringFunctionCredalMode setMinimize() {
+		this.goalType = GoalType.MINIMIZE;
+		return this;
+	}
+
+	public ScoringFunctionCredalMode setMaximize() {
+		this.goalType = GoalType.MAXIMIZE;
+		return this;
 	}
 
 	@Override
