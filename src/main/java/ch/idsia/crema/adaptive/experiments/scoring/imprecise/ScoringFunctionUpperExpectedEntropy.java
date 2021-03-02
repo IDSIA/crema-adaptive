@@ -59,7 +59,7 @@ public class ScoringFunctionUpperExpectedEntropy implements ScoringFunction<Inte
 			final double score0 = lower[0] * HSQs[0] + (1 - lower[0]) * HSQs[1];
 			final double score1 = lower[1] * HSQs[1] + (1 - lower[1]) * HSQs[0];
 
-			return Math.max(score0, score1);
+			return -(Math.max(score0, score1));
 		} catch (NoFeasibleSolutionException e) {
 			System.err.printf("No Feasible Solution for PQ: question=%d obs=%s %n", question.variable, observations);
 			return 0.0;

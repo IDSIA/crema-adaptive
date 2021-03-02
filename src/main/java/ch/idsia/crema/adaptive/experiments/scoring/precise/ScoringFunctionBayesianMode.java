@@ -33,7 +33,7 @@ public class ScoringFunctionBayesianMode implements ScoringFunction<BayesianFact
 		if (inference == null)
 			inference = new BeliefPropagation<>(model);
 
-		final BayesianFactor PQ = inference.query(question.skill, observations);
+		final BayesianFactor PQ = inference.query(question.variable, observations);
 
 		double[] modes = new double[2];
 
@@ -60,7 +60,7 @@ public class ScoringFunctionBayesianMode implements ScoringFunction<BayesianFact
 
 	private double mode(BayesianFactor bf) {
 		final double[] data = bf.getData();
-		return Utils.argmax(data);
+		return data[Utils.argmax(data)];
 	}
 
 }

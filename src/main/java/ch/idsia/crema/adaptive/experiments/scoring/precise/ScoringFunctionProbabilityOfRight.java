@@ -30,7 +30,7 @@ public class ScoringFunctionProbabilityOfRight implements ScoringFunction<Bayesi
 		if (inference == null)
 			inference = new BeliefPropagation<>(model);
 
-		final BayesianFactor PQ = inference.query(question.skill, observations);
+		final BayesianFactor PQ = inference.query(question.variable, observations);
 
 		return 1. - Math.abs(PQ.getValueAt(0) - 0.5);
 	}

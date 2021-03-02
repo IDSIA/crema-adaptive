@@ -137,7 +137,7 @@ public class Teacher<F extends GenericFactor> implements AgentTeacher {
 	 */
 	@Override
 	public Question next() throws Exception {
-		double maxIG = 0.;
+		double maxIG = Double.NEGATIVE_INFINITY;
 		Question nextQuestion = null;
 
 		Set<Integer> templates = new HashSet<>();

@@ -33,7 +33,7 @@ public class ScoringFunctionExpectedEntropy implements ScoringFunction<BayesianF
 		if (inference == null)
 			inference = new BeliefPropagation<>(model);
 
-		final BayesianFactor PQ = inference.query(question.skill, observations);
+		final BayesianFactor PQ = inference.query(question.variable, observations);
 
 		double HSQ = 0;
 		for (int a = 0; a < 2; a++) {
@@ -47,6 +47,6 @@ public class ScoringFunctionExpectedEntropy implements ScoringFunction<BayesianF
 			HSQ += HSq * Pqi;
 		}
 
-		return HSQ / 2;
+		return -(HSQ / 2);
 	}
 }
