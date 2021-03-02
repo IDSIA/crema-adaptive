@@ -76,9 +76,9 @@ public class Bayesian4x4x4 extends AbstractModelBuilder<BayesianFactor> {
 
         final BayesianFactor bF = new BayesianFactor(model.getDomain(s, parent),
                 new double[]{.40, .30, .20, .10,   // P(S1|S0=0)
-                        .25, .35, .25, .15,   // P(S1|S0=1)
-                        .15, .25, .35, .25,   // P(S1|S0=2)
-                        .10, .20, .30, .40}); // P(S1|S0=3)
+                             .25, .35, .25, .15,   // P(S1|S0=1)
+                             .15, .25, .35, .25,   // P(S1|S0=2)
+                             .10, .20, .30, .40}); // P(S1|S0=3)
 
         model.setFactor(s, bF);
 

@@ -13,10 +13,11 @@ import ch.idsia.crema.model.graphical.DAGModel;
 public class BayesianMinimalistic1x2x8 extends AbstractModelBuilder<BayesianFactor> {
 
     /**
-     * A Bayesian model with one skill with two states and a given number of questions. All the questions have the same
-     * CPT that is built from the given <code>p1</code> and <code>p0</code> parameters.
+     * A Bayesian model with one skill with two states and a given number of questions.
+     * Each skill has 8 templates of questions, each template has nQuestions questions, and each question has 2 states.
+     * * All the questions in a template have the same CPT.
      *
-     * @param nQuestions number of questions in total, all questions will have the same template (value: 1).
+     * @param nQuestions number of questions in total, all the questions in a template have the same CPT.
      */
     public BayesianMinimalistic1x2x8(int nQuestions) {
         model = new DAGModel<>();
