@@ -261,9 +261,9 @@ public class AdaptiveSurveyMinimalistic1x2x8Simulation {
 //        final List<Future<String[]>> resultsBayesianAdaptivePRight = es.invokeAll(bayesianMinimalistic1x2x8TasksAdaptivePRight);
 
 //        TODO
-//        final List<Future<String[]>> resultsCredalAdaptiveEntropy = es.invokeAll(credalMinimalistic1x2x8TasksAdaptiveEntropy);
+        final List<Future<String[]>> resultsCredalAdaptiveEntropy = es.invokeAll(credalMinimalistic1x2x8TasksAdaptiveEntropy);
         final List<Future<String[]>> resultsCredalAdaptiveMode = es.invokeAll(credalMinimalistic1x2x8TasksAdaptiveMode);
-//        final List<Future<String[]>> resultsCredalAdaptivePRight = es.invokeAll(credalMinimalistic1x2x8TasksAdaptivePRight);
+        final List<Future<String[]>> resultsCredalAdaptivePRight = es.invokeAll(credalMinimalistic1x2x8TasksAdaptivePRight);
 
         // wait until the end, then shutdown and proceed with the code
         es.shutdown();
@@ -286,14 +286,14 @@ public class AdaptiveSurveyMinimalistic1x2x8Simulation {
 
         // Credal
 //        TODO
-//        writeToFile(path, "Minimalistic1x2x8.posteriors.bayesian-adaptive-entropy", resultsCredalAdaptiveEntropy, 0);
-//        writeToFile(path, "Minimalistic1x2x8.answers.bayesian-adaptive-entropy", resultsCredalAdaptiveEntropy, 1);
+        writeToFile(path, "Minimalistic1x2x8.posteriors.bayesian-adaptive-entropy", resultsCredalAdaptiveEntropy, 0);
+        writeToFile(path, "Minimalistic1x2x8.answers.bayesian-adaptive-entropy", resultsCredalAdaptiveEntropy, 1);
 
         writeToFile(path, "Minimalistic1x2x8.posteriors.bayesian-adaptive-mode", resultsCredalAdaptiveMode, 0);
         writeToFile(path, "Minimalistic1x2x8.answers.bayesian-adaptive-mode", resultsCredalAdaptiveMode, 1);
 
-//        writeToFile(path, "Minimalistic1x2x8.posteriors.bayesian-adaptive-pright", resultsCredalAdaptivePRight, 0);
-//        writeToFile(path, "Minimalistic1x2x8.answers.bayesian-adaptive=pright", resultsCredalAdaptivePRight, 1);
+        writeToFile(path, "Minimalistic1x2x8.posteriors.bayesian-adaptive-pright", resultsCredalAdaptivePRight, 0);
+        writeToFile(path, "Minimalistic1x2x8.answers.bayesian-adaptive=pright", resultsCredalAdaptivePRight, 1);
     }
 
     static void writeToFile(String path, String filename, List<Future<String[]>> content, int idx) throws Exception {
