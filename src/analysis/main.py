@@ -5,28 +5,28 @@ import numpy as np
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
 
 from sklearn.metrics import confusion_matrix
-from src.analysis.multilabel_classification_metrics import brier_multicategory, hamming_distance, exact_match_ratio, \
+from multilabel_classification_metrics import brier_multicategory, hamming_distance, exact_match_ratio, \
     plot_confusion_matrix, class_metrics_barplot, metric_per_question
-from src.analysis.utils import save_metrics, check_dir, save_visualisation
+from utils import save_metrics, check_dir, save_visualisation
 
-if __name__ == '__main__':
-    root = '../../output/'
-    simulations_dirs = next(os.walk(root))[1]
-    # models = ['bayesian-adaptive', 'bayesian-non-adaptive', 'credal']
-    models = ['bayesian-adaptive', 'bayesian-non-adaptive']
 
-    n_skills = [4, 1]
-    n_skill_levels = [4, 2]
+def analyse_model(simulations_dirs, models, n_skills, n_skill_levels):
+    """
+
+    :param simulations_dirs:
+    :param models:
+    :param n_skills:
+    :param n_skill_levels:
+    """
+
     n_questions = 0
-    cms = []
-    # for idx, sim in enumerate(simulations_dirs):
-    for idx, sim in enumerate(['Minimalistic']):
-        sim_path = "../../output/" + sim + '/'
 
-        # TODO REMOVE
-        n_skills = [1, 4]
-        n_skill_levels = [2, 4]
-        # end TODO
+    for idx, sim in enumerate(simulations_dirs):
+        cms = []
+
+        sim_path = "../../output/" + sim + '/'
+        pre_name = sim + '.'
+
         n_skill = n_skills[idx]
         n_states = n_skill_levels[idx]
 
@@ -37,13 +37,11 @@ if __name__ == '__main__':
         avg_brier_per_question = []
 
         for test in models:
-            initial_profiles_file = sim_path + "profiles.csv"
-            posteriors_file = sim_path + "posteriors." + test + ".csv"
+            initial_profiles_file = sim_path + sim + ".profiles.csv"
+            posteriors_file = sim_path + sim + ".posteriors." + test + ".csv"
 
-            observed_classes = np.loadtxt(initial_profiles_file,
-                                          delimiter=',',
-                                          dtype=np.int32)
-            observed_classes = np.reshape(observed_classes, (-1, n_skill))
+            all_observed_classes = np.loadtxt(initial_profiles_file, delimiter=',', dtype=np.int32)
+            observed_classes = np.reshape(all_observed_classes, (-1, n_skill))
 
             posteriors = np.loadtxt(posteriors_file, delimiter=',')[:, 1:]
             n_questions = int(np.shape(posteriors)[1] / n_posteriors)
@@ -53,14 +51,13 @@ if __name__ == '__main__':
 
             final_posterior = posteriors[:, -1, ...]
             predicted_classes = all_predicted_classes[:, -1, ...]
+            predicted_classes_5 = all_predicted_classes[:, 5, ...]
 
             # Analysis
             hamming_losses = []
             hamming_distances = []
             accuracy_scores = []
-            precision_scores = []
-            recall_scores = []
-            f1_scores = []
+
             all_accuracy_scores = []
             all_brier_scores = []
 
@@ -102,7 +99,7 @@ if __name__ == '__main__':
             out_dir = sim_path + "metrics/"
             check_dir(out_dir)
 
-            out_file = out_dir + 'metrics.' + test + '.csv'
+            out_file = out_dir + pre_name + 'metrics.' + test + '.csv'
             metrics = np.column_stack([brier_scores, hamming_losses, hamming_distances, accuracy_scores])
             header = 'brier_scores, hamming_losses, hamming_distances, accuracy_scores'
             save_metrics(out_file, metrics, header)
@@ -118,12 +115,14 @@ if __name__ == '__main__':
             predictions = np.array(predicted_classes).flat
             observations = np.array(observed_classes).flat
 
+            predictions_5 = np.array(predicted_classes_5).flat
+
             macroavg_precision = precision_score(observations, predictions, labels=np.arange(n_states), average='macro')
             macroavg_recall = recall_score(observations, predictions, labels=np.arange(n_states), average='macro')
             macroavg_f1 = f1_score(observations, predictions, labels=np.arange(n_states), average='macro')
 
             # Save avg metrics
-            out_file = out_dir + 'avg_metrics.' + test + '.csv'
+            out_file = out_dir + pre_name + 'avg_metrics.' + test + '.csv'
             header = 'brier_scores, hamming_losses, hamming_distances, accuracy_scores, exact_match_ratio, macroavg_precision, macroavg_recall, macroavg_f1_score'
             metrics = np.column_stack([avg_brier_scores, avg_hamming_losses, avg_hamming_distances,
                                        avg_accuracy_scores, EMR, macroavg_precision, macroavg_recall, macroavg_f1])
@@ -131,18 +130,18 @@ if __name__ == '__main__':
             #                 avg_accuracy_scores, EMR, macroavg_precision, macroavg_recall, macroavg_f1]
             save_metrics(out_file, metrics, header)
 
-            cm = confusion_matrix(observations, predictions, labels=np.arange(n_states))
+            cm = confusion_matrix(observations, predictions_5, labels=np.arange(n_states))
             cms.append(cm)
 
             # Compute metrics for each class:
             cm = cm.astype('float') / cm.sum(axis=1)[:, np.newaxis]  # normalize the diagonal entries
 
             class_accuracy = cm.diagonal()  # the diagonal entries are the accuracies of each class
-            class_precision = precision_score(observations, predictions, labels=np.arange(n_states), average=None)
-            class_recall = recall_score(observations, predictions, labels=np.arange(n_states), average=None)
-            class_f1 = f1_score(observations, predictions, labels=np.arange(n_states), average=None)
+            class_precision = precision_score(observations, predictions_5, labels=np.arange(n_states), average=None)
+            class_recall = recall_score(observations, predictions_5, labels=np.arange(n_states), average=None)
+            class_f1 = f1_score(observations, predictions_5, labels=np.arange(n_states), average=None)
 
-            out_file = out_dir + 'skills_avg_metrics.' + test + '.csv'
+            out_file = out_dir + pre_name + 'skills_avg_metrics.' + test + '.csv'
 
             header = ''
             els = range(class_accuracy.shape[0])
@@ -153,9 +152,9 @@ if __name__ == '__main__':
             dict_f1 = {}
 
             for el in els:
-               header = header + 'skill_' + str(el) + '_accuracy, '
-               dict_metrics['accuracy/X' + str(el)] = class_accuracy[el]
-               dict_acc['X' + str(el)] = 'accuracy/X' + str(el)
+                header = header + 'skill_' + str(el) + '_accuracy, '
+                dict_metrics['accuracy/X' + str(el)] = class_accuracy[el]
+                dict_acc['X' + str(el)] = 'accuracy/X' + str(el)
             for el in els:
                 header = header + 'skill_' + str(el) + '_precision, '
                 dict_metrics['precision/X' + str(el)] = class_precision[el]
@@ -176,24 +175,48 @@ if __name__ == '__main__':
 
             list_dict_metrics.append(dict_metrics)
 
-        fig, axes = plt.subplots(1, 2, sharey=True, figsize=(7, 4))
-        fig.suptitle('Confusion matrix', fontweight='bold')
+        n_models = len(models)
 
-        plot_confusion_matrix(axes[0], cms[0], labels=np.arange(n_states), title=models[0])
-        img = plot_confusion_matrix(axes[1], cms[1], labels=np.arange(n_states), title=models[1])
+        # Save confusion matrices
+        fig, axes = plt.subplots(1, n_models, sharey=True, figsize=(n_models * 3, 4), constrained_layout=True)
+        fig.suptitle('Confusion matrix --- ' + sim, fontweight='bold')
 
-        fig.colorbar(img, ax=axes .ravel().tolist())
-        # fig.tight_layout()
+        for idx, model in enumerate(models):
+            if idx > 0:
+                img = plot_confusion_matrix(axes[idx], cms[idx], labels=np.arange(n_states), title=models[idx], y_label=False)
+            else:
+                plot_confusion_matrix(axes[idx], cms[idx], labels=np.arange(n_states), title=models[idx])
+
+        fig.colorbar(img, ax=axes.ravel().tolist())
         out_images = sim_path + "images/"
         check_dir(out_images)
-        save_visualisation('confusion_matrix', out_images)
+        save_visualisation(pre_name + 'confusion_matrix', out_images)
 
-        class_metrics_barplot(models, list_dict_metrics, dict_labels)
+        # Save barplots
+        class_metrics_barplot(models, list_dict_metrics, dict_labels, sim)
+        save_visualisation(pre_name + 'class_metrics', out_images)
 
-        save_visualisation('class_metrics', out_images)
+        # Save accuracies
+        # annotations = [(0, 10), (0, -10), (0, -20), (0, -15)]
+        annotations = [(0, 20), (0, 20), (0, -20), (0, 10)]
+        metric_per_question(n_questions, avg_accuracy_per_question, 'Accuracy', models, annotations, sim)
+        save_visualisation(pre_name + 'accuracy_per_question', out_images)
 
-        metric_per_question(n_questions, avg_accuracy_per_question, 'Accuracy', models, [(0, 10), (0, -20)])
-        save_visualisation('accuracy_per_question', out_images)
+        # Save brier scores
+        annotations = [(0, 5), (0, 5), (0, 5), (0, 5)]
+        metric_per_question(n_questions, avg_brier_per_question, 'Brier score', models, annotations, sim)
+        save_visualisation(pre_name + 'brier_per_question', out_images)
 
-        metric_per_question(n_questions, avg_brier_per_question, 'Brier score', models, [(0, -20), (0, 10)])
-        save_visualisation('brier_per_question', out_images)
+
+if __name__ == '__main__':
+    root = '../../output/'
+    # simulations_dirs = next(os.walk(root))[1]
+
+    simulations_dirs = ['Minimalistic1x2x8', 'Bayesian4x4x4']
+    models = ['bayesian-adaptive-entropy', 'bayesian-adaptive-mode',
+              'bayesian-adaptive-pright', 'bayesian-non-adaptive']
+
+    number_of_skills = [1, 4]
+    number_of_skill_levels = [2, 4]
+
+    analyse_model(simulations_dirs, models, number_of_skills, number_of_skill_levels)
