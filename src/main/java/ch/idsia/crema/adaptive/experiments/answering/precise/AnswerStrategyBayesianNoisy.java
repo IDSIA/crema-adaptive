@@ -39,10 +39,10 @@ public class AnswerStrategyBayesianNoisy implements AnswerStrategyModel<Bayesian
 	@Override
 	public int answer(DAGModel<BayesianFactor> model, Question question, TIntIntMap skills) {
 		if (inference == null)
-			inference = new BeliefPropagation<>(model);
+			inference = new BeliefPropagation<>();
 
 		// TODO: check
-		final BayesianFactor PQ = inference.query(question.variable, skills);
+		final BayesianFactor PQ = inference.query(model, skills, question.variable);
 		final double Pq0 = PQ.getValue(0);
 		final double x = Math.max(0., Math.min(1., random.nextDouble() * stdDev + mean));
 

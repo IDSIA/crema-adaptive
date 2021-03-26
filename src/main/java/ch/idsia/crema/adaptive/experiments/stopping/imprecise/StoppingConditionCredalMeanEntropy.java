@@ -1,10 +1,11 @@
 package ch.idsia.crema.adaptive.experiments.stopping.imprecise;
 
 import ch.idsia.crema.adaptive.experiments.Utils;
+import ch.idsia.crema.adaptive.experiments.inference.InferenceApproxLP1;
+import ch.idsia.crema.adaptive.experiments.inference.InferenceEngine;
 import ch.idsia.crema.adaptive.experiments.stopping.StoppingConditionModel;
 import ch.idsia.crema.entropy.AbellanEntropy;
 import ch.idsia.crema.factor.credal.linear.IntervalFactor;
-import ch.idsia.crema.inference.approxlp2.ApproxLP2;
 import ch.idsia.crema.model.graphical.DAGModel;
 import gnu.trove.list.TIntList;
 import gnu.trove.map.TIntIntMap;
@@ -17,9 +18,14 @@ import gnu.trove.map.TIntIntMap;
 public class StoppingConditionCredalMeanEntropy implements StoppingConditionModel<IntervalFactor> {
 
 	private final AbellanEntropy entropy = new AbellanEntropy();
-	private final ApproxLP2 approx = new ApproxLP2();
+	private InferenceEngine inferenceEngine = new InferenceApproxLP1();
 
 	private final double threshold;
+
+	public StoppingConditionCredalMeanEntropy setInferenceEngine(InferenceEngine inferenceEngine) {
+		this.inferenceEngine = inferenceEngine;
+		return this;
+	}
 
 	public StoppingConditionCredalMeanEntropy(double threshold) {
 		this.threshold = threshold;
@@ -40,7 +46,7 @@ public class StoppingConditionCredalMeanEntropy implements StoppingConditionMode
 
 		for (int s = 0; s < skills.size(); s++) {
 			int skill = skills.get(s);
-			final IntervalFactor res = approx.query(model, skill, observations);
+			final IntervalFactor res = inferenceEngine.query(model, observations, skill);
 
 			// compute entropy of the current skill
 			final double[] PS = entropy.getMaxEntropy(res.getLower(), res.getUpper());

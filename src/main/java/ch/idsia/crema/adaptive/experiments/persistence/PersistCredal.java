@@ -1,8 +1,8 @@
 package ch.idsia.crema.adaptive.experiments.persistence;
 
 import ch.idsia.crema.adaptive.experiments.agents.Teacher;
+import ch.idsia.crema.adaptive.experiments.inference.InferenceApproxLP1;
 import ch.idsia.crema.factor.credal.linear.IntervalFactor;
-import ch.idsia.crema.inference.approxlp2.ApproxLP2;
 import gnu.trove.list.TIntList;
 
 /**
@@ -12,7 +12,7 @@ import gnu.trove.list.TIntList;
  */
 public class PersistCredal implements Persist<IntervalFactor> {
 
-	private final ApproxLP2 inference = new ApproxLP2();
+	private final InferenceApproxLP1 inference = new InferenceApproxLP1();
 
 	@Override
 	public Output<IntervalFactor> register(Teacher<IntervalFactor> teacher) throws Exception {
@@ -24,7 +24,7 @@ public class PersistCredal implements Persist<IntervalFactor> {
 		for (int s = 0; s < skills.size(); s++) {
 			int skill = skills.get(s);
 
-			final IntervalFactor query = inference.query(teacher.getModel(), skill, teacher.getObservations());
+			final IntervalFactor query = inference.query(teacher.getModel(), teacher.getObservations(), skill);
 
 			output.skills.add(skill);
 			output.factors.add(query);

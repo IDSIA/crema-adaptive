@@ -17,7 +17,7 @@ import gnu.trove.map.hash.TIntIntHashMap;
  */
 public class ScoringFunctionExpectedEntropy implements ScoringFunction<BayesianFactor> {
 
-	private BeliefPropagation<BayesianFactor> inference;
+	private final BeliefPropagation<BayesianFactor> inference = new BeliefPropagation<>();
 
 	/**
 	 * A {@link ScoringFunction} based on the expected mean entropy change from the answer.
@@ -30,17 +30,14 @@ public class ScoringFunctionExpectedEntropy implements ScoringFunction<BayesianF
 	 */
 	@Override
 	public double score(DAGModel<BayesianFactor> model, Question question, TIntIntMap observations) throws Exception {
-		if (inference == null)
-			inference = new BeliefPropagation<>(model);
-
-		final BayesianFactor PQ = inference.query(question.variable, observations);
+		final BayesianFactor PQ = inference.query(model, observations, question.variable);
 
 		double HSQ = 0;
 		for (int a = 0; a < 2; a++) {
 			TIntIntMap obs = new TIntIntHashMap(observations);
 			obs.put(question.variable, a);
 
-			final BayesianFactor bf = inference.query(question.skill, obs);
+			final BayesianFactor bf = inference.query(model, obs, question.skill);
 			final double Pqi = PQ.getValue(a);
 			final double HSq = BayesianEntropy.H(bf);
 

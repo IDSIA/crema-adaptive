@@ -17,7 +17,7 @@ import org.apache.commons.math3.util.Precision;
  */
 public class ScoringFunctionBayesianMode implements ScoringFunction<BayesianFactor> {
 
-	private BeliefPropagation<BayesianFactor> inference;
+	private final BeliefPropagation<BayesianFactor> inference = new BeliefPropagation<>();
 
 	/**
 	 * A {@link ScoringFunction} based on the mode of the probability to answer correctly.
@@ -30,10 +30,7 @@ public class ScoringFunctionBayesianMode implements ScoringFunction<BayesianFact
 	 */
 	@Override
 	public double score(DAGModel<BayesianFactor> model, Question question, TIntIntMap observations) throws Exception {
-		if (inference == null)
-			inference = new BeliefPropagation<>(model);
-
-		final BayesianFactor PQ = inference.query(question.variable, observations);
+		final BayesianFactor PQ = inference.query(model, observations, question.variable);
 
 		double[] modes = new double[2];
 
@@ -42,7 +39,7 @@ public class ScoringFunctionBayesianMode implements ScoringFunction<BayesianFact
 			TIntIntMap obs = new TIntIntHashMap(observations);
 			obs.put(question.variable, a);
 
-			final BayesianFactor bf = inference.query(question.skill, obs);
+			final BayesianFactor bf = inference.query(model, obs, question.skill);
 			final double Pqi = PQ.getValue(a);
 
 			final double mode = mode(bf);

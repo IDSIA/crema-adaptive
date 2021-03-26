@@ -2,10 +2,11 @@ package ch.idsia.crema.adaptive.experiments.scoring.imprecise;
 
 import ch.idsia.crema.adaptive.experiments.Question;
 import ch.idsia.crema.adaptive.experiments.Utils;
+import ch.idsia.crema.adaptive.experiments.inference.InferenceApproxLP1;
+import ch.idsia.crema.adaptive.experiments.inference.InferenceEngine;
 import ch.idsia.crema.adaptive.experiments.scoring.ScoringFunction;
 import ch.idsia.crema.entropy.AbellanEntropy;
 import ch.idsia.crema.factor.credal.linear.IntervalFactor;
-import ch.idsia.crema.inference.approxlp2.ApproxLP2;
 import ch.idsia.crema.model.graphical.DAGModel;
 import gnu.trove.map.TIntIntMap;
 import gnu.trove.map.hash.TIntIntHashMap;
@@ -20,7 +21,13 @@ import org.apache.commons.math3.optim.linear.NoFeasibleSolutionException;
 public class ScoringFunctionUpperExpectedEntropy implements ScoringFunction<IntervalFactor> {
 
 	private final AbellanEntropy entropy = new AbellanEntropy();
-	private final ApproxLP2 approx = new ApproxLP2();
+
+	private InferenceEngine inferenceEngine = new InferenceApproxLP1();
+
+	public ScoringFunctionUpperExpectedEntropy setInferenceEngine(InferenceEngine inferenceEngine) {
+		this.inferenceEngine = inferenceEngine;
+		return this;
+	}
 
 	/**
 	 * A {@link ScoringFunction} based on the expected mean upper entropy change from the answer.
@@ -41,7 +48,7 @@ public class ScoringFunctionUpperExpectedEntropy implements ScoringFunction<Inte
 			double HSq;
 
 			try {
-				final IntervalFactor query = approx.query(model, question.skill, obs); // TODO: bring outside
+				final IntervalFactor query = inferenceEngine.query(model, obs, question.skill); // TODO: bring outside
 				final double[] PSq = entropy.getMaxEntropy(query.getLower(), query.getUpper());
 				HSq = Utils.H(PSq);
 			} catch (NoFeasibleSolutionException e) {
@@ -53,7 +60,7 @@ public class ScoringFunctionUpperExpectedEntropy implements ScoringFunction<Inte
 		}
 
 		try {
-			final IntervalFactor PQ = approx.query(model, question.variable, observations);
+			final IntervalFactor PQ = inferenceEngine.query(model, observations, question.variable);
 			final double[] lower = PQ.getLower();
 
 			final double score0 = lower[0] * HSQs[0] + (1 - lower[0]) * HSQs[1];

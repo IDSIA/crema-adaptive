@@ -17,7 +17,7 @@ public class PersistBayesian implements Persist<BayesianFactor> {
 	@Override
 	public OutputBayesian register(Teacher<BayesianFactor> teacher) {
 		if (inference == null)
-			inference = new BeliefPropagation<>(teacher.getModel());
+			inference = new BeliefPropagation<>();
 
 		final OutputBayesian output = new OutputBayesian();
 
@@ -25,7 +25,7 @@ public class PersistBayesian implements Persist<BayesianFactor> {
 
 		for (int s = 0; s < skills.size(); s++) {
 			int skill = skills.get(s);
-			final BayesianFactor query = inference.query(skill, teacher.getObservations());
+			final BayesianFactor query = inference.query(teacher.getModel(), teacher.getObservations(), skill);
 
 			output.skills.add(skill);
 			output.factors.add(query);

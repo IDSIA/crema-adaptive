@@ -95,8 +95,14 @@
 		<dependency>
 			<groupId>ch.idsia</groupId>
 			<artifactId>crema</artifactId>
-			<version>0.1.6.e</version>
+			<version>0.1.7</version>
 			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.junit.jupiter</groupId>
+			<artifactId>junit-jupiter</artifactId>
+			<version>RELEASE</version>
+			<scope>test</scope>
 		</dependency>
 	</dependencies>
 

@@ -15,7 +15,7 @@ import gnu.trove.map.TIntIntMap;
  */
 public class StoppingConditionBayesianMeanEntropy implements StoppingConditionModel<BayesianFactor> {
 
-	private BeliefPropagation<BayesianFactor> inference;
+	private final BeliefPropagation<BayesianFactor> inference = new BeliefPropagation<>();
 
 	private final double threshold;
 
@@ -34,14 +34,11 @@ public class StoppingConditionBayesianMeanEntropy implements StoppingConditionMo
 	 */
 	@Override
 	public boolean stop(DAGModel<BayesianFactor> model, TIntList skills, TIntIntMap observations) throws Exception {
-		if (inference == null)
-			inference = new BeliefPropagation<>(model);
-
 		double mean = 0;
 
 		for (int s = 0; s < skills.size(); s++) {
 			int skill = skills.get(s);
-			final BayesianFactor PS = inference.query(skill, observations);
+			final BayesianFactor PS = inference.query(model, observations, skill);
 
 			// compute entropy of the current skill
 			final double HS = BayesianEntropy.H(PS);

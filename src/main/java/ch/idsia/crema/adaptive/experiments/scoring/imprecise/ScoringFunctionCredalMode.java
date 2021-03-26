@@ -1,9 +1,10 @@
 package ch.idsia.crema.adaptive.experiments.scoring.imprecise;
 
 import ch.idsia.crema.adaptive.experiments.Question;
+import ch.idsia.crema.adaptive.experiments.inference.InferenceApproxLP1;
+import ch.idsia.crema.adaptive.experiments.inference.InferenceEngine;
 import ch.idsia.crema.adaptive.experiments.scoring.ScoringFunction;
 import ch.idsia.crema.factor.credal.linear.IntervalFactor;
-import ch.idsia.crema.inference.approxlp2.ApproxLP2;
 import ch.idsia.crema.model.graphical.DAGModel;
 import gnu.trove.map.TIntIntMap;
 import org.apache.commons.math3.optim.PointValuePair;
@@ -22,9 +23,13 @@ import java.util.List;
  */
 public class ScoringFunctionCredalMode implements ScoringFunction<IntervalFactor> {
 
-	private final ApproxLP2 approx = new ApproxLP2();
-
+	private InferenceEngine inferenceEngine = new InferenceApproxLP1();
 	private GoalType goalType = GoalType.MINIMIZE;
+
+	public ScoringFunctionCredalMode setInferenceEngine(InferenceEngine inferenceEngine) {
+		this.inferenceEngine = inferenceEngine;
+		return this;
+	}
 
 	public ScoringFunctionCredalMode setMinimize() {
 		this.goalType = GoalType.MINIMIZE;
@@ -39,7 +44,7 @@ public class ScoringFunctionCredalMode implements ScoringFunction<IntervalFactor
 	@Override
 	public double score(DAGModel<IntervalFactor> model, Question question, TIntIntMap observations) throws Exception {
 
-		final IntervalFactor pS = approx.query(model, question.skill, observations); // TODO: bring outside
+		final IntervalFactor pS = inferenceEngine.query(model, observations, question.skill); // TODO: bring outside
 		final int m = model.getSize(question.skill); // number of state of skill under analysis
 
 		List<LinearConstraint> general_constraints = new ArrayList<>();

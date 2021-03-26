@@ -14,7 +14,7 @@ import gnu.trove.map.TIntIntMap;
  */
 public class ScoringFunctionProbabilityOfRight implements ScoringFunction<BayesianFactor> {
 
-	private BeliefPropagation<BayesianFactor> inference;
+	private final BeliefPropagation<BayesianFactor> inference = new BeliefPropagation<>();
 
 	/**
 	 * A {@link ScoringFunction} based on the probability of answer correctly.
@@ -27,10 +27,7 @@ public class ScoringFunctionProbabilityOfRight implements ScoringFunction<Bayesi
 	 */
 	@Override
 	public double score(DAGModel<BayesianFactor> model, Question question, TIntIntMap observations) throws Exception {
-		if (inference == null)
-			inference = new BeliefPropagation<>(model);
-
-		final BayesianFactor PQ = inference.query(question.variable, observations);
+		final BayesianFactor PQ = inference.query(model, observations, question.variable);
 
 		return 1. - Math.abs(PQ.getValueAt(0) - 0.5);
 	}

@@ -7,18 +7,15 @@ import ch.idsia.crema.factor.bayesian.BayesianFactor;
 import ch.idsia.crema.factor.credal.linear.IntervalFactor;
 import ch.idsia.crema.factor.credal.vertex.VertexFactor;
 import ch.idsia.crema.factor.credal.vertex.generator.CNGenerator;
-import ch.idsia.crema.inference.approxlp.Inference;
 import ch.idsia.crema.inference.sepolyve.SePolyVE;
 import ch.idsia.crema.model.graphical.DAGModel;
+import ch.idsia.crema.model.graphical.GraphicalModel;
 import ch.idsia.crema.model.io.dot.DotSerialize;
 import ch.idsia.crema.preprocess.RemoveBarren;
-import ch.idsia.crema.search.ISearch;
-import ch.idsia.crema.search.impl.GreedyWithRandomRestart;
 import gnu.trove.map.TIntIntMap;
 import gnu.trove.map.hash.TIntIntHashMap;
 
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 
@@ -223,7 +220,8 @@ public class AdaptiveTestsFast {
 		evidence.put(myQuestions[2], 0);
 		evidence.put(myQuestions[3], 0);
 
-		DAGModel<VertexFactor> vmodel2 = new RemoveBarren().execute(modelV, mySkills[0], evidence);
+		final RemoveBarren<VertexFactor> rb = new RemoveBarren<>();
+		GraphicalModel<VertexFactor> vmodel2 = rb.execute(modelV, evidence, mySkills[0]);
 
 		System.out.println(new DotSerialize().run(vmodel2));
 
@@ -361,6 +359,9 @@ public class AdaptiveTestsFast {
 		fDummy.setValue(1.0, 1, 1, 1, 0, 0);
 		fDummy.setValue(1.0, 1, 1, 1, 1, 0);
 		model.setFactor(dummy, fDummy);
+
+/*
+        TODO: incompatible with CREMA 0.1.7.RC3
 		model = new RemoveBarren().execute(model, skill[queriedSkill], dummy);
 
 		// Compute the inferences
@@ -381,7 +382,7 @@ public class AdaptiveTestsFast {
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
-
+*/
 		return null;
 	}
 }
