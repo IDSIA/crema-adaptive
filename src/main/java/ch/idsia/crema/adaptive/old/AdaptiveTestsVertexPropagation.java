@@ -1,5 +1,9 @@
 package ch.idsia.crema.adaptive.old;
 
+import cern.colt.matrix.DoubleMatrix1D;
+import cern.colt.matrix.DoubleMatrix2D;
+import cern.colt.matrix.impl.DenseDoubleMatrix1D;
+import cern.colt.matrix.impl.DenseDoubleMatrix2D;
 import com.joptimizer.functions.ConvexMultivariateRealFunction;
 import com.joptimizer.functions.LinearMultivariateRealFunction;
 import com.joptimizer.optimizers.JOptimizer;
@@ -31,35 +35,35 @@ public class AdaptiveTestsVertexPropagation {
 		inequalities[1] = new ConvexMultivariateRealFunction() {
 
 			@Override
-			public double value(double[] X) {
-				double y0 = X[0];
-				double y1 = X[1];
-				double t = X[2];
+			public double value(DoubleMatrix1D X) {
+				double y0 = X.get(0);
+				double y1 = X.get(1);
+				double t = X.get(2);
 				return t * (Math.pow(y0 / t - c0, 2) + Math.pow(y1 / t - c1, 2) - Math.pow(R, 2));
 			}
 
 			@Override
-			public double[] gradient(double[] X) {
-				double y0 = X[0];
-				double y1 = X[1];
-				double t = X[2];
+			public DoubleMatrix1D gradient(DoubleMatrix1D X) {
+				double y0 = X.get(0);
+				double y1 = X.get(1);
+				double t = X.get(2);
 				double[] ret = new double[3];
 				ret[0] = 2 * (y0 / t - c0);
 				ret[1] = 2 * (y1 / t - c1);
 				ret[2] = Math.pow(c0, 2) + Math.pow(c1, 2) - Math.pow(R, 2) - (Math.pow(y0, 2) + Math.pow(y1, 2)) / Math.pow(t, 2);
-				return ret;
+				return new DenseDoubleMatrix1D(ret);
 			}
 
 			@Override
-			public double[][] hessian(double[] X) {
-				double y0 = X[0];
-				double y1 = X[1];
-				double t = X[2];
+			public DoubleMatrix2D hessian(DoubleMatrix1D X) {
+				double y0 = X.get(0);
+				double y1 = X.get(1);
+				double t = X.get(2);
 				double[][] ret = {
 						{2 / t, 0, -2 * y0 / Math.pow(t, 2)},
 						{0, 2 / t, -2 * y1 / Math.pow(t, 2)},
 						{-2 * y0 / Math.pow(t, 2), -2 * y1 / Math.pow(t, 2), 2 * (Math.pow(y0, 2) + Math.pow(y1, 2)) / Math.pow(t, 3)}};
-				return ret;
+				return new DenseDoubleMatrix2D(ret);
 			}
 
 			@Override
@@ -87,7 +91,7 @@ public class AdaptiveTestsVertexPropagation {
 		JOptimizer opt = new JOptimizer();
 		opt.setOptimizationRequest(or);
 		try {
-			int returnCode = opt.optimize();
+			opt.optimize();
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

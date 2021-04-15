@@ -49,8 +49,8 @@ public class CredalMinimalistic1x2x8 extends AbstractModelBuilder<IntervalFactor
         model.addParent(q, parent);
 
         final IntervalFactor fQ = new IntervalFactor(model.getDomain(q), model.getDomain(parent));
-        fQ.setLower(new double[]{.87, 1 - .07}, 0); // lP(Q=right|S=0)
-        fQ.setUpper(new double[]{.93, 1 - .13}, 0); // uP(Q=right|S=0)
+        fQ.setLower(new double[]{.87, 1 - .93}, 0); // lP(Q=right|S=0)
+        fQ.setUpper(new double[]{.93, 1 - .87}, 0); // uP(Q=right|S=0)
 
         fQ.setLower(new double[]{.85, 1. - .90}, 1); // lP(Q=right|S=1)
         fQ.setUpper(new double[]{.90, 1. - .85}, 1); // uP(Q=right|S=1)

@@ -18,7 +18,7 @@ public class InferenceApproxLP1 implements InferenceEngine {
 
 	@Override
 	public IntervalFactor query(DAGModel<IntervalFactor> original, TIntIntMap obs, int variable) throws InterruptedException {
-		final DAGModel<IntervalFactor> model = original.copy();
+		DAGModel<IntervalFactor> model = original.copy();
 
 		if (obs.isEmpty()) {
 			// remove barren nodes
@@ -32,6 +32,12 @@ public class InferenceApproxLP1 implements InferenceEngine {
 			// remove barren nodes
 			final RemoveBarren<IntervalFactor> rb = new RemoveBarren<>();
 			rb.executeInPlace(model, obs, variable);
+
+			final CutObserved co = new CutObserved();
+			co.executeInPlace(model, obs);
+
+			final MergeObserved mo = new MergeObserved();
+			model = mo.execute(model, obs);
 
 			// binarize evidence
 			final BinarizeEvidence<IntervalFactor> be = new BinarizeEvidence<>(obs.size());
