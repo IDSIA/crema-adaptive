@@ -8,6 +8,7 @@ import ch.idsia.crema.model.graphical.MixedModel;
 import ch.idsia.crema.preprocess.BinarizeEvidence;
 import ch.idsia.crema.preprocess.RemoveBarren;
 import gnu.trove.map.TIntIntMap;
+import gnu.trove.map.hash.TIntIntHashMap;
 
 /**
  * Author:  Claudio "Dna" Bonesana
@@ -19,6 +20,7 @@ public class InferenceApproxLP1 implements InferenceEngine {
 	@Override
 	public IntervalFactor query(DAGModel<IntervalFactor> original, TIntIntMap obs, int variable) throws InterruptedException {
 		DAGModel<IntervalFactor> model = original.copy();
+		obs = new TIntIntHashMap(obs);
 
 		if (obs.isEmpty()) {
 			// remove barren nodes
@@ -47,7 +49,13 @@ public class InferenceApproxLP1 implements InferenceEngine {
 			// ApproxLP1
 			final ApproxLP1<GenericFactor> approx = new ApproxLP1<>();
 			approx.setEvidenceNode(evidence);
-			return approx.query(mixedModel, variable);
+
+			try {
+				return approx.query(mixedModel, variable);
+			} catch (IndexOutOfBoundsException e) {
+				e.printStackTrace();
+				return null;
+			}
 		}
 	}
 
