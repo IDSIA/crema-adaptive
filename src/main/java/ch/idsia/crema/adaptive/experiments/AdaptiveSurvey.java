@@ -3,7 +3,7 @@ package ch.idsia.crema.adaptive.experiments;
 import ch.idsia.crema.adaptive.experiments.agents.AgentTeacher;
 import ch.idsia.crema.adaptive.experiments.agents.Student;
 import ch.idsia.crema.adaptive.experiments.agents.Teacher;
-import ch.idsia.crema.adaptive.experiments.model.imprecise.CredalMinimalistic;
+import ch.idsia.crema.adaptive.experiments.model.imprecise.CredalMinimalistic1x2x1;
 import ch.idsia.crema.adaptive.experiments.model.precise.BayesianMinimalistic;
 import ch.idsia.crema.adaptive.experiments.persistence.PersistBayesian;
 import ch.idsia.crema.adaptive.experiments.persistence.PersistCredal;
@@ -17,6 +17,7 @@ import ch.idsia.crema.factor.bayesian.BayesianFactor;
 import ch.idsia.crema.inference.sampling.BayesianNetworkSampling;
 import gnu.trove.map.TIntIntMap;
 
+import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
@@ -34,7 +35,7 @@ public class AdaptiveSurvey {
 	// we will generate samples up to 20 students
 	static final int N_STUDENTS = 20;
 	// we are going to use a minimalistic (1xSkill NxQuestion) model with 20 questions
-	static final int N_QUESTIONS = 20;
+	static final int N_QUESTIONS = 5;
 	// since we are using an ExecutorService, we will run 4 tests in parallel
 	static final int PARALLEL_COUNT = 4;
 
@@ -127,7 +128,7 @@ public class AdaptiveSurvey {
 						System.out.println("Student Credal " + student.getId());
 
 						final AgentTeacher teacher = new Teacher<>(
-								new CredalMinimalistic(N_QUESTIONS, .4, .4, .6, .6),
+								new CredalMinimalistic1x2x1(N_QUESTIONS, .4, .4, .6, .6),
 								new ScoringFunctionCredalMode(),
 								new StoppingConditionCredalMeanEntropy(.5),
 								new StoppingConditionQuestionNumber<>(10)
@@ -154,9 +155,9 @@ public class AdaptiveSurvey {
 		es.shutdown();
 
 		// write the output to file
-		writeToFile("output.non-adaptive.csv", resultsNonAdaptive);
-		writeToFile("output.bayesian-adaptive.csv", resultsAdaptiveBayesian);
-		writeToFile("output.credal-adaptive.csv", resultsAdaptiveCredal);
+		writeToFile("non-adaptive.csv", resultsNonAdaptive);
+		writeToFile("bayesian-adaptive.csv", resultsAdaptiveBayesian);
+		writeToFile("credal-adaptive.csv", resultsAdaptiveCredal);
 	}
 
 	static void writeToFile(String filename, List<Future<String>> content) throws Exception {
@@ -176,7 +177,8 @@ public class AdaptiveSurvey {
 				.collect(Collectors.toList());
 
 		// just dump everything to a file
-		Files.write(Paths.get(filename), lines);
+		new File("output/").mkdirs();
+		Files.write(Paths.get("output/" + filename), lines);
 	}
 
 }

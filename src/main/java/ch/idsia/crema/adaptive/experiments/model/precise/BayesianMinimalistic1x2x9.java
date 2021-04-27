@@ -10,7 +10,7 @@ import ch.idsia.crema.model.graphical.DAGModel;
  * Project: crema-adaptive
  * Date:    18.02.2021 16:00
  */
-public class BayesianMinimalistic1x2x8 extends AbstractModelBuilder<BayesianFactor> {
+public class BayesianMinimalistic1x2x9 extends AbstractModelBuilder<BayesianFactor> {
 
     /**
      * A Bayesian model with one skill with two states and a given number of questions.
@@ -19,7 +19,7 @@ public class BayesianMinimalistic1x2x8 extends AbstractModelBuilder<BayesianFact
      *
      * @param nQuestions number of questions in total, all the questions in a template have the same CPT.
      */
-    public BayesianMinimalistic1x2x8(int nQuestions) {
+    public BayesianMinimalistic1x2x9(int nQuestions) {
         model = new DAGModel<>();
 
         int s = model.addVariable(2);
@@ -36,6 +36,7 @@ public class BayesianMinimalistic1x2x8 extends AbstractModelBuilder<BayesianFact
             addQuestionNodeL6(model, s, 10 * s + 6);
             addQuestionNodeL7(model, s, 10 * s + 7);
             addQuestionNodeL8(model, s, 10 * s + 8);
+            addQuestionNodeL9(model, s, 10 * s + 9);
         }
     }
 
@@ -44,8 +45,8 @@ public class BayesianMinimalistic1x2x8 extends AbstractModelBuilder<BayesianFact
         model.addParent(q, parent);
 
         final BayesianFactor fQ = new BayesianFactor(model.getDomain(parent, q), new double[]{
-                .9, .1,
-                .1, .9
+                     .8,     .40,
+                1. - .8, 1. - .40
         });
 
         model.setFactor(q, fQ);
@@ -58,8 +59,8 @@ public class BayesianMinimalistic1x2x8 extends AbstractModelBuilder<BayesianFact
         model.addParent(q, parent);
 
         final BayesianFactor fQ = new BayesianFactor(model.getDomain(parent, q), new double[]{
-                .85, .15,
-                .15, .85
+                     .85,     .35,
+                1. - .85, 1. - .35
         });
 
         model.setFactor(q, fQ);
@@ -72,8 +73,8 @@ public class BayesianMinimalistic1x2x8 extends AbstractModelBuilder<BayesianFact
         model.addParent(q, parent);
 
         final BayesianFactor fQ = new BayesianFactor(model.getDomain(parent, q), new double[]{
-                .8, .2,
-                .2, .8
+                     .90,     .3,
+                1. - .90, 1. - .3
         });
 
         model.setFactor(q, fQ);
@@ -86,8 +87,8 @@ public class BayesianMinimalistic1x2x8 extends AbstractModelBuilder<BayesianFact
         model.addParent(q, parent);
 
         final BayesianFactor fQ = new BayesianFactor(model.getDomain(parent, q), new double[]{
-                .75, .25,
-                .25, .75
+                     .7,     .3,
+                1. - .7, 1. - .3
         });
 
         model.setFactor(q, fQ);
@@ -100,8 +101,8 @@ public class BayesianMinimalistic1x2x8 extends AbstractModelBuilder<BayesianFact
         model.addParent(q, parent);
 
         final BayesianFactor fQ = new BayesianFactor(model.getDomain(parent, q), new double[]{
-                .7, .3,
-                .3, .7
+                     .75,     .25,
+                1. - .75, 1. - .25
         });
 
         model.setFactor(q, fQ);
@@ -114,8 +115,8 @@ public class BayesianMinimalistic1x2x8 extends AbstractModelBuilder<BayesianFact
         model.addParent(q, parent);
 
         final BayesianFactor fQ = new BayesianFactor(model.getDomain(parent, q), new double[]{
-                .65, .35,
-                .35, .65
+                     .8,     .2,
+                1. - .8, 1. - .2
         });
 
         model.setFactor(q, fQ);
@@ -128,8 +129,8 @@ public class BayesianMinimalistic1x2x8 extends AbstractModelBuilder<BayesianFact
         model.addParent(q, parent);
 
         final BayesianFactor fQ = new BayesianFactor(model.getDomain(parent, q), new double[]{
-                .6, .4,
-                .4, .6
+                     .6,     .2,
+                1. - .6, 1. - .2
         });
 
         model.setFactor(q, fQ);
@@ -142,8 +143,22 @@ public class BayesianMinimalistic1x2x8 extends AbstractModelBuilder<BayesianFact
         model.addParent(q, parent);
 
         final BayesianFactor fQ = new BayesianFactor(model.getDomain(parent, q), new double[]{
-                .55, .45,
-                .45, .55
+                     .65,      .15,
+                1. - .65, 1. - .15
+        });
+
+        model.setFactor(q, fQ);
+
+        questions.add(new Question(parent, q, template));
+    }
+
+    public void addQuestionNodeL9(DAGModel<BayesianFactor> model, int parent, int template) {
+        final int q = model.addVariable(2);
+        model.addParent(q, parent);
+
+        final BayesianFactor fQ = new BayesianFactor(model.getDomain(parent, q), new double[]{
+                     .7,      .1,
+                1. - .7, 1. - .1
         });
 
         model.setFactor(q, fQ);

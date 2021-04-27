@@ -19,8 +19,14 @@ public class Experiment {
 	}
 
 	public void run() throws Exception {
+		int question = 0;
+
 		while (!teacher.stop()) {
 			Question q = teacher.next();
+
+			System.out.println("Question: " + question);
+			question++;
+
 			if (q == null)
 				break;
 
