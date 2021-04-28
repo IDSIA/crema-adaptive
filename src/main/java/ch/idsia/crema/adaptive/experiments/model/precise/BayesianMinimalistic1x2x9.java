@@ -44,10 +44,8 @@ public class BayesianMinimalistic1x2x9 extends AbstractModelBuilder<BayesianFact
         final int q = model.addVariable(2);
         model.addParent(q, parent);
 
-        final BayesianFactor fQ = new BayesianFactor(model.getDomain(parent, q), new double[]{
-                     .8,     .40,
-                1. - .8, 1. - .40
-        });
+        final BayesianFactor fQ = new BayesianFactor(model.getDomain(parent, q), false);
+        fQ.setData(new int[]{q, parent}, new double[]{.8, .2, .4, .6});
 
         model.setFactor(q, fQ);
 
@@ -58,10 +56,8 @@ public class BayesianMinimalistic1x2x9 extends AbstractModelBuilder<BayesianFact
         final int q = model.addVariable(2);
         model.addParent(q, parent);
 
-        final BayesianFactor fQ = new BayesianFactor(model.getDomain(parent, q), new double[]{
-                     .85,     .35,
-                1. - .85, 1. - .35
-        });
+        final BayesianFactor fQ = new BayesianFactor(model.getDomain(parent, q), false);
+        fQ.setData(new int[]{q, parent}, new double[]{.85, .15, .35, .65});
 
         model.setFactor(q, fQ);
 
@@ -72,10 +68,8 @@ public class BayesianMinimalistic1x2x9 extends AbstractModelBuilder<BayesianFact
         final int q = model.addVariable(2);
         model.addParent(q, parent);
 
-        final BayesianFactor fQ = new BayesianFactor(model.getDomain(parent, q), new double[]{
-                     .90,     .3,
-                1. - .90, 1. - .3
-        });
+        final BayesianFactor fQ = new BayesianFactor(model.getDomain(parent, q), false);
+        fQ.setData(new int[]{q, parent}, new double[]{.90, .1, .3, .7});
 
         model.setFactor(q, fQ);
 
@@ -86,10 +80,8 @@ public class BayesianMinimalistic1x2x9 extends AbstractModelBuilder<BayesianFact
         final int q = model.addVariable(2);
         model.addParent(q, parent);
 
-        final BayesianFactor fQ = new BayesianFactor(model.getDomain(parent, q), new double[]{
-                     .7,     .3,
-                1. - .7, 1. - .3
-        });
+        final BayesianFactor fQ = new BayesianFactor(model.getDomain(parent, q), false);
+        fQ.setData(new int[]{q, parent}, new double[]{.7, .3, .3, .7});
 
         model.setFactor(q, fQ);
 
@@ -100,10 +92,8 @@ public class BayesianMinimalistic1x2x9 extends AbstractModelBuilder<BayesianFact
         final int q = model.addVariable(2);
         model.addParent(q, parent);
 
-        final BayesianFactor fQ = new BayesianFactor(model.getDomain(parent, q), new double[]{
-                     .75,     .25,
-                1. - .75, 1. - .25
-        });
+        final BayesianFactor fQ = new BayesianFactor(model.getDomain(parent, q), false);
+        fQ.setData(new int[]{q, parent}, new double[]{.75, .25, .25, .75});
 
         model.setFactor(q, fQ);
 
@@ -114,10 +104,8 @@ public class BayesianMinimalistic1x2x9 extends AbstractModelBuilder<BayesianFact
         final int q = model.addVariable(2);
         model.addParent(q, parent);
 
-        final BayesianFactor fQ = new BayesianFactor(model.getDomain(parent, q), new double[]{
-                     .8,     .2,
-                1. - .8, 1. - .2
-        });
+        final BayesianFactor fQ = new BayesianFactor(model.getDomain(parent, q), false);
+        fQ.setData(new int[]{q, parent}, new double[]{.8, .2, .2, .8});
 
         model.setFactor(q, fQ);
 
@@ -128,10 +116,8 @@ public class BayesianMinimalistic1x2x9 extends AbstractModelBuilder<BayesianFact
         final int q = model.addVariable(2);
         model.addParent(q, parent);
 
-        final BayesianFactor fQ = new BayesianFactor(model.getDomain(parent, q), new double[]{
-                     .6,     .2,
-                1. - .6, 1. - .2
-        });
+        final BayesianFactor fQ = new BayesianFactor(model.getDomain(parent, q), false);
+        fQ.setData(new int[]{q, parent}, new double[]{.6, .4, .2, .8});
 
         model.setFactor(q, fQ);
 
@@ -142,10 +128,8 @@ public class BayesianMinimalistic1x2x9 extends AbstractModelBuilder<BayesianFact
         final int q = model.addVariable(2);
         model.addParent(q, parent);
 
-        final BayesianFactor fQ = new BayesianFactor(model.getDomain(parent, q), new double[]{
-                     .65,      .15,
-                1. - .65, 1. - .15
-        });
+        final BayesianFactor fQ = new BayesianFactor(model.getDomain(parent, q), false);
+        fQ.setData(new int[]{q, parent}, new double[]{.65, .35, .15, .85});
 
         model.setFactor(q, fQ);
 
@@ -156,10 +140,8 @@ public class BayesianMinimalistic1x2x9 extends AbstractModelBuilder<BayesianFact
         final int q = model.addVariable(2);
         model.addParent(q, parent);
 
-        final BayesianFactor fQ = new BayesianFactor(model.getDomain(parent, q), new double[]{
-                     .7,      .1,
-                1. - .7, 1. - .1
-        });
+        final BayesianFactor fQ = new BayesianFactor(model.getDomain(parent, q), false);
+        fQ.setData(new int[]{q, parent}, new double[]{.7, .3, .1, .9});
 
         model.setFactor(q, fQ);
 
