@@ -11,7 +11,7 @@ import ch.idsia.crema.model.graphical.DAGModel;
  * Project: crema-adaptive
  * Date:    08.02.2021 15:40
  */
-public class CredalMinimalistic extends AbstractModelBuilder<IntervalFactor> {
+public class CredalMinimalistic1x2x1 extends AbstractModelBuilder<IntervalFactor> {
 
 	/**
 	 * A Bayesian model with one skill with two states and a given number of questions. All the questions have the same
@@ -23,7 +23,7 @@ public class CredalMinimalistic extends AbstractModelBuilder<IntervalFactor> {
 	 * @param u0         upper probability to know the answer given that it has the skill
 	 * @param u1         upper probability to know the answer given that it has not the skill
 	 */
-	public CredalMinimalistic(int nQuestions, double l0, double l1, double u0, double u1) {
+	public CredalMinimalistic1x2x1(int nQuestions, double l0, double l1, double u0, double u1) {
 		model = new DAGModel<>();
 
 		int s = model.addVariable(2);
