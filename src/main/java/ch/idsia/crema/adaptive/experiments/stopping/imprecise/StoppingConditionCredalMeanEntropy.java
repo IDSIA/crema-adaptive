@@ -49,11 +49,12 @@ public class StoppingConditionCredalMeanEntropy implements StoppingConditionMode
 			final IntervalFactor res = inferenceEngine.query(model, observations, skill);
 
 			// compute entropy of the current skill
-			final double[] PS = entropy.getMaxEntropy(res.getLower(), res.getUpper());
+			final double[] PS = entropy.getMaxEntropy(res.getLower().clone(), res.getUpper().clone());
 			final double HS = Utils.H(PS);
-
-			mean += HS / model.getSize(skill);
+			mean += HS / skills.size();
 		}
+
+		System.out.printf("H%2d: %.4f%n", observations.size(), mean);
 
 		return mean < threshold;
 	}

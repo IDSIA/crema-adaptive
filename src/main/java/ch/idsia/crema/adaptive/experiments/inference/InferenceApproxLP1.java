@@ -18,9 +18,9 @@ import gnu.trove.map.hash.TIntIntHashMap;
 public class InferenceApproxLP1 implements InferenceEngine {
 
 	@Override
-	public IntervalFactor query(DAGModel<IntervalFactor> original, TIntIntMap obs, int variable) throws InterruptedException {
+	public IntervalFactor query(DAGModel<IntervalFactor> original, TIntIntMap original_obs, int variable) throws InterruptedException {
 		DAGModel<IntervalFactor> model = original.copy();
-		obs = new TIntIntHashMap(obs);
+		TIntIntMap obs = new TIntIntHashMap(original_obs);
 
 		if (obs.isEmpty()) {
 			// remove barren nodes

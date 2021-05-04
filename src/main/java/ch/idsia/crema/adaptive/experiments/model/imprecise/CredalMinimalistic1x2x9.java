@@ -13,7 +13,13 @@ import ch.idsia.crema.model.graphical.DAGModel;
  */
 public class CredalMinimalistic1x2x9 extends AbstractModelBuilder<IntervalFactor> {
 
-    /**
+    private double eps = .05;
+
+	public void setEps(double eps) {
+		this.eps = eps;
+	}
+
+	/**
      * Build a Credal model with one skill with two states and a given number of questions.
      * Each skill has 8 templates of questions, each template has nQuestions questions, and each question has 2 states.
      * All the questions in a template have the same CPT.
@@ -21,7 +27,6 @@ public class CredalMinimalistic1x2x9 extends AbstractModelBuilder<IntervalFactor
      * @param nQuestions number of questions in total, all the questions in a
      *                   template have the same CPT.
      */
-
     public CredalMinimalistic1x2x9(int nQuestions){
         model = new DAGModel<>();
 
@@ -32,18 +37,33 @@ public class CredalMinimalistic1x2x9 extends AbstractModelBuilder<IntervalFactor
         skills.add(s);
 
         for (int i = 0; i < nQuestions; i++) {
-            addQuestionNodeL1(model, s, 10 * s + 1);
-            addQuestionNodeL2(model, s, 10 * s + 2);
-            addQuestionNodeL3(model, s, 10 * s + 3);
-            addQuestionNodeL4(model, s, 10 * s + 4);
-            addQuestionNodeL5(model, s, 10 * s + 5);
-            addQuestionNodeL6(model, s, 10 * s + 6);
-            addQuestionNodeL7(model, s, 10 * s + 7);
-            addQuestionNodeL8(model, s, 10 * s + 8);
-            addQuestionNodeL9(model, s, 10 * s + 9);
+            addQuestionNodeTemplate(model, s, 10 * s + 1, .40, .80);
+            addQuestionNodeTemplate(model, s, 10 * s + 2, .35, .85);
+            addQuestionNodeTemplate(model, s, 10 * s + 3, .30, .90);
+            addQuestionNodeTemplate(model, s, 10 * s + 4, .30, .70);
+            addQuestionNodeTemplate(model, s, 10 * s + 5, .25, .75);
+            addQuestionNodeTemplate(model, s, 10 * s + 6, .20, .80);
+            addQuestionNodeTemplate(model, s, 10 * s + 7, .40, .60);
+            addQuestionNodeTemplate(model, s, 10 * s + 8, .15, .65);
+            addQuestionNodeTemplate(model, s, 10 * s + 9, .10, .70);
         }
     }
 
+	public void addQuestionNodeTemplate(DAGModel<IntervalFactor> model, int parent, int template, double p0, double p1) {
+		final int q = model.addVariable(2);
+		model.addParent(q, parent);
+
+		final IntervalFactor fQ = new IntervalFactor(model.getDomain(q), model.getDomain(parent));
+		fQ.setLower(new double[]{p0 + eps, 1 - (p0 + eps)}, 0); // lP(Q=right|S=0) {l1, 1 - u1}
+		fQ.setUpper(new double[]{p0 + eps, 1 - (p0 + eps)}, 0); // uP(Q=right|S=0) {u1, 1 - l1}
+
+		fQ.setLower(new double[]{1. - (p1 - eps), p1 - eps}, 1); // lP(Q=right|S=1) {l0, 1 - u0}
+		fQ.setUpper(new double[]{1. - (p1 - eps), p1 - eps}, 1); // uP(Q=right|S=1) {u0, 1 - l0}
+
+		model.setFactor(q, fQ);
+
+		questions.add(new Question(parent, q, template));
+	}
 
     public void addQuestionNodeL1(DAGModel<IntervalFactor> model, int parent, int template) {
         final int q = model.addVariable(2);

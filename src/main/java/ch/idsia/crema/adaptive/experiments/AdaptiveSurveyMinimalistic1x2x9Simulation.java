@@ -14,6 +14,7 @@ import ch.idsia.crema.adaptive.experiments.scoring.precise.ScoringFunctionBayesi
 import ch.idsia.crema.adaptive.experiments.scoring.precise.ScoringFunctionExpectedEntropy;
 import ch.idsia.crema.adaptive.experiments.scoring.precise.ScoringFunctionProbabilityOfRight;
 import ch.idsia.crema.adaptive.experiments.scoring.precise.ScoringFunctionRandom;
+import ch.idsia.crema.adaptive.experiments.stopping.imprecise.StoppingConditionCredalMeanEntropy;
 import ch.idsia.crema.factor.bayesian.BayesianFactor;
 import ch.idsia.crema.inference.sampling.BayesianNetworkSampling;
 import ch.idsia.crema.utility.RandomUtil;
@@ -25,7 +26,10 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.Random;
-import java.util.concurrent.*;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -184,7 +188,8 @@ public class AdaptiveSurveyMinimalistic1x2x9Simulation {
 
                         final AgentTeacher teacher = new Teacher<>(
                                 new CredalMinimalistic1x2x9(N_QUESTIONS),
-                                new ScoringFunctionUpperExpectedEntropy()
+                                new ScoringFunctionUpperExpectedEntropy(),
+                                new StoppingConditionCredalMeanEntropy(.1)
                         )
                                 .setPersist(new PersistCredal());
 
@@ -302,7 +307,7 @@ public class AdaptiveSurveyMinimalistic1x2x9Simulation {
                     try {
                         // wait for the task to finish (should already be completed) and get the returned row
                         return x.get()[idx];
-                    } catch (InterruptedException | ExecutionException e) {
+                    } catch (Exception e) {
                         // if something bad happens, erase the line
                         e.printStackTrace();
                         return "";

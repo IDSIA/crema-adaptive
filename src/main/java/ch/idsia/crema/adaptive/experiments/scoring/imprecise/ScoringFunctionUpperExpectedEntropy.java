@@ -49,7 +49,7 @@ public class ScoringFunctionUpperExpectedEntropy implements ScoringFunction<Inte
 
 			try {
 				final IntervalFactor query = inferenceEngine.query(model, obs, question.skill); // TODO: bring outside
-				final double[] PSq = entropy.getMaxEntropy(query.getLower(), query.getUpper());
+				final double[] PSq = entropy.getMaxEntropy(query.getLower().clone(), query.getUpper().clone());
 				HSq = Utils.H(PSq);
 			} catch (NoFeasibleSolutionException e) {
 				System.err.printf("No Feasible Solution for HSq: question=%d skill=%d state=%d obs=%s %n", question.variable, question.skill, a, obs);
