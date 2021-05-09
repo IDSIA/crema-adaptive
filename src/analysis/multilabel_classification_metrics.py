@@ -154,7 +154,7 @@ def class_metrics_barplot(runs, metrics, labels, sim):
     grouped_barplot(ax4, runs, metrics, labels[3], title='F1 score', legend=False)
     fig.legend(loc='lower center', ncol=2)
     fig.subplots_adjust(bottom=0.25)
-    fig.suptitle('Metrics analysis --- ' + sim, fontweight='bold')
+    fig.suptitle(sim, fontweight='bold')
 
 
 def metric_per_question(n_questions, avg_metric, metric, tests, xytext, sim):
@@ -167,34 +167,42 @@ def metric_per_question(n_questions, avg_metric, metric, tests, xytext, sim):
     :param xytext:
     :param sim:
     """
-    markers = ['o', 's', '^', 'D']
+    # markers = ['o', 's', '^', 'D']
+    line_markers = ['o-.', 's-',  '^--', 'D:']
     colors = ['C0', 'C1', 'C2', 'C3']
 
     for idx, el in enumerate(avg_metric):
-
         if n_questions < 50:
             m = 5
         else:
             m = 20
-        plt.plot(avg_metric[idx], color=colors[idx], label=tests[idx])
-        plt.plot(np.arange(n_questions)[::m][1:], avg_metric[idx][::m][1:], markers[idx], color=colors[idx])
-        for x, y in zip(np.arange(n_questions)[::m][1:], avg_metric[idx][::m][1:]):
-            label = "{:.2f}".format(y)
+        plt.plot(avg_metric[idx], line_markers[idx], color=colors[idx], label=tests[idx])
+        # plt.plot(np.arange(n_questions)[::m][1:], avg_metric[idx][::m][1:], markers[idx], color=colors[idx])
 
-            plt.annotate(label,  # this is the text
-                         (x, y),  # this is the point to label
-                         textcoords="offset points",  # how to position the text
-                         xytext=xytext[idx],  # distance from text to points (x,y)
-                         ha='center')
+        # for x, y in zip(np.arange(n_questions)[::m][1:], avg_metric[idx][::m][1:]):
+        #     label = "{:.2f}".format(y)
+        #
+        #     plt.annotate(label,  # this is the text
+        #                  (x, y),  # this is the point to label
+        #                  textcoords="offset points",  # how to position the text
+        #                  xytext=xytext[idx],  # distance from text to points (x,y)
+        #                  ha='center')
 
     plt.xlabel('Number of questions')
     plt.ylabel(metric)
-    plt.xlim(0, n_questions)
+    plt.xticks(np.arange(n_questions, step=2))
 
     # plt.yscale('log')
-    plt.ylim(-0.01, 1.01)
-    plt.legend()
+    if metric == "Accuracy":
+        plt.ylim(0.49, 1.01)
+        plt.legend(loc='lower right')
+    else:
+        plt.ylim(-0.01, 0.26)
+        plt.legend(loc='upper right')
+    # else:
+    #     plt.ylim()
+
     plt.grid()
 
-    plt.title(metric + ' --- ' + sim, fontweight='bold', pad='30')
+    plt.title(sim, fontweight='bold', pad='30')
     plt.tight_layout()
