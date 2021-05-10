@@ -23,6 +23,8 @@ import java.util.List;
  */
 public class ScoringFunctionCredalMode implements ScoringFunction<IntervalFactor> {
 
+	private boolean verbose = false;
+
 	private InferenceEngine inferenceEngine = new InferenceApproxLP1();
 	private GoalType goalType = GoalType.MINIMIZE;
 
@@ -41,6 +43,11 @@ public class ScoringFunctionCredalMode implements ScoringFunction<IntervalFactor
 		return this;
 	}
 
+	void print(LinearConstraint lc) {
+		if (verbose)
+			System.out.println(lc.getCoefficients() + " " + lc.getRelationship() + " " + lc.getValue());
+	}
+
 	@Override
 	public double score(DAGModel<IntervalFactor> model, Question question, TIntIntMap observations) throws Exception {
 
@@ -50,43 +57,52 @@ public class ScoringFunctionCredalMode implements ScoringFunction<IntervalFactor
 		List<LinearConstraint> general_constraints = new ArrayList<>();
 
 		// normalize
+		if (verbose) System.out.println("normalize");
 		final double[] c = new double[2 * m];
 		Arrays.fill(c, 1.);
-		general_constraints.add(new LinearConstraint(c, Relationship.EQ, 1));
+		general_constraints.add(new LinearConstraint(c, Relationship.EQ, 1.));
+		print(general_constraints.get(general_constraints.size() - 1));
 
 		// Pi
+		if (verbose) System.out.println("Pi");
 		for (int k = 0; k < m; k++) {
 			final double[] C = new double[2 * m];
-			C[k] = 1;
-			C[m + k] = 1;
-			general_constraints.add(new LinearConstraint(C, Relationship.GEQ, pS.getLower()[k]));
-			general_constraints.add(new LinearConstraint(C, Relationship.LEQ, pS.getUpper()[k]));
+			C[k] = 1;       // vi
+			C[m + k] = 1;   // wi
+			general_constraints.add(new LinearConstraint(C, Relationship.GEQ, pS.getLower()[k])); // p_lower
+			print(general_constraints.get(general_constraints.size() - 1));
+			general_constraints.add(new LinearConstraint(C, Relationship.LEQ, pS.getUpper()[k])); // p_upper
+			print(general_constraints.get(general_constraints.size() - 1));
 		}
 
 		// PI
+		if (verbose) System.out.println("PIE");
 		final IntervalFactor factor = model.getFactor(question.variable);
 		final double[] lower = factor.getLower();
 		final double[] upper = factor.getUpper();
 
 		for (int k = 0; k < m; k++) {
 			final double[] c1 = new double[2 * m];
-			c1[k] = 1 - upper[k];
-			c1[k + m] = -upper[k];
+			c1[k] = 1 - upper[k];   // 1 - PI_upper * vi
+			c1[k + m] = -upper[k];  //   - PI_upper * wi
 			general_constraints.add(new LinearConstraint(c1, Relationship.LEQ, 0));
+			print(general_constraints.get(general_constraints.size() - 1));
 
 			final double[] c2 = new double[2 * m];
-			c2[k] = 1 - lower[k];
-			c2[k + m] = -lower[k];
-			general_constraints.add(new LinearConstraint(c2, Relationship.GEQ, 0));
+			c2[k] = lower[k] - 1;   // PI_lower * vi -1
+			c2[k + m] = lower[k];   // PI_lower * wi
+			general_constraints.add(new LinearConstraint(c2, Relationship.LEQ, 0));
+			print(general_constraints.get(general_constraints.size() - 1));
 		}
 
 		List<Double> solutions = new ArrayList<>();
 
+		if (verbose) System.out.println("constraint opt.");
 		for (int i = 0; i < m; i++) {
 			for (int j = 0; j < m; j++) {
 				final double[] ci = new double[2 * m];
-				ci[i] = 1;
-				ci[j + m] = 1;
+				ci[i] = 1;      // vi
+				ci[j + m] = 1;  // wi
 
 				LinearObjectiveFunction f = new LinearObjectiveFunction(ci, 0);
 
@@ -94,15 +110,17 @@ public class ScoringFunctionCredalMode implements ScoringFunction<IntervalFactor
 				for (int k = 0; k < m; k++) {
 					if (i != k) {
 						double[] c0 = new double[2 * m];
-						c0[i] = 1;
-						c0[k] = -1;
-						constraints.add(new LinearConstraint(c0, Relationship.GEQ, 0));
+						c0[i] = 1;  // vi
+						c0[k] = -1; // -wi
+						constraints.add(new LinearConstraint(c0, Relationship.GEQ, 0)); // <= 1
+						print(constraints.get(constraints.size() - 1));
 					}
 					if (j != k) {
 						double[] c0 = new double[2 * m];
-						c0[m + j] = 1;
-						c0[m + k] = -1;
-						constraints.add(new LinearConstraint(c0, Relationship.GEQ, 0));
+						c0[m + j] = 1;  // vi
+						c0[m + k] = -1; // -wi
+						constraints.add(new LinearConstraint(c0, Relationship.GEQ, 0)); // <= 0
+						print(constraints.get(constraints.size() - 1));
 					}
 				}
 
@@ -116,6 +134,8 @@ public class ScoringFunctionCredalMode implements ScoringFunction<IntervalFactor
 				}
 			}
 		}
+
+		if (verbose) System.out.println("solutions found: " + solutions.size());
 
 		if (goalType == GoalType.MAXIMIZE) {
 			return solutions.stream().max(Comparator.comparingDouble(x -> x)).orElseThrow(IllegalStateException::new);

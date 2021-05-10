@@ -48,7 +48,6 @@ public class BayesianMinimalistic1x2x9 extends AbstractModelBuilder<BayesianFact
         fQ.setData(new double[]{1. - p0, 1. - p1, p0, p1});
 
         model.setFactor(q, fQ);
-        System.out.println(fQ);
 
         questions.add(new Question(parent, q, template));
     }
@@ -61,7 +60,6 @@ public class BayesianMinimalistic1x2x9 extends AbstractModelBuilder<BayesianFact
         fQ.setData(new int[]{q, parent}, new double[]{.8, .2, .4, .6});
 
         model.setFactor(q, fQ);
-        System.out.println(fQ);
 
         questions.add(new Question(parent, q, template));
     }

@@ -15,8 +15,9 @@ public class CredalMinimalistic1x2x9 extends AbstractModelBuilder<IntervalFactor
 
     private double eps = .05;
 
-	public void setEps(double eps) {
+	public CredalMinimalistic1x2x9 setEps(double eps) {
 		this.eps = eps;
+		return this;
 	}
 
 	/**
