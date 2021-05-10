@@ -15,7 +15,6 @@ import ch.idsia.crema.adaptive.experiments.scoring.precise.ScoringFunctionExpect
 import ch.idsia.crema.adaptive.experiments.scoring.precise.ScoringFunctionProbabilityOfRight;
 import ch.idsia.crema.adaptive.experiments.scoring.precise.ScoringFunctionRandom;
 import ch.idsia.crema.adaptive.experiments.stopping.imprecise.StoppingConditionCredalMeanEntropy;
-import ch.idsia.crema.adaptive.experiments.stopping.precise.StoppingConditionBayesianMeanEntropy;
 import ch.idsia.crema.factor.bayesian.BayesianFactor;
 import ch.idsia.crema.inference.sampling.BayesianNetworkSampling;
 import ch.idsia.crema.utility.RandomUtil;
@@ -23,10 +22,12 @@ import gnu.trove.map.TIntIntMap;
 import org.apache.commons.lang3.ArrayUtils;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.List;
-import java.util.Random;
+import java.time.Duration;
+import java.time.Instant;
+import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -262,41 +263,77 @@ public class AdaptiveSurveyMinimalistic1x2x9Simulation {
 
 
         // submit all the tasks to the ExecutionService
+
+        Instant start1 = Instant.now();
         final List<Future<String[]>> resultsBayesianNonAdaptive = es.invokeAll(bayesianMinimalistic1x2x9TasksNonAdaptive);
+        Instant end1 = Instant.now();
+        String timeBayesianNonAdaptive = String.valueOf(Duration.between(start1, end1).getSeconds());
 
+        Instant start2 = Instant.now();
         final List<Future<String[]>> resultsBayesianAdaptiveEntropy = es.invokeAll(bayesianMinimalistic1x2x9TasksAdaptiveEntropy);
-        final List<Future<String[]>> resultsBayesianAdaptiveMode = es.invokeAll(bayesianMinimalistic1x2x9TasksAdaptiveMode);
-        final List<Future<String[]>> resultsBayesianAdaptivePRight = es.invokeAll(bayesianMinimalistic1x2x9TasksAdaptivePRight);
+        Instant end2 = Instant.now();
+        String timeBayesianAdaptiveEntropy = String.valueOf(Duration.between(start2, end2).getSeconds());
 
-//        TODO
-//        final List<Future<String[]>> resultsCredalAdaptiveEntropy = es.invokeAll(credalMinimalistic1x2x9TasksAdaptiveEntropy);
-//        final List<Future<String[]>> resultsCredalAdaptiveMode = es.invokeAll(credalMinimalistic1x2x9TasksAdaptiveMode);
-//        final List<Future<String[]>> resultsCredalAdaptivePRight = es.invokeAll(credalMinimalistic1x2x9TasksAdaptivePRight);
+        Instant start3 = Instant.now();
+        final List<Future<String[]>> resultsBayesianAdaptiveMode = es.invokeAll(bayesianMinimalistic1x2x9TasksAdaptiveMode);
+        Instant end3 = Instant.now();
+        String timeBayesianAdaptiveMode = String.valueOf(Duration.between(start3, end3).getSeconds());
+
+        Instant start4 = Instant.now();
+        final List<Future<String[]>> resultsBayesianAdaptivePRight = es.invokeAll(bayesianMinimalistic1x2x9TasksAdaptivePRight);
+        Instant end4 = Instant.now();
+        String timeBayesianAdaptivePRight = String.valueOf(Duration.between(start4, end4).getSeconds());
+
+        Instant start5 = Instant.now();
+        final List<Future<String[]>> resultsCredalAdaptiveEntropy = es.invokeAll(credalMinimalistic1x2x9TasksAdaptiveEntropy);
+        Instant end5 = Instant.now();
+        String timeCredalAdaptiveEntropy = String.valueOf(Duration.between(start5, end5).getSeconds());
+
+        Instant start6 = Instant.now();
+        final List<Future<String[]>> resultsCredalAdaptiveMode = es.invokeAll(credalMinimalistic1x2x9TasksAdaptiveMode);
+        Instant end6 = Instant.now();
+        String timeCredalAdaptiveMode = String.valueOf(Duration.between(start6, end6).getSeconds());
+
+        Instant start7 = Instant.now();
+        final List<Future<String[]>> resultsCredalAdaptivePRight = es.invokeAll(credalMinimalistic1x2x9TasksAdaptivePRight);
+        Instant end7 = Instant.now();
+        String timeCredalAdaptivePRight = String.valueOf(Duration.between(start7, end7).getSeconds());
 
         // wait until the end, then shutdown and proceed with the code
         es.shutdown();
 
         // write the output to file
 		String path = "output/Minimalistic1x2x9/";
-        writeToFile(path, "Minimalistic1x2x9.profiles", resultsBayesianNonAdaptive, 2);
-        // Bayesian
-        writeToFile(path, "Minimalistic1x2x9.posteriors.bayesian-non-adaptive", resultsBayesianNonAdaptive, 0);
-        writeToFile(path, "Minimalistic1x2x9.answers.bayesian-non-adaptive", resultsBayesianNonAdaptive, 1);
 
-        writeToFile(path, "Minimalistic1x2x9.posteriors.bayesian-adaptive-entropy", resultsBayesianAdaptiveEntropy, 0);
-        writeToFile(path, "Minimalistic1x2x9.answers.bayesian-adaptive-entropy", resultsBayesianAdaptiveEntropy, 1);
+        String[] lines = {"bayesian-non-adaptive, " + timeBayesianNonAdaptive + "sec",
+                           "bayesian-adaptive-entropy, " + timeBayesianAdaptiveEntropy + "sec",
+                            "bayesian-adaptive-mode, " + timeBayesianAdaptiveMode + "sec",
+                            "bayesian-adaptive-pright, " + timeBayesianAdaptivePRight + "sec",
+                            "credal-adaptive-entropy, " + timeCredalAdaptiveEntropy + "sec",
+                            "credal-adaptive-mode, " + timeCredalAdaptiveMode + "sec",
+                            "credal-adaptive-pright, " + timeCredalAdaptivePRight + "sec"};
 
-        writeToFile(path, "Minimalistic1x2x9.posteriors.bayesian-adaptive-mode", resultsBayesianAdaptiveMode, 0);
-        writeToFile(path, "Minimalistic1x2x9.answers.bayesian-adaptive-mode", resultsBayesianAdaptiveMode, 1);
+        writeTimeToFile(path, lines);
 
-        writeToFile(path, "Minimalistic1x2x9.posteriors.bayesian-adaptive-pright", resultsBayesianAdaptivePRight, 0);
-        writeToFile(path, "Minimalistic1x2x9.answers.bayesian-adaptive-pright", resultsBayesianAdaptivePRight, 1);
+//        writeToFile(path, "Minimalistic1x2x9.profiles", resultsBayesianNonAdaptive, 2);
 
-        // Credal
-//        TODO
+//        // Bayesian
+//        writeToFile(path, "Minimalistic1x2x9.posteriors.bayesian-non-adaptive", resultsBayesianNonAdaptive, 0);
+//        writeToFile(path, "Minimalistic1x2x9.answers.bayesian-non-adaptive", resultsBayesianNonAdaptive, 1);
+
+//        writeToFile(path, "Minimalistic1x2x9.posteriors.bayesian-adaptive-entropy", resultsBayesianAdaptiveEntropy, 0);
+//        writeToFile(path, "Minimalistic1x2x9.answers.bayesian-adaptive-entropy", resultsBayesianAdaptiveEntropy, 1);
+//
+//        writeToFile(path, "Minimalistic1x2x9.posteriors.bayesian-adaptive-mode", resultsBayesianAdaptiveMode, 0);
+//        writeToFile(path, "Minimalistic1x2x9.answers.bayesian-adaptive-mode", resultsBayesianAdaptiveMode, 1);
+//
+//        writeToFile(path, "Minimalistic1x2x9.posteriors.bayesian-adaptive-pright", resultsBayesianAdaptivePRight, 0);
+//        writeToFile(path, "Minimalistic1x2x9.answers.bayesian-adaptive-pright", resultsBayesianAdaptivePRight, 1);
+//
+//        // Credal
 //        writeToFile(path, "Minimalistic1x2x9.posteriors.credal-adaptive-entropy", resultsCredalAdaptiveEntropy, 0);
 //        writeToFile(path, "Minimalistic1x2x9.answers.credal-adaptive-entropy", resultsCredalAdaptiveEntropy, 1);
-
+//
 //        writeToFile(path, "Minimalistic1x2x9.posteriors.credal-adaptive-mode", resultsCredalAdaptiveMode, 0);
 //        writeToFile(path, "Minimalistic1x2x9.answers.credal-adaptive-mode", resultsCredalAdaptiveMode, 1);
 //
@@ -323,5 +360,11 @@ public class AdaptiveSurveyMinimalistic1x2x9Simulation {
         // just dump everything to a file
         new File(path).mkdirs();
         Files.write(Paths.get(path + filename + ".csv"), lines);
+    }
+
+    static void writeTimeToFile(String path, String[] lines) throws IOException {
+        // just dump everything to a file
+        new File(path).mkdirs();
+        Files.write(Paths.get(path + "Times" + ".csv"), Arrays.asList(lines));
     }
 }
