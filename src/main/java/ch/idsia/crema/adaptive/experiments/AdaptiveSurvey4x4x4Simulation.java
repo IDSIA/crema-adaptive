@@ -29,6 +29,8 @@ import java.util.concurrent.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import static ch.idsia.crema.adaptive.experiments.Utils.separator;
+
 
 /**
  * Authors:  	Claudio "Dna" Bonesana, Giorgia Adorni
@@ -88,7 +90,7 @@ public class AdaptiveSurvey4x4x4Simulation {
 
 						new Experiment(teacher, student).run();
 
-						String posteriors = student.getId() + "," + teacher.getResults();
+						String posteriors = student.getId() + separator + teacher.getResults();
 						String answers = student.getAnswers(teacher.getTotalNumberQuestions());
 						String profiles = student.getProfiles(teacher.getTotalNumberQuestions());
 
@@ -123,7 +125,7 @@ public class AdaptiveSurvey4x4x4Simulation {
 						new Experiment(teacher, student).run();
 
 						// return a row for the CSV file
-						String posteriors = student.getId() + "," + teacher.getResults();
+						String posteriors = student.getId() + separator + teacher.getResults();
 						String answers = student.getAnswers(teacher.getTotalNumberQuestions());
 						String profiles = student.getProfiles(teacher.getTotalNumberQuestions());
 
@@ -158,7 +160,7 @@ public class AdaptiveSurvey4x4x4Simulation {
 						new Experiment(teacher, student).run();
 
 						// return a row for the CSV file
-						String posteriors = student.getId() + "," + teacher.getResults();
+						String posteriors = student.getId() + separator + teacher.getResults();
 						String answers = student.getAnswers(teacher.getTotalNumberQuestions());
 						String profiles = student.getProfiles(teacher.getTotalNumberQuestions());
 
@@ -193,7 +195,7 @@ public class AdaptiveSurvey4x4x4Simulation {
 						new Experiment(teacher, student).run();
 
 						// return a row for the CSV file
-						String posteriors = student.getId() + "," + teacher.getResults();
+						String posteriors = student.getId() + separator + teacher.getResults();
 						String answers = student.getAnswers(teacher.getTotalNumberQuestions());
 						String profiles = student.getProfiles(teacher.getTotalNumberQuestions());
 
@@ -220,7 +222,7 @@ public class AdaptiveSurvey4x4x4Simulation {
 
 						new Experiment(teacher, student).run();
 
-						String posteriors = student.getId() + "," + teacher.getResults();
+						String posteriors = student.getId() + separator + teacher.getResults();
 						String answers = student.getAnswers(teacher.getTotalNumberQuestions());
 						String profiles = student.getProfiles(teacher.getTotalNumberQuestions());
 
@@ -245,7 +247,7 @@ public class AdaptiveSurvey4x4x4Simulation {
 
 						new Experiment(teacher, student).run();
 
-						String posteriors = student.getId() + "," + teacher.getResults();
+						String posteriors = student.getId() + separator + teacher.getResults();
 						String answers = student.getAnswers(teacher.getTotalNumberQuestions());
 						String profiles = student.getProfiles(teacher.getTotalNumberQuestions());
 
@@ -270,7 +272,7 @@ public class AdaptiveSurvey4x4x4Simulation {
 
 						new Experiment(teacher, student).run();
 
-						String posteriors = student.getId() + "," + teacher.getResults();
+						String posteriors = student.getId() + separator + teacher.getResults();
 						String answers = student.getAnswers(teacher.getTotalNumberQuestions());
 						String profiles = student.getProfiles(teacher.getTotalNumberQuestions());
 

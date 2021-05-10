@@ -40,6 +40,19 @@ public class BayesianMinimalistic1x2x9 extends AbstractModelBuilder<BayesianFact
         }
     }
 
+    public void addQuestionNodeTemplate(DAGModel<BayesianFactor> model, int parent, int template, double p0, double p1) {
+        final int q = model.addVariable(2);
+        model.addParent(q, parent);
+
+        final BayesianFactor fQ = new BayesianFactor(model.getDomain(parent, q), false);
+        fQ.setData(new double[]{1. - p0, 1. - p1, p0, p1});
+
+        model.setFactor(q, fQ);
+        System.out.println(fQ);
+
+        questions.add(new Question(parent, q, template));
+    }
+
     public void addQuestionNodeL1(DAGModel<BayesianFactor> model, int parent, int template) {
         final int q = model.addVariable(2);
         model.addParent(q, parent);
@@ -48,6 +61,7 @@ public class BayesianMinimalistic1x2x9 extends AbstractModelBuilder<BayesianFact
         fQ.setData(new int[]{q, parent}, new double[]{.8, .2, .4, .6});
 
         model.setFactor(q, fQ);
+        System.out.println(fQ);
 
         questions.add(new Question(parent, q, template));
     }

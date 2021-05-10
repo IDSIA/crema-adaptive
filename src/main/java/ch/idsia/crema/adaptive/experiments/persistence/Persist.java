@@ -10,6 +10,12 @@ import ch.idsia.crema.factor.GenericFactor;
  */
 public interface Persist<F extends GenericFactor> {
 
+	/**
+	 * Register the current state of a {@link Teacher}.
+	 *
+	 * @param teacher who keep the experiment
+	 * @throws Exception if the inference cannot be done
+	 */
 	Output<F> register(Teacher<F> teacher) throws Exception;
 
 }

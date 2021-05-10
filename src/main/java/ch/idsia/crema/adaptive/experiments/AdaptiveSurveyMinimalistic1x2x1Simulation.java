@@ -27,6 +27,8 @@ import java.util.concurrent.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import static ch.idsia.crema.adaptive.experiments.Utils.separator;
+
 /**
  * Authors:  	Giorgia Adorni
  * Project: 	crema-adaptive
@@ -83,7 +85,7 @@ public class AdaptiveSurveyMinimalistic1x2x1Simulation {
 
                         new Experiment(teacher, student).run();
 
-                        String posteriors = student.getId() + "," + teacher.getResults();
+                        String posteriors = student.getId() + separator + teacher.getResults();
                         String answers = student.getAnswers(teacher.getTotalNumberQuestions());
                         String profiles = student.getProfiles(teacher.getTotalNumberQuestions());
 
@@ -110,7 +112,7 @@ public class AdaptiveSurveyMinimalistic1x2x1Simulation {
 
                         new Experiment(teacher, student).run();
 
-                        String posteriors = student.getId() + "," + teacher.getResults();
+                        String posteriors = student.getId() + separator + teacher.getResults();
                         String answers = student.getAnswers(teacher.getTotalNumberQuestions());
                         String profiles = student.getProfiles(teacher.getTotalNumberQuestions());
 
@@ -136,7 +138,7 @@ public class AdaptiveSurveyMinimalistic1x2x1Simulation {
 
                         new Experiment(teacher, student).run();
 
-                        String posteriors = student.getId() + "," + teacher.getResults();
+                        String posteriors = student.getId() + separator + teacher.getResults();
                         String answers = student.getAnswers(teacher.getTotalNumberQuestions());
                         String profiles = student.getProfiles(teacher.getTotalNumberQuestions());
 
@@ -162,7 +164,7 @@ public class AdaptiveSurveyMinimalistic1x2x1Simulation {
 
                         new Experiment(teacher, student).run();
 
-                        String posteriors = student.getId() + "," + teacher.getResults();
+                        String posteriors = student.getId() + separator + teacher.getResults();
                         String answers = student.getAnswers(teacher.getTotalNumberQuestions());
                         String profiles = student.getProfiles(teacher.getTotalNumberQuestions());
 
@@ -187,7 +189,7 @@ public class AdaptiveSurveyMinimalistic1x2x1Simulation {
 
                         new Experiment(teacher, student).run();
 
-                        String posteriors = student.getId() + "," + teacher.getResults();
+                        String posteriors = student.getId() + separator + teacher.getResults();
                         String answers = student.getAnswers(teacher.getTotalNumberQuestions());
                         String profiles = student.getProfiles(teacher.getTotalNumberQuestions());
 

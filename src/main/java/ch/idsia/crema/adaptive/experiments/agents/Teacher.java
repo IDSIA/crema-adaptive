@@ -4,6 +4,7 @@ import ch.idsia.crema.adaptive.experiments.Question;
 import ch.idsia.crema.adaptive.experiments.model.AbstractModelBuilder;
 import ch.idsia.crema.adaptive.experiments.persistence.Output;
 import ch.idsia.crema.adaptive.experiments.persistence.Persist;
+import ch.idsia.crema.adaptive.experiments.persistence.Progress;
 import ch.idsia.crema.adaptive.experiments.scoring.ScoringFunction;
 import ch.idsia.crema.adaptive.experiments.stopping.StoppingCondition;
 import ch.idsia.crema.factor.GenericFactor;
@@ -14,6 +15,8 @@ import gnu.trove.map.hash.TIntIntHashMap;
 
 import java.util.*;
 import java.util.stream.Collectors;
+
+import static ch.idsia.crema.adaptive.experiments.Utils.separator;
 
 /**
  * Author:  Claudio "Dna" Bonesana
@@ -56,7 +59,7 @@ public class Teacher<F extends GenericFactor> implements AgentTeacher {
 
 	private Persist<F> persist;
 
-	private final List<Output<F>> outputs = new ArrayList<>();
+	private final List<Progress<F>> progress = new ArrayList<>();
 
 	/**
 	 * @param builder            used to generate the model and store information
@@ -76,6 +79,8 @@ public class Teacher<F extends GenericFactor> implements AgentTeacher {
 		this.stoppingConditions = Arrays.asList(stoppingConditions);
 
 		this.questions = builder.questions;
+
+		this.progress.add(new Progress<>(-1, new Question(-1, -1, -1))); // this is just the staring point
 	}
 
 	public Teacher<F> setPersist(Persist<F> persist) {
@@ -90,7 +95,7 @@ public class Teacher<F extends GenericFactor> implements AgentTeacher {
 
 	@Override
 	public int getTotalNumberQuestions() {
-		return  questions.size();
+		return questions.size();
 	}
 
 	public DAGModel<F> getModel() {
@@ -110,9 +115,11 @@ public class Teacher<F extends GenericFactor> implements AgentTeacher {
 	 * @param answer   should be 0 or 1
 	 */
 	@Override
-	public void check(Question question, int answer) {
+	public void check(Question question, int answer) throws Exception {
 		observations.put(question.variable, answer);
 		questionsDone.add(question);
+
+		progress.get(this.progress.size() - 1).setAnswer(answer);
 	}
 
 	/**
@@ -122,7 +129,7 @@ public class Teacher<F extends GenericFactor> implements AgentTeacher {
 	@Override
 	public boolean stop() throws Exception {
 		if (persist != null)
-			outputs.add(persist.register(this));
+			progress.get(progress.size() - 1).setOutput(persist.register(this));
 
 		for (StoppingCondition<Teacher<F>> condition : stoppingConditions) {
 			if (condition.stop(this))
@@ -160,16 +167,25 @@ public class Teacher<F extends GenericFactor> implements AgentTeacher {
 			}
 		}
 
-//		if (nextQuestion == null)
-//			System.out.printf("AgentTeacher:       no question found%n");
-//		else
-//			System.out.printf("AgentTeacher:       next question=%-3d%n", nextQuestion.id);
+		progress.add(new Progress<>(maxIG, nextQuestion));
 
 		return nextQuestion;
 	}
 
 	@Override
 	public String getResults() {
-		return outputs.stream().map(Output::serialize).collect(Collectors.joining(","));
+		return progress.stream()
+				.map(Progress::getOutput)
+				.filter(Objects::nonNull)
+				.map(Output::serialize)
+				.collect(Collectors.joining(separator));
+	}
+
+	@Override
+	public List<String> getProgress(int id) {
+		return progress.stream()
+				.filter(x -> x.getOutput() != null)
+				.map(x -> x.serialize(id))
+				.collect(Collectors.toList());
 	}
 }

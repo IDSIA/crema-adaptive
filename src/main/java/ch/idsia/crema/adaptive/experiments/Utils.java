@@ -1,11 +1,26 @@
 package ch.idsia.crema.adaptive.experiments;
 
+import java.text.NumberFormat;
+import java.util.Locale;
+
 /**
  * Author:  Claudio "Dna" Bonesana
  * Project: crema-adaptive
  * Date:    05.02.2021 16:03
  */
 public class Utils {
+
+	public static final String separator = ",";
+	protected static final NumberFormat nf = NumberFormat.getNumberInstance(Locale.ROOT);
+
+	static {
+		nf.setMaximumFractionDigits(4);
+		nf.setMinimumFractionDigits(4);
+	}
+
+	public static NumberFormat numberFormat() {
+		return nf;
+	}
 
 	public static double H(double[] d) {
 		double h = 0.0;

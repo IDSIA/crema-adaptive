@@ -2,6 +2,8 @@ package ch.idsia.crema.adaptive.experiments.agents;
 
 import ch.idsia.crema.adaptive.experiments.Question;
 
+import java.util.List;
+
 /**
  * Author:  Claudio "Dna" Bonesana
  * Project: crema-adaptive
@@ -10,14 +12,16 @@ import ch.idsia.crema.adaptive.experiments.Question;
 public interface AgentTeacher {
 
 	int getNumberQuestionsDone();
+
 	int getTotalNumberQuestions();
+
 	/**
 	 * Checks the answer to the given question.
 	 *
 	 * @param question {@link Teacher}'s question
 	 * @param answer   {@link Student}'s answer
 	 */
-	void check(Question question, int answer);
+	void check(Question question, int answer) throws Exception;
 
 	/**
 	 * @return true if one the {@link ch.idsia.crema.adaptive.experiments.stopping.StoppingCondition} is meet, otherwise false.
@@ -36,4 +40,11 @@ public interface AgentTeacher {
 	 * {@link ch.idsia.crema.adaptive.experiments.stopping.StoppingCondition} is called (so we have nQuestion+1 outputs)
 	 */
 	String getResults();
+
+	/**
+	 * @param id id of a {@link Student}
+	 * @return a list of comma separated rows with all the progress (the answers) of a student during the experiment.
+	 */
+	List<String> getProgress(int id);
+
 }

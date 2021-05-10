@@ -25,6 +25,8 @@ import java.util.concurrent.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import static ch.idsia.crema.adaptive.experiments.Utils.separator;
+
 /**
  * Author:  Claudio "Dna" Bonesana
  * Project: crema-adaptive
@@ -77,7 +79,7 @@ public class AdaptiveSurvey {
 
 						new Experiment(teacher, student).run();
 
-						return student.getId() + "," + teacher.getNumberQuestionsDone() + "," + teacher.getResults();
+						return student.getId() + separator + teacher.getNumberQuestionsDone() + separator + teacher.getResults();
 					} catch (Exception e) {
 						e.printStackTrace();
 						return "";
@@ -112,7 +114,7 @@ public class AdaptiveSurvey {
 						new Experiment(teacher, student).run();
 
 						// return a row for the CSV file
-						return student.getId() + "," + teacher.getNumberQuestionsDone() + "," + teacher.getResults();
+						return student.getId() + separator + teacher.getNumberQuestionsDone() + separator + teacher.getResults();
 					} catch (Exception e) {
 						// if something goes wrong, return an empty row that will be filtered out
 						e.printStackTrace();
@@ -137,7 +139,7 @@ public class AdaptiveSurvey {
 
 						new Experiment(teacher, student).run();
 
-						return student.getId() + "," + teacher.getNumberQuestionsDone() + "," + teacher.getResults();
+						return student.getId() + separator + teacher.getNumberQuestionsDone() + separator + teacher.getResults();
 					} catch (Exception e) {
 						e.printStackTrace();
 						return "";

@@ -3,6 +3,11 @@ package ch.idsia.crema.adaptive.experiments;
 import ch.idsia.crema.adaptive.experiments.agents.AgentStudent;
 import ch.idsia.crema.adaptive.experiments.agents.AgentTeacher;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import static ch.idsia.crema.adaptive.experiments.Utils.separator;
+
 /**
  * Author:  Claudio "Dna" Bonesana
  * Project: crema-adaptive
@@ -12,27 +17,41 @@ public class Experiment {
 
 	private final AgentTeacher teacher;
 	private final AgentStudent student;
+	private final List<String> records = new ArrayList<>();
 
 	public Experiment(AgentTeacher teacher, AgentStudent student) {
 		this.teacher = teacher;
 		this.student = student;
 	}
 
-	public void run() throws Exception {
-		int question = 0;
+	public String[] run() {
+		int questions = 0;
 
-		while (!teacher.stop()) {
-			Question q = teacher.next();
+		try {
+			while (!teacher.stop()) {
+				Question q = teacher.next();
+				questions++;
 
-			System.out.println("Question: " + question);
-			question++;
+				if (q == null)
+					break;
 
-			if (q == null)
-				break;
+				final int x = student.answer(q);
+				teacher.check(q, x);
 
-			final int x = student.answer(q);
-			teacher.check(q, x);
+				System.out.printf("Student:  %3d ", student.getId());
+				System.out.printf("Question: n=%2d v=%2d t=%2d s=%2d a=%d%n", questions, q.variable, q.template, q.skill, x);
+
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
+
+		String posteriors = student.getId() + separator + teacher.getResults();
+		String answers = student.getAnswers(teacher.getTotalNumberQuestions());
+		String profiles = student.getProfiles(teacher.getTotalNumberQuestions());
+		String progress = String.join("\n", teacher.getProgress(student.getId()));
+
+		return new String[]{posteriors, answers, profiles, progress};
 	}
 
 }
