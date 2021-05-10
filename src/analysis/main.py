@@ -8,18 +8,21 @@ from multilabel_classification_metrics import brier_multicategory, hamming_dista
 from utils import save_metrics, check_dir, save_visualisation
 
 
-def read_and_convert_input_files(model_type, n_skill, n_states, sim, sim_path, test):
+def read_and_convert_input_files(n_questions, model_type, n_skill, n_states, sim, sim_path, test):
     """
 
+    :param n_questions
     :param model_type:
     :param n_skill:
     :param n_states:
     :param sim:
     :param sim_path:
     :param test:
-    :return:
+    :return: n_questions, all_predicted_classes, final_posteriors, observed_classes, posteriors, predicted_classes,
+            predicted_classes_5
     """
 
+    global final_posteriors
     initial_profiles_file = sim_path + sim + ".profiles.csv"
     posteriors_file = sim_path + sim + ".posteriors." + test + ".csv"
 
@@ -35,7 +38,6 @@ def read_and_convert_input_files(model_type, n_skill, n_states, sim, sim_path, t
     predicted_classes = []
     predicted_classes_5 = []  # class predicted after 5 steps (used to visualise the the confusion matrix)
 
-    # TODO FIXME: refactoring
     if model_type == 'bayesian':
         n_posteriors = n_skill * n_states
         n_questions = int(np.shape(posteriors)[1] / n_posteriors)
@@ -95,6 +97,7 @@ def analyse_model(simulations_dirs, models, n_skills, n_skill_levels, model_type
     :param model_type:
     """
     n_models = len(models)
+    n_questions = 0
 
     for idx, sim in enumerate(simulations_dirs):
         cms = []
@@ -104,11 +107,10 @@ def analyse_model(simulations_dirs, models, n_skills, n_skill_levels, model_type
 
         n_skill = n_skills[idx]
         n_states = n_skill_levels[idx]
-        n_questions = 0
 
         list_dict_metrics = []
-        question_accuracy = []  # (19)
-        question_brier_score = []  # (19)
+        question_accuracy = []  # (n_question)
+        question_brier_score = []  # (n_question)
 
         if model_type == 'bayesian':
             indices = [0]
@@ -116,7 +118,7 @@ def analyse_model(simulations_dirs, models, n_skills, n_skill_levels, model_type
             indices = [0, 1]
 
         for test in models:
-            out = read_and_convert_input_files(model_type, n_skill, n_states, sim, sim_path, test)
+            out = read_and_convert_input_files(n_questions, model_type, n_skill, n_states, sim, sim_path, test)
             n_questions, question_predicted_classes, final_posteriors, observed_classes, posteriors, \
             predicted_classes, predicted_classes_5 = out
 
@@ -124,13 +126,13 @@ def analyse_model(simulations_dirs, models, n_skills, n_skill_levels, model_type
                 n_student = len(predicted_classes[el])
 
                 # variables use to distinguish, in case of credal network, between lower and upper metrics
-                student_hamming_loss = []          # (256)
-                student_hamming_distance = []      # (256)
-                student_accuracy = []              # (256)
-                # student_brier_score                (256)
+                student_hamming_loss = []          # (n_student)
+                student_hamming_distance = []      # (n_student)
+                student_accuracy = []              # (n_student)
+                # student_brier_score                (n_student)
 
-                student_question_accuracy = []     # (256, 19)
-                student_question_brier_score = []  # (256, 19)
+                student_question_accuracy = []     # (n_student, n_question)
+                student_question_brier_score = []  # (n_student, n_question)
 
                 # For each student:
                 for i in range(n_student):
@@ -149,7 +151,7 @@ def analyse_model(simulations_dirs, models, n_skills, n_skill_levels, model_type
                         a2 = accuracy_score(observed_classes[i], question_predicted_classes[el][i][j])
                         question_accuracies.append(a2)
 
-                    student_question_accuracy.append(question_accuracies)  # this is supposed to have shape (256, 19)
+                    student_question_accuracy.append(question_accuracies)  # this is supposed to have shape (n_student, n_question)
 
                 # For each question
                 for j in range(n_questions):
@@ -218,7 +220,6 @@ def analyse_model(simulations_dirs, models, n_skills, n_skill_levels, model_type
                                            avg_accuracy_scores, EMR, macroavg_precision, macroavg_recall, macroavg_f1])
                 save_metrics(out_file, metrics, header)
 
-                # FIXME: forse va portato fuori dai test ma non sono sicura
                 # Compute metrics for each skill
                 cm = confusion_matrix(observations, predictions_5, labels=np.arange(n_states))
                 cms.append(cm)
@@ -273,57 +274,63 @@ def analyse_model(simulations_dirs, models, n_skills, n_skill_levels, model_type
         question_accuracy = np.array(question_accuracy)
         question_brier_score = np.array(question_brier_score)
 
-        # Save confusion matrices
-        fig, axes = plt.subplots(1, n_models, sharey=True, figsize=(n_models * 3, 4), constrained_layout=True)
-        fig.suptitle(sim, fontweight='bold')
-
-        for idx, model in enumerate(models):
-            if idx > 0:
-                img = plot_confusion_matrix(axes[idx], cms[idx], labels=np.arange(n_states), title=model, y_label=False)
-            else:
-                plot_confusion_matrix(axes[idx], cms[idx], labels=np.arange(n_states), title=model)
-
-        fig.colorbar(img, ax=axes.ravel().tolist())
-        out_images = sim_path + "images/"
-        check_dir(out_images)
-
-        if model_type == 'bayesian':
-            save_visualisation(pre_name + 'confusion_matrix.', out_images)
-        # else:
-            # save_visualisation(pre_name + 'confusion_matrix.' + '.' + credal_type, out_images)
-
-        # Save barplots
-        class_metrics_barplot(models, list_dict_metrics, dict_labels, sim)
-
-        if model_type == 'bayesian':
-            save_visualisation(pre_name + 'class_metrics.' + test, out_images)
-        else:
-            save_visualisation(pre_name + 'class_metrics.' + test + '.' + credal_type, out_images)
-
-        # Save accuracies
-        # annotations = [(0, 10), (0, -10), (0, -20), (0, -15)]
-        annotations = [(0, 20), (0, 20), (0, -20), (0, 10)]
+        cms = np.array(cms)
 
         for el in indices:
-            if model_type== 'bayesian':
+            if model_type == 'bayesian':
                 test_indices = [0, 1, 2, 3]
             elif model_type == 'credal':
                 if el == 0:
                     credal_type = 'lower'
-                    test_indices = [0, 2, 4, 6]
+                    test_indices = [0, 2, 4]
                 elif el == 1:
                     credal_type = 'upper'
-                    test_indices = [1, 3, 5, 7]
+                    test_indices = [1, 3, 5]
                 else:
                     Exception('Invalid indices for model type.')
             else:
                 Exception('Model type not valid. Only bayesian or credal model supported.')
 
+            # Save confusion matrices
+            fig, axes = plt.subplots(1, n_models, sharey=True, figsize=(n_models * 3, 4), constrained_layout=True)
+            fig.suptitle(sim, fontweight='bold')
+
+            for idx, model in enumerate(models):
+                if idx > 0:
+                    img = plot_confusion_matrix(axes[idx], cms[test_indices][idx], labels=np.arange(n_states), title=model,
+                                                y_label=False)
+                else:
+                    plot_confusion_matrix(axes[idx], cms[test_indices][idx], labels=np.arange(n_states), title=model)
+
+            fig.colorbar(img, ax=axes.ravel().tolist())
+            out_images = sim_path + "images/"
+            check_dir(out_images)
+
+            if model_type == 'bayesian':
+                save_visualisation(pre_name + model_type + '.confusion_matrix.' + model_type, out_images)
+            else:
+                save_visualisation(pre_name + model_type + '.confusion_matrix.' + model_type + '.' + credal_type, out_images)
+
+            # else:
+            # save_visualisation(pre_name + 'confusion_matrix.' + '.' + credal_type, out_images)
+
+            # Save barplots
+            class_metrics_barplot(models, list_dict_metrics, dict_labels, sim)
+
+            if model_type == 'bayesian':
+                save_visualisation(pre_name + 'class_metrics.' + model_type, out_images)
+            else:
+                save_visualisation(pre_name + 'class_metrics.' + model_type + '.' + credal_type, out_images)
+
+            # Save accuracies
+            # annotations = [(0, 10), (0, -10), (0, -20), (0, -15)]
+            annotations = [(0, 20), (0, 20), (0, -20), (0, 10)]
+
             metric_per_question(n_questions, question_accuracy[test_indices], 'Accuracy', models, annotations, sim)
             if model_type == 'bayesian':
-                save_visualisation(pre_name + 'accuracy_per_question.' + test, out_images)
+                save_visualisation(pre_name + 'accuracy_per_question.' + model_type, out_images)
             else:
-                save_visualisation(pre_name + 'accuracy_per_question.' + test + '.' + credal_type, out_images)
+                save_visualisation(pre_name + 'accuracy_per_question.' + model_type + '.' + credal_type, out_images)
 
             # Save brier scores
             annotations = [(0, 5), (0, 5), (0, 5), (0, 5)]
@@ -355,4 +362,4 @@ if __name__ == '__main__':
     credal_models = ['credal-adaptive-entropy', 'credal-adaptive-mode',
                      'credal-adaptive-pright']
 
-    # analyse_model(simulations_dirs, credal_models, number_of_skills, number_of_skill_levels, model)
+    analyse_model(simulations_dirs, credal_models, number_of_skills, number_of_skill_levels, model)

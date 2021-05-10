@@ -15,6 +15,7 @@ import ch.idsia.crema.adaptive.experiments.scoring.precise.ScoringFunctionExpect
 import ch.idsia.crema.adaptive.experiments.scoring.precise.ScoringFunctionProbabilityOfRight;
 import ch.idsia.crema.adaptive.experiments.scoring.precise.ScoringFunctionRandom;
 import ch.idsia.crema.adaptive.experiments.stopping.imprecise.StoppingConditionCredalMeanEntropy;
+import ch.idsia.crema.adaptive.experiments.stopping.precise.StoppingConditionBayesianMeanEntropy;
 import ch.idsia.crema.factor.bayesian.BayesianFactor;
 import ch.idsia.crema.inference.sampling.BayesianNetworkSampling;
 import ch.idsia.crema.utility.RandomUtil;
@@ -214,7 +215,8 @@ public class AdaptiveSurveyMinimalistic1x2x9Simulation {
 
                         final AgentTeacher teacher = new Teacher<>(
                                 new CredalMinimalistic1x2x9(N_QUESTIONS),
-                                new ScoringFunctionCredalMode()
+                                new ScoringFunctionCredalMode(),
+                                new StoppingConditionCredalMeanEntropy(.1)
                         )
                                 .setPersist(new PersistCredal());
 
@@ -239,7 +241,8 @@ public class AdaptiveSurveyMinimalistic1x2x9Simulation {
 
                         final AgentTeacher teacher = new Teacher<>(
                                 new CredalMinimalistic1x2x9(N_QUESTIONS),
-                                new ScoringFunctionUpperLowerProbabilityOfRight()
+                                new ScoringFunctionUpperLowerProbabilityOfRight(),
+                                new StoppingConditionCredalMeanEntropy(.1)
                         )
                                 .setPersist(new PersistCredal());
 
@@ -259,14 +262,14 @@ public class AdaptiveSurveyMinimalistic1x2x9Simulation {
 
 
         // submit all the tasks to the ExecutionService
-//        final List<Future<String[]>> resultsBayesianNonAdaptive = es.invokeAll(bayesianMinimalistic1x2x9TasksNonAdaptive);
+        final List<Future<String[]>> resultsBayesianNonAdaptive = es.invokeAll(bayesianMinimalistic1x2x9TasksNonAdaptive);
 
-//        final List<Future<String[]>> resultsBayesianAdaptiveEntropy = es.invokeAll(bayesianMinimalistic1x2x9TasksAdaptiveEntropy);
-//        final List<Future<String[]>> resultsBayesianAdaptiveMode = es.invokeAll(bayesianMinimalistic1x2x9TasksAdaptiveMode);
-//        final List<Future<String[]>> resultsBayesianAdaptivePRight = es.invokeAll(bayesianMinimalistic1x2x9TasksAdaptivePRight);
+        final List<Future<String[]>> resultsBayesianAdaptiveEntropy = es.invokeAll(bayesianMinimalistic1x2x9TasksAdaptiveEntropy);
+        final List<Future<String[]>> resultsBayesianAdaptiveMode = es.invokeAll(bayesianMinimalistic1x2x9TasksAdaptiveMode);
+        final List<Future<String[]>> resultsBayesianAdaptivePRight = es.invokeAll(bayesianMinimalistic1x2x9TasksAdaptivePRight);
 
 //        TODO
-        final List<Future<String[]>> resultsCredalAdaptiveEntropy = es.invokeAll(credalMinimalistic1x2x9TasksAdaptiveEntropy);
+//        final List<Future<String[]>> resultsCredalAdaptiveEntropy = es.invokeAll(credalMinimalistic1x2x9TasksAdaptiveEntropy);
 //        final List<Future<String[]>> resultsCredalAdaptiveMode = es.invokeAll(credalMinimalistic1x2x9TasksAdaptiveMode);
 //        final List<Future<String[]>> resultsCredalAdaptivePRight = es.invokeAll(credalMinimalistic1x2x9TasksAdaptivePRight);
 
@@ -275,28 +278,28 @@ public class AdaptiveSurveyMinimalistic1x2x9Simulation {
 
         // write the output to file
 		String path = "output/Minimalistic1x2x9/";
-//        writeToFile(path, "Minimalistic1x2x9.profiles", resultsBayesianNonAdaptive, 2);
-//        // Bayesian
-//        writeToFile(path, "Minimalistic1x2x9.posteriors.bayesian-non-adaptive", resultsBayesianNonAdaptive, 0);
-//        writeToFile(path, "Minimalistic1x2x9.answers.bayesian-non-adaptive", resultsBayesianNonAdaptive, 1);
-//
-//        writeToFile(path, "Minimalistic1x2x9.posteriors.bayesian-adaptive-entropy", resultsBayesianAdaptiveEntropy, 0);
-//        writeToFile(path, "Minimalistic1x2x9.answers.bayesian-adaptive-entropy", resultsBayesianAdaptiveEntropy, 1);
+        writeToFile(path, "Minimalistic1x2x9.profiles", resultsBayesianNonAdaptive, 2);
+        // Bayesian
+        writeToFile(path, "Minimalistic1x2x9.posteriors.bayesian-non-adaptive", resultsBayesianNonAdaptive, 0);
+        writeToFile(path, "Minimalistic1x2x9.answers.bayesian-non-adaptive", resultsBayesianNonAdaptive, 1);
 
-//        writeToFile(path, "Minimalistic1x2x9.posteriors.bayesian-adaptive-mode", resultsBayesianAdaptiveMode, 0);
-//        writeToFile(path, "Minimalistic1x2x9.answers.bayesian-adaptive-mode", resultsBayesianAdaptiveMode, 1);
-//
-//        writeToFile(path, "Minimalistic1x2x9.posteriors.bayesian-adaptive-pright", resultsBayesianAdaptivePRight, 0);
-//        writeToFile(path, "Minimalistic1x2x9.answers.bayesian-adaptive-pright", resultsBayesianAdaptivePRight, 1);
+        writeToFile(path, "Minimalistic1x2x9.posteriors.bayesian-adaptive-entropy", resultsBayesianAdaptiveEntropy, 0);
+        writeToFile(path, "Minimalistic1x2x9.answers.bayesian-adaptive-entropy", resultsBayesianAdaptiveEntropy, 1);
+
+        writeToFile(path, "Minimalistic1x2x9.posteriors.bayesian-adaptive-mode", resultsBayesianAdaptiveMode, 0);
+        writeToFile(path, "Minimalistic1x2x9.answers.bayesian-adaptive-mode", resultsBayesianAdaptiveMode, 1);
+
+        writeToFile(path, "Minimalistic1x2x9.posteriors.bayesian-adaptive-pright", resultsBayesianAdaptivePRight, 0);
+        writeToFile(path, "Minimalistic1x2x9.answers.bayesian-adaptive-pright", resultsBayesianAdaptivePRight, 1);
 
         // Credal
 //        TODO
-        writeToFile(path, "Minimalistic1x2x9.posteriors.credal-adaptive-entropy", resultsCredalAdaptiveEntropy, 0);
-        writeToFile(path, "Minimalistic1x2x9.answers.credal-adaptive-entropy", resultsCredalAdaptiveEntropy, 1);
+//        writeToFile(path, "Minimalistic1x2x9.posteriors.credal-adaptive-entropy", resultsCredalAdaptiveEntropy, 0);
+//        writeToFile(path, "Minimalistic1x2x9.answers.credal-adaptive-entropy", resultsCredalAdaptiveEntropy, 1);
 
 //        writeToFile(path, "Minimalistic1x2x9.posteriors.credal-adaptive-mode", resultsCredalAdaptiveMode, 0);
 //        writeToFile(path, "Minimalistic1x2x9.answers.credal-adaptive-mode", resultsCredalAdaptiveMode, 1);
-
+//
 //        writeToFile(path, "Minimalistic1x2x9.posteriors.credal-adaptive-pright", resultsCredalAdaptivePRight, 0);
 //        writeToFile(path, "Minimalistic1x2x9.answers.credal-adaptive-pright", resultsCredalAdaptivePRight, 1);
     }
