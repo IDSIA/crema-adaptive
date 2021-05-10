@@ -194,10 +194,10 @@ def metric_per_question(n_questions, avg_metric, metric, tests, xytext, sim):
 
     # plt.yscale('log')
     if metric == "Accuracy":
-        plt.ylim(0.49, 1.01)
+        # plt.ylim(0.49, 1.01)
         plt.legend(loc='lower right')
     else:
-        plt.ylim(-0.01, 0.26)
+        # plt.ylim(-0.01, 0.26)
         plt.legend(loc='upper right')
     # else:
     #     plt.ylim()

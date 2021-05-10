@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
 
 from sklearn.metrics import confusion_matrix
@@ -26,11 +27,15 @@ def read_and_convert_input_files(n_questions, model_type, n_skill, n_states, sim
     initial_profiles_file = sim_path + sim + ".profiles.csv"
     posteriors_file = sim_path + sim + ".posteriors." + test + ".csv"
 
+    pd.read_csv(posteriors_file)
     observed_classes = np.loadtxt(initial_profiles_file, delimiter=',', dtype=np.int32)
     observed_classes = np.reshape(observed_classes, (-1, n_skill))
 
-    posteriors = np.loadtxt(posteriors_file, delimiter=',')[:, 1:]
-    student_id = np.loadtxt(posteriors_file, delimiter=',', dtype=np.int32)[:, 0]
+    posteriors = pd.read_csv(posteriors_file, sep=',', header=None, index_col=0).to_numpy()
+    student_id = pd.read_csv(posteriors_file, sep=',', header=None, usecols=[0]).to_numpy().flatten()
+
+    # posteriors = np.loadtxt(posteriors_file, delimiter=',')[:, 1:]
+    # student_id = np.loadtxt(posteriors_file, delimiter=',', dtype=np.int32)[:, 0]
 
     observed_classes = observed_classes[student_id]
 
@@ -355,7 +360,7 @@ if __name__ == '__main__':
     bayesian_models = ['bayesian-adaptive-entropy', 'bayesian-adaptive-mode',
                        'bayesian-adaptive-pright', 'bayesian-non-adaptive']
 
-    analyse_model(simulations_dirs, bayesian_models, number_of_skills, number_of_skill_levels, model)
+    # analyse_model(simulations_dirs, bayesian_models, number_of_skills, number_of_skill_levels, model)
 
     # Credal
     model = 'credal'
