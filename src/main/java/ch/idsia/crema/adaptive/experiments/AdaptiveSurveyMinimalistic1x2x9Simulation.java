@@ -24,8 +24,6 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.time.Duration;
-import java.time.Instant;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
@@ -143,7 +141,7 @@ public class AdaptiveSurveyMinimalistic1x2x9Simulation {
                     System.out.println("Credal Minimalistic1x2x9 adaptive + Entropy" + student.getId());
 
                     final AgentTeacher teacher = new Teacher<>(
-                            new CredalMinimalistic1x2x9(N_QUESTIONS),
+                            new CredalMinimalistic1x2x9(N_QUESTIONS).setEps(.05),
                             new ScoringFunctionUpperExpectedEntropy(),
                             new StoppingConditionCredalMeanEntropy(.1)
                     )
@@ -158,7 +156,7 @@ public class AdaptiveSurveyMinimalistic1x2x9Simulation {
                     System.out.println("Credal Minimalistic1x2x9 adaptive + Mode " + student.getId());
 
                     final AgentTeacher teacher = new Teacher<>(
-                            new CredalMinimalistic1x2x9(N_QUESTIONS),
+                            new CredalMinimalistic1x2x9(N_QUESTIONS).setEps(.05),
                             new ScoringFunctionCredalMode(),
                             new StoppingConditionCredalMeanEntropy(.1)
                     )
@@ -172,7 +170,50 @@ public class AdaptiveSurveyMinimalistic1x2x9Simulation {
                     System.out.println("Credal Minimalistic1x2x9 adaptive + PRight " + student.getId());
 
                     final AgentTeacher teacher = new Teacher<>(
-                            new CredalMinimalistic1x2x9(N_QUESTIONS),
+                            new CredalMinimalistic1x2x9(N_QUESTIONS).setEps(.05),
+                            new ScoringFunctionUpperLowerProbabilityOfRight(),
+                            new StoppingConditionCredalMeanEntropy(.1)
+                    )
+                            .setPersist(new PersistCredal());
+                    return new Experiment(teacher, student).run();
+                })
+                .collect(Collectors.toList());
+
+        final List<Callable<String[]>> credalMinimalistic1x2x9TasksAdaptiveEntropyEps01 = students.stream()
+                .map(student -> (Callable<String[]>) () -> {
+                    System.out.println("Credal Minimalistic1x2x9 adaptive + Entropy" + student.getId());
+
+                    final AgentTeacher teacher = new Teacher<>(
+                            new CredalMinimalistic1x2x9(N_QUESTIONS).setEps(.01),
+                            new ScoringFunctionUpperExpectedEntropy(),
+                            new StoppingConditionCredalMeanEntropy(.1)
+                    )
+                            .setPersist(new PersistCredal());
+
+                    return new Experiment(teacher, student).run();
+                })
+                .collect(Collectors.toList());
+
+        final List<Callable<String[]>> credalMinimalistic1x2x9TasksAdaptiveModeEps01 = students.stream()
+                .map(student -> (Callable<String[]>) () -> {
+                    System.out.println("Credal Minimalistic1x2x9 adaptive + Mode " + student.getId());
+
+                    final AgentTeacher teacher = new Teacher<>(
+                            new CredalMinimalistic1x2x9(N_QUESTIONS).setEps(.01),
+                            new ScoringFunctionCredalMode(),
+                            new StoppingConditionCredalMeanEntropy(.1)
+                    )
+                            .setPersist(new PersistCredal());
+                    return new Experiment(teacher, student).run();
+                })
+                .collect(Collectors.toList());
+
+        final List<Callable<String[]>> credalMinimalistic1x2x9TasksAdaptivePRightEps01 = students.stream()
+                .map(student -> (Callable<String[]>) () -> {
+                    System.out.println("Credal Minimalistic1x2x9 adaptive + PRight " + student.getId());
+
+                    final AgentTeacher teacher = new Teacher<>(
+                            new CredalMinimalistic1x2x9(N_QUESTIONS).setEps(.01),
                             new ScoringFunctionUpperLowerProbabilityOfRight(),
                             new StoppingConditionCredalMeanEntropy(.1)
                     )
@@ -184,40 +225,44 @@ public class AdaptiveSurveyMinimalistic1x2x9Simulation {
 
         // submit all the tasks to the ExecutionService
 
-        Instant start1 = Instant.now();
+//        Instant start1 = Instant.now();
         final List<Future<String[]>> resultsBayesianNonAdaptive = es.invokeAll(bayesianMinimalistic1x2x9TasksNonAdaptive);
-        Instant end1 = Instant.now();
-        String timeBayesianNonAdaptive = String.valueOf(Duration.between(start1, end1).getSeconds());
+//        Instant end1 = Instant.now();
+//        String timeBayesianNonAdaptive = String.valueOf(Duration.between(start1, end1).getSeconds());
 
-        Instant start2 = Instant.now();
+//        Instant start2 = Instant.now();
         final List<Future<String[]>> resultsBayesianAdaptiveEntropy = es.invokeAll(bayesianMinimalistic1x2x9TasksAdaptiveEntropy);
-        Instant end2 = Instant.now();
-        String timeBayesianAdaptiveEntropy = String.valueOf(Duration.between(start2, end2).getSeconds());
+//        Instant end2 = Instant.now();
+//        String timeBayesianAdaptiveEntropy = String.valueOf(Duration.between(start2, end2).getSeconds());
 
-        Instant start3 = Instant.now();
+//        Instant start3 = Instant.now();
         final List<Future<String[]>> resultsBayesianAdaptiveMode = es.invokeAll(bayesianMinimalistic1x2x9TasksAdaptiveMode);
-        Instant end3 = Instant.now();
-        String timeBayesianAdaptiveMode = String.valueOf(Duration.between(start3, end3).getSeconds());
+//        Instant end3 = Instant.now();
+//        String timeBayesianAdaptiveMode = String.valueOf(Duration.between(start3, end3).getSeconds());
 
-        Instant start4 = Instant.now();
+//        Instant start4 = Instant.now();
         final List<Future<String[]>> resultsBayesianAdaptivePRight = es.invokeAll(bayesianMinimalistic1x2x9TasksAdaptivePRight);
-        Instant end4 = Instant.now();
-        String timeBayesianAdaptivePRight = String.valueOf(Duration.between(start4, end4).getSeconds());
+//        Instant end4 = Instant.now();
+//        String timeBayesianAdaptivePRight = String.valueOf(Duration.between(start4, end4).getSeconds());
 
-        Instant start5 = Instant.now();
+//        Instant start5 = Instant.now();
         final List<Future<String[]>> resultsCredalAdaptiveEntropy = es.invokeAll(credalMinimalistic1x2x9TasksAdaptiveEntropy);
-        Instant end5 = Instant.now();
-        String timeCredalAdaptiveEntropy = String.valueOf(Duration.between(start5, end5).getSeconds());
+//        Instant end5 = Instant.now();
+//        String timeCredalAdaptiveEntropy = String.valueOf(Duration.between(start5, end5).getSeconds());
 
-        Instant start6 = Instant.now();
+//        Instant start6 = Instant.now();
         final List<Future<String[]>> resultsCredalAdaptiveMode = es.invokeAll(credalMinimalistic1x2x9TasksAdaptiveMode);
-        Instant end6 = Instant.now();
-        String timeCredalAdaptiveMode = String.valueOf(Duration.between(start6, end6).getSeconds());
+//        Instant end6 = Instant.now();
+//        String timeCredalAdaptiveMode = String.valueOf(Duration.between(start6, end6).getSeconds());
 
-        Instant start7 = Instant.now();
+//        Instant start7 = Instant.now();
         final List<Future<String[]>> resultsCredalAdaptivePRight = es.invokeAll(credalMinimalistic1x2x9TasksAdaptivePRight);
-        Instant end7 = Instant.now();
-        String timeCredalAdaptivePRight = String.valueOf(Duration.between(start7, end7).getSeconds());
+//        Instant end7 = Instant.now();
+//        String timeCredalAdaptivePRight = String.valueOf(Duration.between(start7, end7).getSeconds());
+
+        final List<Future<String[]>> resultsCredalAdaptiveEntropyEps01 = es.invokeAll(credalMinimalistic1x2x9TasksAdaptiveEntropyEps01);
+        final List<Future<String[]>> resultsCredalAdaptiveModeEps01 = es.invokeAll(credalMinimalistic1x2x9TasksAdaptiveModeEps01);
+        final List<Future<String[]>> resultsCredalAdaptivePRightEps01 = es.invokeAll(credalMinimalistic1x2x9TasksAdaptivePRightEps01);
 
         // wait until the end, then shutdown and proceed with the code
         es.shutdown();
@@ -225,15 +270,15 @@ public class AdaptiveSurveyMinimalistic1x2x9Simulation {
         // write the output to file
 		String path = "output/Minimalistic1x2x9/";
 
-        String[] lines = {"bayesian-non-adaptive, " + timeBayesianNonAdaptive + "sec",
-                           "bayesian-adaptive-entropy, " + timeBayesianAdaptiveEntropy + "sec",
-                            "bayesian-adaptive-mode, " + timeBayesianAdaptiveMode + "sec",
-                            "bayesian-adaptive-pright, " + timeBayesianAdaptivePRight + "sec",
-                            "credal-adaptive-entropy, " + timeCredalAdaptiveEntropy + "sec",
-                            "credal-adaptive-mode, " + timeCredalAdaptiveMode + "sec",
-                            "credal-adaptive-pright, " + timeCredalAdaptivePRight + "sec"};
+//        String[] lines = {"bayesian-non-adaptive, " + timeBayesianNonAdaptive + "sec",
+//                           "bayesian-adaptive-entropy, " + timeBayesianAdaptiveEntropy + "sec",
+//                            "bayesian-adaptive-mode, " + timeBayesianAdaptiveMode + "sec",
+//                            "bayesian-adaptive-pright, " + timeBayesianAdaptivePRight + "sec",
+//                            "credal-adaptive-entropy, " + timeCredalAdaptiveEntropy + "sec",
+//                            "credal-adaptive-mode, " + timeCredalAdaptiveMode + "sec",
+//                            "credal-adaptive-pright, " + timeCredalAdaptivePRight + "sec"};
 
-        writeTimeToFile(path, lines);
+//        writeTimeToFile(path, lines);
 
         // Non-adaptive
         writeToFile(path, "Minimalistic1x2x9.profiles", resultsBayesianNonAdaptive, 2);
@@ -268,6 +313,18 @@ public class AdaptiveSurveyMinimalistic1x2x9Simulation {
         writeToFile(path, "Minimalistic1x2x9.posteriors.credal-adaptive-pright", resultsCredalAdaptivePRight, 0);
         writeToFile(path, "Minimalistic1x2x9.answers.credal-adaptive-pright", resultsCredalAdaptivePRight, 1);
         writeToFile(path, "Minimalistic1x2x9.progress.credal-adaptive-pright", resultsCredalAdaptivePRight, 3);
+
+        writeToFile(path, "Minimalistic1x2x9.posteriors.credal-adaptive-entropy.eps01", resultsCredalAdaptiveEntropyEps01, 0);
+        writeToFile(path, "Minimalistic1x2x9.answers.credal-adaptive-entropy.eps01", resultsCredalAdaptiveEntropyEps01, 1);
+        writeToFile(path, "Minimalistic1x2x9.progress.credal-adaptive-entropy.eps01", resultsCredalAdaptiveEntropyEps01, 3);
+
+        writeToFile(path, "Minimalistic1x2x9.posteriors.credal-adaptive-mode.eps01", resultsCredalAdaptiveModeEps01, 0);
+        writeToFile(path, "Minimalistic1x2x9.answers.credal-adaptive-mode.eps01", resultsCredalAdaptiveModeEps01, 1);
+        writeToFile(path, "Minimalistic1x2x9.progress.credal-adaptive-mode.eps01", resultsCredalAdaptiveModeEps01, 3);
+
+        writeToFile(path, "Minimalistic1x2x9.posteriors.credal-adaptive-pright.eps01", resultsCredalAdaptivePRightEps01, 0);
+        writeToFile(path, "Minimalistic1x2x9.answers.credal-adaptive-pright.eps01", resultsCredalAdaptivePRightEps01, 1);
+        writeToFile(path, "Minimalistic1x2x9.progress.credal-adaptive-pright.eps01", resultsCredalAdaptivePRightEps01, 3);
     }
 
     static void writeToFile(String path, String filename, List<Future<String[]>> content, int idx) throws Exception {

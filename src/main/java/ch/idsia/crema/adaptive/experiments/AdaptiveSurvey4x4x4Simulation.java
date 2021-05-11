@@ -14,29 +14,30 @@ import ch.idsia.crema.adaptive.experiments.scoring.precise.ScoringFunctionBayesi
 import ch.idsia.crema.adaptive.experiments.scoring.precise.ScoringFunctionExpectedEntropy;
 import ch.idsia.crema.adaptive.experiments.scoring.precise.ScoringFunctionProbabilityOfRight;
 import ch.idsia.crema.adaptive.experiments.scoring.precise.ScoringFunctionRandom;
+import ch.idsia.crema.adaptive.experiments.stopping.imprecise.StoppingConditionCredalMeanEntropy;
 import ch.idsia.crema.factor.bayesian.BayesianFactor;
 import ch.idsia.crema.inference.sampling.BayesianNetworkSampling;
 import ch.idsia.crema.utility.RandomUtil;
 import gnu.trove.map.TIntIntMap;
-import org.apache.commons.lang3.ArrayUtils;
 
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.Random;
-import java.util.concurrent.*;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-
-import static ch.idsia.crema.adaptive.experiments.Utils.separator;
 
 
 /**
  * Authors:  	Claudio "Dna" Bonesana, Giorgia Adorni
  * Project: 	crema-adaptive
  * Date:    	V1.0: 04.02.2021 16:09
- * 				V2.0: 11.02.2021 16:00
+ * V2.0: 11.02.2021 16:00
  */
 public class AdaptiveSurvey4x4x4Simulation {
 
@@ -45,7 +46,7 @@ public class AdaptiveSurvey4x4x4Simulation {
 	// we are going to use a model with 20 questions: each template has 5 questions
 	static final int N_QUESTIONS = 10;
 	// since we are using an ExecutorService, we will run 16 tests in parallel
-	static final int PARALLEL_COUNT = 16;
+	static final int PARALLEL_COUNT = 8;
 
 	public static void main(String[] args) throws Exception {
 
@@ -79,250 +80,154 @@ public class AdaptiveSurvey4x4x4Simulation {
 		final List<Callable<String[]>> bayesian4x4x4TasksNonAdaptive = students.stream()
 				.map(student -> (Callable<String[]>) () -> {
 					// all these tasks are similar: check bayesian experiments for comments!
-					try {
-						System.out.println("Bayesian4x4x4 non adaptive " + student.getId());
+					System.out.println("Bayesian Minimalistic1x2x9 non adaptive " + student.getId());
 
-						final AgentTeacher teacher = new Teacher<>(
-								new Bayesian4x4x4(N_QUESTIONS),
-								new ScoringFunctionRandom(student.getId())
-						)
-								.setPersist(new PersistBayesian());
+					final AgentTeacher teacher = new Teacher<>(
+							new Bayesian4x4x4(N_QUESTIONS),
+							new ScoringFunctionRandom(student.getId())
+					)
+							.setPersist(new PersistBayesian());
 
-						new Experiment(teacher, student).run();
-
-						String posteriors = student.getId() + separator + teacher.getResults();
-						String answers = student.getAnswers(teacher.getTotalNumberQuestions());
-						String profiles = student.getProfiles(teacher.getTotalNumberQuestions());
-
-						return new String[]{posteriors, answers, profiles};
-					} catch (Exception e) {
-						e.printStackTrace();
-						return ArrayUtils.EMPTY_STRING_ARRAY;
-					}
+					return new Experiment(teacher, student).run();
 				})
 				.collect(Collectors.toList());
 
 		// Bayesian adaptive survey
 		final List<Callable<String[]>> bayesian4x4x4TasksAdaptiveEntropy = students.stream()
 				.map(student -> (Callable<String[]>) () -> {
-					try {
-						System.out.println("Bayesian4x4x4 adaptive + Entropy " + student.getId());
+					// all these tasks are similar: check bayesian experiments for comments!
+					System.out.println("Bayesian Minimalistic1x2x9 adaptive + Entropy " + student.getId());
 
-						/*
-							build a teacher for each student since we are in a concurrent environment and the teacher
-							will save the output results of a single student
-						 */
-						final AgentTeacher teacher = new Teacher<>(
-								// model to use for the question choice
-								new Bayesian4x4x4(N_QUESTIONS),
-								// scoring function used to select the next question
-								new ScoringFunctionExpectedEntropy()
-						)
-								// we want to save the results and they are of bayesian type
-								.setPersist(new PersistBayesian());
+					final AgentTeacher teacher = new Teacher<>(
+							new Bayesian4x4x4(N_QUESTIONS),
+							new ScoringFunctionExpectedEntropy()
+					)
+							.setPersist(new PersistBayesian());
 
-						// run new configured experiment
-						new Experiment(teacher, student).run();
-
-						// return a row for the CSV file
-						String posteriors = student.getId() + separator + teacher.getResults();
-						String answers = student.getAnswers(teacher.getTotalNumberQuestions());
-						String profiles = student.getProfiles(teacher.getTotalNumberQuestions());
-
-						return new String[]{posteriors, answers, profiles};
-					} catch (Exception e) {
-						// if something goes wrong, return an empty row that will be filtered out
-						e.printStackTrace();
-						return ArrayUtils.EMPTY_STRING_ARRAY;
-					}
+					return new Experiment(teacher, student).run();
 				})
 				.collect(Collectors.toList());
 
 		final List<Callable<String[]>> bayesian4x4x4TasksAdaptiveMode = students.stream()
 				.map(student -> (Callable<String[]>) () -> {
-					try {
-						System.out.println("Bayesian4x4x4 adaptive + Mode " + student.getId());
+					// all these tasks are similar: check bayesian experiments for comments!
+					System.out.println("Bayesian Minimalistic1x2x9 adaptive + Mode " + student.getId());
 
-						/*
-							build a teacher for each student since we are in a concurrent environment and the teacher
-							will save the output results of a single student
-						 */
-						final AgentTeacher teacher = new Teacher<>(
-								// model to use for the question choice
-								new Bayesian4x4x4(N_QUESTIONS),
-								// scoring function used to select the next question
-								new ScoringFunctionBayesianMode()
-						)
-								// we want to save the results and they are of bayesian type
-								.setPersist(new PersistBayesian());
-
-						// run new configured experiment
-						new Experiment(teacher, student).run();
-
-						// return a row for the CSV file
-						String posteriors = student.getId() + separator + teacher.getResults();
-						String answers = student.getAnswers(teacher.getTotalNumberQuestions());
-						String profiles = student.getProfiles(teacher.getTotalNumberQuestions());
-
-						return new String[]{posteriors, answers, profiles};
-					} catch (Exception e) {
-						// if something goes wrong, return an empty row that will be filtered out
-						e.printStackTrace();
-						return ArrayUtils.EMPTY_STRING_ARRAY;
-					}
+					final AgentTeacher teacher = new Teacher<>(
+							new Bayesian4x4x4(N_QUESTIONS),
+							new ScoringFunctionBayesianMode()
+					)
+							.setPersist(new PersistBayesian());
+					return new Experiment(teacher, student).run();
 				})
 				.collect(Collectors.toList());
 
 		final List<Callable<String[]>> bayesian4x4x4TasksAdaptivePRight = students.stream()
 				.map(student -> (Callable<String[]>) () -> {
-					try {
-						System.out.println("Bayesian4x4x4 adaptive + PRight " + student.getId());
+					// all these tasks are similar: check bayesian experiments for comments!
+					System.out.println("Bayesian Minimalistic1x2x9 adaptive + PRight " + student.getId());
 
-						/*
-							build a teacher for each student since we are in a concurrent environment and the teacher
-							will save the output results of a single student
-						 */
-						final AgentTeacher teacher = new Teacher<>(
-								// model to use for the question choice
-								new Bayesian4x4x4(N_QUESTIONS),
-								// scoring function used to select the next question
-								new ScoringFunctionProbabilityOfRight()
-						)
-								// we want to save the results and they are of bayesian type
-								.setPersist(new PersistBayesian());
-
-						// run new configured experiment
-						new Experiment(teacher, student).run();
-
-						// return a row for the CSV file
-						String posteriors = student.getId() + separator + teacher.getResults();
-						String answers = student.getAnswers(teacher.getTotalNumberQuestions());
-						String profiles = student.getProfiles(teacher.getTotalNumberQuestions());
-
-						return new String[]{posteriors, answers, profiles};
-					} catch (Exception e) {
-						// if something goes wrong, return an empty row that will be filtered out
-						e.printStackTrace();
-						return ArrayUtils.EMPTY_STRING_ARRAY;
-					}
+					final AgentTeacher teacher = new Teacher<>(
+							new Bayesian4x4x4(N_QUESTIONS),
+							new ScoringFunctionProbabilityOfRight()
+					)
+							.setPersist(new PersistBayesian());
+					return new Experiment(teacher, student).run();
 				})
 				.collect(Collectors.toList());
 
 		// Credal adaptive survey
 		final List<Callable<String[]>> credal4x4x4TasksAdaptiveEntropy = students.stream()
 				.map(student -> (Callable<String[]>) () -> {
-					try {
-						System.out.println("Credal4x4x4 adaptive + Entropy " + student.getId());
+					System.out.println("Credal Minimalistic1x2x9 adaptive + Entropy" + student.getId());
 
-						final AgentTeacher teacher = new Teacher<>(
-								new Credal4x4x4(N_QUESTIONS),
-								new ScoringFunctionUpperExpectedEntropy()
-						)
-								.setPersist(new PersistCredal());
+					final AgentTeacher teacher = new Teacher<>(
+							new Credal4x4x4(N_QUESTIONS),
+							new ScoringFunctionUpperExpectedEntropy(),
+							new StoppingConditionCredalMeanEntropy(.1)
+					)
+							.setPersist(new PersistCredal());
 
-						new Experiment(teacher, student).run();
-
-						String posteriors = student.getId() + separator + teacher.getResults();
-						String answers = student.getAnswers(teacher.getTotalNumberQuestions());
-						String profiles = student.getProfiles(teacher.getTotalNumberQuestions());
-
-						return new String[]{posteriors, answers, profiles};
-					} catch (Exception e) {
-						e.printStackTrace();
-						return ArrayUtils.EMPTY_STRING_ARRAY;
-					}
+					return new Experiment(teacher, student).run();
 				})
 				.collect(Collectors.toList());
 
 		final List<Callable<String[]>> credal4x4x4TasksAdaptiveMode = students.stream()
 				.map(student -> (Callable<String[]>) () -> {
-					try {
-						System.out.println("Credal4x4x4 adaptive + Mode " + student.getId());
+					System.out.println("Credal Minimalistic1x2x9 adaptive + Mode " + student.getId());
 
-						final AgentTeacher teacher = new Teacher<>(
-								new Credal4x4x4(N_QUESTIONS),
-								new ScoringFunctionCredalMode()
-						)
-								.setPersist(new PersistCredal());
-
-						new Experiment(teacher, student).run();
-
-						String posteriors = student.getId() + separator + teacher.getResults();
-						String answers = student.getAnswers(teacher.getTotalNumberQuestions());
-						String profiles = student.getProfiles(teacher.getTotalNumberQuestions());
-
-						return new String[]{posteriors, answers, profiles};
-					} catch (Exception e) {
-						e.printStackTrace();
-						return ArrayUtils.EMPTY_STRING_ARRAY;
-					}
+					final AgentTeacher teacher = new Teacher<>(
+							new Credal4x4x4(N_QUESTIONS),
+							new ScoringFunctionCredalMode(),
+							new StoppingConditionCredalMeanEntropy(.1)
+					)
+							.setPersist(new PersistCredal());
+					return new Experiment(teacher, student).run();
 				})
 				.collect(Collectors.toList());
 
 		final List<Callable<String[]>> credal4x4x4TasksAdaptivePRight = students.stream()
 				.map(student -> (Callable<String[]>) () -> {
-					try {
-						System.out.println("Credal4x4x4 adaptive + PRight " + student.getId());
+					System.out.println("Credal Minimalistic1x2x9 adaptive + PRight " + student.getId());
 
-						final AgentTeacher teacher = new Teacher<>(
-								new Credal4x4x4(N_QUESTIONS),
-								new ScoringFunctionUpperLowerProbabilityOfRight()
-						)
-								.setPersist(new PersistCredal());
-
-						new Experiment(teacher, student).run();
-
-						String posteriors = student.getId() + separator + teacher.getResults();
-						String answers = student.getAnswers(teacher.getTotalNumberQuestions());
-						String profiles = student.getProfiles(teacher.getTotalNumberQuestions());
-
-						return new String[]{posteriors, answers, profiles};
-					} catch (Exception e) {
-						e.printStackTrace();
-						return ArrayUtils.EMPTY_STRING_ARRAY;
-					}
+					final AgentTeacher teacher = new Teacher<>(
+							new Credal4x4x4(N_QUESTIONS),
+							new ScoringFunctionUpperLowerProbabilityOfRight(),
+							new StoppingConditionCredalMeanEntropy(.1)
+					)
+							.setPersist(new PersistCredal());
+					return new Experiment(teacher, student).run();
 				})
 				.collect(Collectors.toList());
 
 		// submit all the tasks to the ExecutionService
-//		final List<Future<String[]>> resultsBayesianNonAdaptive = es.invokeAll(bayesian4x4x4TasksNonAdaptive);
-//		final List<Future<String[]>> resultsBayesianAdaptiveEntropy = es.invokeAll(bayesian4x4x4TasksAdaptiveEntropy);
-//		final List<Future<String[]>> resultsBayesianAdaptiveMode = es.invokeAll(bayesian4x4x4TasksAdaptiveMode);
-//		final List<Future<String[]>> resultsBayesianAdaptivePRight = es.invokeAll(bayesian4x4x4TasksAdaptivePRight);
+		final List<Future<String[]>> resultsBayesianNonAdaptive = es.invokeAll(bayesian4x4x4TasksNonAdaptive);
 
-//		final List<Future<String[]>> resultsCredalAdaptiveEntropy = es.invokeAll(credal4x4x4TasksAdaptiveEntropy);
-//		final List<Future<String[]>> resultsCredalAdaptiveMode = es.invokeAll(credal4x4x4TasksAdaptiveMode);
+		final List<Future<String[]>> resultsBayesianAdaptiveEntropy = es.invokeAll(bayesian4x4x4TasksAdaptiveEntropy);
+		final List<Future<String[]>> resultsBayesianAdaptiveMode = es.invokeAll(bayesian4x4x4TasksAdaptiveMode);
+		final List<Future<String[]>> resultsBayesianAdaptivePRight = es.invokeAll(bayesian4x4x4TasksAdaptivePRight);
+
+		final List<Future<String[]>> resultsCredalAdaptiveEntropy = es.invokeAll(credal4x4x4TasksAdaptiveEntropy);
+		final List<Future<String[]>> resultsCredalAdaptiveMode = es.invokeAll(credal4x4x4TasksAdaptiveMode);
 		final List<Future<String[]>> resultsCredalAdaptivePRight = es.invokeAll(credal4x4x4TasksAdaptivePRight);
 
 		// wait until the end, then shutdown and proceed with the code
 		es.shutdown();
 
 		// write the output to file
-		String Bayesian4x4Path = "output/Bayesian4x4x4/";
-//		writeToFile(Bayesian4x4Path, "Bayesian4x4x4.profiles", resultsBayesianNonAdaptive, 2);
+		String Bayesian4x4Path = "output/MultiSkill4x4x4/";
+		writeToFile(Bayesian4x4Path, "Bayesian4x4x4.profiles", resultsBayesianNonAdaptive, 2);
+		writeToFile(Bayesian4x4Path, "Bayesian4x4x4.progress", resultsBayesianNonAdaptive, 3);
 
 		// Bayesian
-//		writeToFile(Bayesian4x4Path, "Bayesian4x4x4.posteriors.bayesian-non-adaptive", resultsBayesianNonAdaptive, 0);
-//		writeToFile(Bayesian4x4Path, "Bayesian4x4x4.answers.bayesian-non-adaptive", resultsBayesianNonAdaptive, 1);
+		writeToFile(Bayesian4x4Path, "Bayesian4x4x4.posteriors.bayesian-non-adaptive", resultsBayesianNonAdaptive, 0);
+		writeToFile(Bayesian4x4Path, "Bayesian4x4x4.answers.bayesian-non-adaptive", resultsBayesianNonAdaptive, 1);
+		writeToFile(Bayesian4x4Path, "Bayesian4x4x4.progress.bayesian-non-adaptive", resultsBayesianNonAdaptive, 3);
 
-//		writeToFile(Bayesian4x4Path, "Bayesian4x4x4.posteriors.bayesian-adaptive-entropy", resultsBayesianAdaptiveEntropy,	0);
-//		writeToFile(Bayesian4x4Path, "Bayesian4x4x4.answers.bayesian-adaptive-entropy", resultsBayesianAdaptiveEntropy, 1);
+		writeToFile(Bayesian4x4Path, "Bayesian4x4x4.posteriors.bayesian-adaptive-entropy", resultsBayesianAdaptiveEntropy, 0);
+		writeToFile(Bayesian4x4Path, "Bayesian4x4x4.answers.bayesian-adaptive-entropy", resultsBayesianAdaptiveEntropy, 1);
+		writeToFile(Bayesian4x4Path, "Bayesian4x4x4.progress.bayesian-adaptive-entropy", resultsBayesianAdaptiveEntropy, 3);
 
-//		writeToFile(Bayesian4x4Path, "Bayesian4x4x4.posteriors.bayesian-adaptive-mode", resultsBayesianAdaptiveMode,	0);
-//		writeToFile(Bayesian4x4Path, "Bayesian4x4x4.answers.bayesian-adaptive-mode", resultsBayesianAdaptiveMode, 1);
-//
-//		writeToFile(Bayesian4x4Path, "Bayesian4x4x4.posteriors.bayesian-adaptive-pright", resultsBayesianAdaptivePRight, 0);
-//		writeToFile(Bayesian4x4Path, "Bayesian4x4x4.answers.bayesian-adaptive-pright", resultsBayesianAdaptivePRight, 1);
-//
-//		// Credal
-//		writeToFile(Bayesian4x4Path, "Bayesian4x4x4.posteriors.credal-adaptive-entropy", resultsCredalAdaptiveEntropy, 0);
-//		writeToFile(Bayesian4x4Path, "Bayesian4x4x4.answers.credal-adaptive-entropy", resultsCredalAdaptiveEntropy, 1);
-//
-//		writeToFile(Bayesian4x4Path, "Bayesian4x4x4.posteriors.credal-adaptive-mode", resultsCredalAdaptiveMode, 0);
-//		writeToFile(Bayesian4x4Path, "Bayesian4x4x4.answers.credal-adaptive-mode", resultsCredalAdaptiveMode, 1);
+		writeToFile(Bayesian4x4Path, "Bayesian4x4x4.posteriors.bayesian-adaptive-mode", resultsBayesianAdaptiveMode, 0);
+		writeToFile(Bayesian4x4Path, "Bayesian4x4x4.answers.bayesian-adaptive-mode", resultsBayesianAdaptiveMode, 1);
+		writeToFile(Bayesian4x4Path, "Bayesian4x4x4.progress.bayesian-adaptive-mode", resultsBayesianAdaptiveMode, 3);
+
+		writeToFile(Bayesian4x4Path, "Bayesian4x4x4.posteriors.bayesian-adaptive-pright", resultsBayesianAdaptivePRight, 0);
+		writeToFile(Bayesian4x4Path, "Bayesian4x4x4.answers.bayesian-adaptive-pright", resultsBayesianAdaptivePRight, 1);
+		writeToFile(Bayesian4x4Path, "Bayesian4x4x4.progress.bayesian-adaptive-pright", resultsBayesianAdaptivePRight, 3);
+
+		// Credal
+		writeToFile(Bayesian4x4Path, "Bayesian4x4x4.posteriors.credal-adaptive-entropy", resultsCredalAdaptiveEntropy, 0);
+		writeToFile(Bayesian4x4Path, "Bayesian4x4x4.answers.credal-adaptive-entropy", resultsCredalAdaptiveEntropy, 1);
+		writeToFile(Bayesian4x4Path, "Bayesian4x4x4.progress.credal-adaptive-entropy", resultsCredalAdaptiveEntropy, 3);
+
+		writeToFile(Bayesian4x4Path, "Bayesian4x4x4.posteriors.credal-adaptive-mode", resultsCredalAdaptiveMode, 0);
+		writeToFile(Bayesian4x4Path, "Bayesian4x4x4.answers.credal-adaptive-mode", resultsCredalAdaptiveMode, 1);
+		writeToFile(Bayesian4x4Path, "Bayesian4x4x4.progress.credal-adaptive-mode", resultsCredalAdaptiveMode, 3);
 
 		writeToFile(Bayesian4x4Path, "Bayesian4x4x4.posteriors.credal-adaptive-pright", resultsCredalAdaptivePRight, 0);
 		writeToFile(Bayesian4x4Path, "Bayesian4x4x4.answers.credal-adaptive-pright", resultsCredalAdaptivePRight, 1);
+		writeToFile(Bayesian4x4Path, "Bayesian4x4x4.progress.credal-adaptive-pright", resultsCredalAdaptivePRight, 3);
 	}
 
 	static void writeToFile(String path, String filename, List<Future<String[]>> content, int idx) throws Exception {
@@ -331,7 +236,7 @@ public class AdaptiveSurvey4x4x4Simulation {
 					try {
 						// wait for the task to finish (should already be completed) and get the returned row
 						return x.get()[idx];
-					} catch (InterruptedException | ExecutionException e) {
+					} catch (Exception e) {
 						// if something bad happens, erase the line
 						e.printStackTrace();
 						return "";
