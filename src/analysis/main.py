@@ -19,21 +19,20 @@ def read_and_convert_input_files(n_questions, model_type, n_skill, n_states, sim
     :param sim:
     :param sim_path:
     :param test:
-    :return: n_questions, all_predicted_classes, final_posteriors, observed_classes, posteriors, predicted_classes,
-            predicted_classes_5
+    :return: n_questions, n_student, all_predicted_classes, final_posteriors, observed_classes, posteriors,
+            predicted_classes, predicted_classes_5
     """
 
     global final_posteriors
     initial_profiles_file = sim_path + sim + ".profiles.csv"
     posteriors_file = sim_path + sim + ".posteriors." + test + ".csv"
 
-    pd.read_csv(posteriors_file)
     observed_classes = np.loadtxt(initial_profiles_file, delimiter=',', dtype=np.int32)
     observed_classes = np.reshape(observed_classes, (-1, n_skill))
 
     posteriors = pd.read_csv(posteriors_file, sep=',', header=None, index_col=0).to_numpy()
     student_id = pd.read_csv(posteriors_file, sep=',', header=None, usecols=[0]).to_numpy().flatten()
-
+    n_student = len(student_id)
     # posteriors = np.loadtxt(posteriors_file, delimiter=',')[:, 1:]
     # student_id = np.loadtxt(posteriors_file, delimiter=',', dtype=np.int32)[:, 0]
 
@@ -47,7 +46,19 @@ def read_and_convert_input_files(n_questions, model_type, n_skill, n_states, sim
         n_posteriors = n_skill * n_states
         n_questions = int(np.shape(posteriors)[1] / n_posteriors)
 
-        posteriors = np.reshape(posteriors, (-1, n_questions, n_skill, n_states))
+        posteriors = np.reshape(posteriors, (n_student, n_questions, n_posteriors))
+
+        if n_skill == 4 and n_states == 2:
+            permutation = [0, 2, 4, 6, 1, 3, 5, 7]
+        elif n_skill == 4 and n_states == 2:
+            # FIXME
+            permutation = [0, 4, 8, 12, 1, 5, 9, 13, 2, 6, 10, 14, 3, 7, 11, 15]
+        elif n_skill == 1 and n_states == 2:
+            permutation = [0, 1]
+
+        permutation_idx = np.array(permutation)
+        posteriors = posteriors[:, :, permutation_idx]
+        posteriors = np.reshape(posteriors, (n_student, n_questions, n_skill, n_states))
 
         _all_predicted_classes = np.argmax(posteriors, axis=3)
         all_predicted_classes.append(_all_predicted_classes)
@@ -64,10 +75,17 @@ def read_and_convert_input_files(n_questions, model_type, n_skill, n_states, sim
         n_questions = int(np.shape(posteriors)[1] / n_posteriors)
 
         # (n_states, n_states) = lower and upper
-        posteriors = np.reshape(posteriors, (-1, n_questions, n_skill, n_states, n_states))
+        posteriors = np.reshape(posteriors, (len(student_id), n_questions, n_skill, n_states * n_states))
 
-        posteriors_lower = posteriors[:, :, :, :, 0]
-        posteriors_upper = posteriors[:, :, :, 0, :]
+        posteriors_lower = posteriors[:, :, :, [0, 2]]
+        posteriors_upper = posteriors[:, :, :, [1, 3]]
+
+        posteriors = np.reshape(np.concatenate([posteriors_lower, posteriors_upper], axis=3),
+                                (len(student_id), n_questions, n_skill, n_states, n_states))
+        # OLD
+        # posteriors = np.reshape(posteriors, (len(student_id), n_questions, n_skill, n_states, n_states))
+        # posteriors_lower_ = posteriors[:, :, :, :, 0]
+        # posteriors_upper_ = posteriors[:, :, :, 0, :]
 
         all_predicted_classes_lower = np.argmax(posteriors_lower, axis=3)
         all_predicted_classes_upper = np.argmax(posteriors_upper, axis=3)
@@ -88,8 +106,8 @@ def read_and_convert_input_files(n_questions, model_type, n_skill, n_states, sim
     else:
         Exception('Model type not valid. Only bayesian or credal model supported.')
 
-    return [n_questions, all_predicted_classes, final_posteriors, observed_classes, posteriors, predicted_classes,
-            predicted_classes_5]
+    return [n_questions, n_student, all_predicted_classes, final_posteriors, observed_classes, posteriors,
+            predicted_classes, predicted_classes_5]
 
 
 def analyse_model(simulations_dirs, models, n_skills, n_skill_levels, model_type):
@@ -123,13 +141,12 @@ def analyse_model(simulations_dirs, models, n_skills, n_skill_levels, model_type
             indices = [0, 1]
 
         for test in models:
+            print('Generating plots for ' + test)
             out = read_and_convert_input_files(n_questions, model_type, n_skill, n_states, sim, sim_path, test)
-            n_questions, question_predicted_classes, final_posteriors, observed_classes, posteriors, \
+            n_questions, n_student, question_predicted_classes, final_posteriors, observed_classes, posteriors, \
             predicted_classes, predicted_classes_5 = out
 
             for el in indices:
-                n_student = len(predicted_classes[el])
-
                 # variables use to distinguish, in case of credal network, between lower and upper metrics
                 student_hamming_loss = []          # (n_student)
                 student_hamming_distance = []      # (n_student)
@@ -192,8 +209,7 @@ def analyse_model(simulations_dirs, models, n_skills, n_skill_levels, model_type
 
                     out_file = out_dir + pre_name + 'student_metrics.' + test + '.' + credal_type + '.csv'
 
-                metrics = np.column_stack(
-                    [student_brier_score, student_hamming_loss, student_hamming_distance, student_accuracy])
+                metrics = np.column_stack([student_brier_score, student_hamming_loss, student_hamming_distance, student_accuracy])
                 header = 'student_brier_score, student_hamming_loss, student_hamming_distance, student_accuracy'
                 save_metrics(out_file, metrics, header)
 
@@ -226,15 +242,28 @@ def analyse_model(simulations_dirs, models, n_skills, n_skill_levels, model_type
                 save_metrics(out_file, metrics, header)
 
                 # Compute metrics for each skill
-                cm = confusion_matrix(observations, predictions_5, labels=np.arange(n_states))
+                cm = []
+                class_accuracy = []
+                class_precision = []
+                class_recall = []
+                class_f1 = []
+                for skill in np.arange(n_skill):
+                    o = np.reshape(observations, (n_student, n_skill, 1))[:, skill, :]
+                    p = np.reshape(predictions, (n_student, n_skill, 1))[:, skill, :] ## substitute with predictions_5
+                    cm_skill = confusion_matrix(o, p)
+                    cm.append(cm_skill)
+
+                    single_class_accuracy = accuracy_score(o, p)
+                    single_class_precision = precision_score(o, p, labels=np.arange(n_states), average='binary')
+                    single_class_recall = recall_score(o, p, labels=np.arange(n_states), average='binary')
+                    single_class_f1 = f1_score(o, p, labels=np.arange(n_states), average='binary')
+
+                    class_accuracy.append(single_class_accuracy)
+                    class_precision.append(single_class_precision)
+                    class_recall.append(single_class_recall)
+                    class_f1.append(single_class_f1)
+
                 cms.append(cm)
-
-                _cm = cm.astype('float') / cm.sum(axis=1)[:, np.newaxis]  # normalize the diagonal entries
-
-                class_accuracy = _cm.diagonal()  # the diagonal entries are the accuracies of each class
-                class_precision = precision_score(observations, predictions_5, labels=np.arange(n_states), average=None)
-                class_recall = recall_score(observations, predictions_5, labels=np.arange(n_states), average=None)
-                class_f1 = f1_score(observations, predictions_5, labels=np.arange(n_states), average=None)
 
                 if model_type == 'bayesian':
                     out_file = out_dir + pre_name + 'skills_avg_metrics.' + test + '.csv'
@@ -242,33 +271,33 @@ def analyse_model(simulations_dirs, models, n_skills, n_skill_levels, model_type
                     out_file = out_dir + pre_name + 'skills_avg_metrics.' + test + '.' + credal_type + '.csv'
 
                 header = ''
-                els = range(class_accuracy.shape[0])
                 dict_metrics = {}
                 dict_acc = {}
                 dict_prec = {}
                 dict_rec = {}
                 dict_f1 = {}
 
-                for el in els:
+                for el in np.arange(n_skill):
                     header = header + 'skill_' + str(el) + '_accuracy, '
                     dict_metrics['accuracy/X' + str(el)] = class_accuracy[el]
                     dict_acc['X' + str(el)] = 'accuracy/X' + str(el)
-                for el in els:
+                for el in np.arange(n_skill):
                     header = header + 'skill_' + str(el) + '_precision, '
                     dict_metrics['precision/X' + str(el)] = class_precision[el]
                     dict_prec['X' + str(el)] = 'precision/X' + str(el)
-                for el in els:
+                for el in np.arange(n_skill):
                     header = header + 'skill_' + str(el) + '_recall, '
                     dict_metrics['recall/X' + str(el)] = class_recall[el]
                     dict_rec['X' + str(el)] = 'recall/X' + str(el)
-                for el in els:
+                for el in np.arange(n_skill):
                     header = header + 'skill_' + str(el) + '_f1_score, '
                     dict_metrics['f1_score/X' + str(el)] = class_f1[el]
                     dict_f1['X' + str(el)] = 'f1_score/X' + str(el)
 
                 dict_labels = [dict_acc, dict_prec, dict_rec, dict_f1]
-                metrics = np.column_stack([class_accuracy[::, None].T, class_precision[::, None].T,
-                                           class_recall[::, None].T, class_f1[::, None].T])
+                metrics = np.column_stack([np.array(class_accuracy)[::, None].T, np.array(class_precision)[::, None].T,
+                                 np.array(class_recall)[::, None].T, np.array(class_f1)[::, None].T])
+
                 save_metrics(out_file, metrics, header)
 
                 list_dict_metrics.append(dict_metrics)
@@ -297,17 +326,25 @@ def analyse_model(simulations_dirs, models, n_skills, n_skill_levels, model_type
                 Exception('Model type not valid. Only bayesian or credal model supported.')
 
             # Save confusion matrices
-            fig, axes = plt.subplots(1, n_models, sharey=True, figsize=(n_models * 3, 4), constrained_layout=True)
+            fig, axes = plt.subplots(nrows=n_skill, ncols=n_models, sharey=True,
+                                     figsize=(n_models * 6, n_skill * 6),
+                                     constrained_layout=True)
             fig.suptitle(sim, fontweight='bold')
 
-            for idx, model in enumerate(models):
-                if idx > 0:
-                    img = plot_confusion_matrix(axes[idx], cms[test_indices][idx], labels=np.arange(n_states), title=model,
-                                                y_label=False)
-                else:
-                    plot_confusion_matrix(axes[idx], cms[test_indices][idx], labels=np.arange(n_states), title=model)
+            for i, row in enumerate(axes):
+                for j, ax in enumerate(row):
+                    if j > 0:
+                        img = plot_confusion_matrix(ax, cms[test_indices][i, j], labels=np.arange(n_states),
+                                                    title=models[j] + '\nSkill' + str(i), y_label=False)
+                    else:
+                        plot_confusion_matrix(ax, cms[test_indices][i, j], labels=np.arange(n_states),
+                                              title=models[j] + '\nSkill' + str(i))
 
-            fig.colorbar(img, ax=axes.ravel().tolist())
+            # fig.colorbar(img, ax=axes.ravel().tolist())
+            fig.subplots_adjust(right=0.8)
+            cbar_ax = fig.add_axes([0.85, 0.15, 0.05, 0.7])
+            fig.colorbar(img, cax=cbar_ax)
+
             out_images = sim_path + "images/"
             check_dir(out_images)
 
@@ -315,9 +352,6 @@ def analyse_model(simulations_dirs, models, n_skills, n_skill_levels, model_type
                 save_visualisation(pre_name + model_type + '.confusion_matrix.' + model_type, out_images)
             else:
                 save_visualisation(pre_name + model_type + '.confusion_matrix.' + model_type + '.' + credal_type, out_images)
-
-            # else:
-            # save_visualisation(pre_name + 'confusion_matrix.' + '.' + credal_type, out_images)
 
             # Save barplots
             class_metrics_barplot(models, list_dict_metrics, dict_labels, sim)
@@ -328,7 +362,6 @@ def analyse_model(simulations_dirs, models, n_skills, n_skill_levels, model_type
                 save_visualisation(pre_name + 'class_metrics.' + model_type + '.' + credal_type, out_images)
 
             # Save accuracies
-            # annotations = [(0, 10), (0, -10), (0, -20), (0, -15)]
             annotations = [(0, 20), (0, 20), (0, -20), (0, 10)]
 
             metric_per_question(n_questions, question_accuracy[test_indices], 'Accuracy', models, annotations, sim)
@@ -341,18 +374,56 @@ def analyse_model(simulations_dirs, models, n_skills, n_skill_levels, model_type
             annotations = [(0, 5), (0, 5), (0, 5), (0, 5)]
             metric_per_question(n_questions, question_brier_score[test_indices], 'Brier score', models, annotations, sim)
             if model_type == 'bayesian':
-                save_visualisation(pre_name + 'brier_per_question.' + test, out_images)
+                save_visualisation(pre_name + 'brier_per_question.' + model_type, out_images)
             else:
-                save_visualisation(pre_name + 'brier_per_question.' + test + '.' + credal_type, out_images)
+                save_visualisation(pre_name + 'brier_per_question.' + model_type + '.' + credal_type, out_images)
 
 
 if __name__ == '__main__':
     root = '../../output/'
     # simulations_dirs = next(os.walk(root))[1]
 
-    simulations_dirs = ['Minimalistic1x2x9']
+    # simulations_dirs = ['Minimalistic1x2x9']
+    #
+    # number_of_skills = [1]
+    # number_of_skill_levels = [2]
+    #
+    # # Bayesian
+    # model = 'bayesian'
+    # bayesian_models = ['bayesian-adaptive-entropy', 'bayesian-adaptive-mode',
+    #                    'bayesian-adaptive-pright', 'bayesian-non-adaptive']
+    #
+    # analyse_model(simulations_dirs, bayesian_models, number_of_skills, number_of_skill_levels, model)
+    #
+    # # Credal
+    # model = 'credal'
+    # credal_models = ['credal-adaptive-entropy', 'credal-adaptive-mode',
+    #                  'credal-adaptive-pright']
+    #
+    # analyse_model(simulations_dirs, credal_models, number_of_skills, number_of_skill_levels, model)
+    #
+    # simulations_dirs = ['Bayesian4x4x4']
+    #
+    # number_of_skills = [4]
+    # number_of_skill_levels = [4]
+    #
+    # # Bayesian
+    # model = 'bayesian'
+    # bayesian_models = ['bayesian-adaptive-entropy', 'bayesian-adaptive-mode',
+    #                    'bayesian-adaptive-pright', 'bayesian-non-adaptive']
+    #
+    # analyse_model(simulations_dirs, bayesian_models, number_of_skills, number_of_skill_levels, model)
+    #
+    # # Credal
+    # model = 'credal'
+    # credal_models = ['credal-adaptive-entropy', 'credal-adaptive-mode',
+    #                  'credal-adaptive-pright']
+    #
+    # analyse_model(simulations_dirs, credal_models, number_of_skills, number_of_skill_levels, model)
 
-    number_of_skills = [1]
+    simulations_dirs = ['Bayesian4x2x4']
+
+    number_of_skills = [4]
     number_of_skill_levels = [2]
 
     # Bayesian
@@ -360,11 +431,4 @@ if __name__ == '__main__':
     bayesian_models = ['bayesian-adaptive-entropy', 'bayesian-adaptive-mode',
                        'bayesian-adaptive-pright', 'bayesian-non-adaptive']
 
-    # analyse_model(simulations_dirs, bayesian_models, number_of_skills, number_of_skill_levels, model)
-
-    # Credal
-    model = 'credal'
-    credal_models = ['credal-adaptive-entropy', 'credal-adaptive-mode',
-                     'credal-adaptive-pright']
-
-    analyse_model(simulations_dirs, credal_models, number_of_skills, number_of_skill_levels, model)
+    analyse_model(simulations_dirs, bayesian_models, number_of_skills, number_of_skill_levels, model)

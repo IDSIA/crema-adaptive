@@ -135,7 +135,6 @@ def grouped_barplot(ax: plt.Axes, runs: List[str], metrics, keys, title=None, le
     ax.set_xlim(-0.5, n_keys - 0.5)
     ax.set_ylim(0, 1)
     ax.set_xlabel('Skills')
-    ax.set_xlabel(title)
     ax.set_xticks(idxs)
     ax.set_xticklabels(xticklabels)
 
@@ -172,11 +171,15 @@ def metric_per_question(n_questions, avg_metric, metric, tests, xytext, sim):
     colors = ['C0', 'C1', 'C2', 'C3']
 
     for idx, el in enumerate(avg_metric):
-        if n_questions < 50:
+        if n_questions < 20:
+            m = 2
+        elif n_questions < 50:
             m = 5
         else:
             m = 20
-        plt.plot(avg_metric[idx], line_markers[idx], color=colors[idx], label=tests[idx])
+
+        markers_on = np.arange(n_questions, step=m)
+        plt.plot(avg_metric[idx], line_markers[idx], color=colors[idx], label=tests[idx], markevery=markers_on)
         # plt.plot(np.arange(n_questions)[::m][1:], avg_metric[idx][::m][1:], markers[idx], color=colors[idx])
 
         # for x, y in zip(np.arange(n_questions)[::m][1:], avg_metric[idx][::m][1:]):
@@ -190,7 +193,7 @@ def metric_per_question(n_questions, avg_metric, metric, tests, xytext, sim):
 
     plt.xlabel('Number of questions')
     plt.ylabel(metric)
-    plt.xticks(np.arange(n_questions, step=2))
+    plt.xticks(markers_on)
 
     # plt.yscale('log')
     if metric == "Accuracy":
