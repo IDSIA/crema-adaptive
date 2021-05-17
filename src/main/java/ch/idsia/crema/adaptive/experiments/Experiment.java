@@ -3,9 +3,6 @@ package ch.idsia.crema.adaptive.experiments;
 import ch.idsia.crema.adaptive.experiments.agents.AgentStudent;
 import ch.idsia.crema.adaptive.experiments.agents.AgentTeacher;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import static ch.idsia.crema.adaptive.experiments.Utils.separator;
 
 /**
@@ -17,7 +14,6 @@ public class Experiment {
 
 	private final AgentTeacher teacher;
 	private final AgentStudent student;
-	private final List<String> records = new ArrayList<>();
 
 	public Experiment(AgentTeacher teacher, AgentStudent student) {
 		this.teacher = teacher;

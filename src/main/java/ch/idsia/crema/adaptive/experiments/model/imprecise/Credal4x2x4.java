@@ -61,7 +61,7 @@ public class Credal4x2x4 extends AbstractModelBuilder<IntervalFactor> {
 	 * @return the new variable added
 	 */
 	int addSkillNode(DAGModel<IntervalFactor> model) {
-		int s = model.addVariable(4);
+		int s = model.addVariable(2);
 		final IntervalFactor fS = new IntervalFactor(model.getDomain(s), Strides.EMPTY);
 		fS.setLower(new double[]{
 				.5 - eps, .5 - eps,
