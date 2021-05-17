@@ -5,11 +5,12 @@ import ch.idsia.crema.adaptive.experiments.answering.AnswerStrategy;
 import ch.idsia.crema.adaptive.experiments.model.AbstractModelBuilder;
 import ch.idsia.crema.factor.GenericFactor;
 import ch.idsia.crema.model.graphical.DAGModel;
+import gnu.trove.list.TIntList;
 import gnu.trove.map.TIntIntMap;
 import gnu.trove.map.hash.TIntIntHashMap;
 import org.apache.commons.lang3.StringUtils;
 
-import java.util.Arrays;
+import java.util.stream.IntStream;
 
 /**
  * Author:  Claudio "Dna" Bonesana
@@ -47,8 +48,6 @@ public class Student<F extends GenericFactor> implements AgentStudent {
 	 */
 	final TIntIntMap answers = new TIntIntHashMap();
 
-	// TODO: generator of students
-
 	/**
 	 * @param id       unique identifier of this student
 	 * @param builder  used to generate the model and store model related information
@@ -66,12 +65,16 @@ public class Student<F extends GenericFactor> implements AgentStudent {
 	 * @param answers map of already available answers where the key is the unique id of a {@link Question}, value is
 	 *                the answer
 	 */
-	public Student(int id, TIntIntMap answers) {
+	public Student(int id, TIntIntMap answers, TIntList skills) {
 		this.id = id;
 		this.builder = null;
 		this.model = null;
 		this.answerStrategy = null;
 		setAnswers(answers);
+		for (int i = 0; i < skills.size(); i++) {
+			final int s = skills.get(i);
+			this.skills.put(s, answers.get(s));
+		}
 	}
 
 	@Override
@@ -144,14 +147,15 @@ public class Student<F extends GenericFactor> implements AgentStudent {
 	}
 
 	@Override
-	public String getAnswers(int numQuestions) {
-		int [] answersList = Arrays.copyOfRange(Arrays.stream(answers.values()).toArray(), 0, numQuestions);
+	public String getAnswers() {
+		int[] answersList = IntStream.range(skills.size(), answers.size()).map(answers::get).toArray();
 		return StringUtils.join(answersList, ',');
 	}
 
 	@Override
-	public String getProfiles(int numQuestions) {
-		int [] profilesList = Arrays.copyOfRange(Arrays.stream(answers.values()).toArray(), numQuestions, answers.values().length);
+	public String getProfiles() {
+		int[] profilesList = IntStream.range(0, skills.size()).map(answers::get).toArray();
 		return StringUtils.join(profilesList, ',');
 	}
+
 }

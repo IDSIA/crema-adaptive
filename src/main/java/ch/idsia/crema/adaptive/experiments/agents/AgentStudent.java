@@ -23,11 +23,11 @@ public interface AgentStudent {
 	/**
 	 * @return a comma separated row of all the answers;
 	 */
-	String getAnswers(int numQuestions);
+	String getAnswers();
 
 	/**
 	 * @return a comma separated row of the profiles;
 	 */
-	String getProfiles(int numQuestions);
+	String getProfiles();
 
 }

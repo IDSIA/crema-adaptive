@@ -31,6 +31,8 @@ public class ScoringFunctionExpectedEntropy implements ScoringFunction<BayesianF
 	@Override
 	public double score(DAGModel<BayesianFactor> model, Question question, TIntIntMap observations) throws Exception {
 		final BayesianFactor PQ = inference.query(model, observations, question.variable);
+		final BayesianFactor PS = inference.query(model, observations, question.skill);
+		final double HS = BayesianEntropy.H(PS);
 
 		double HSQ = 0;
 		for (int a = 0; a < 2; a++) {
@@ -44,6 +46,6 @@ public class ScoringFunctionExpectedEntropy implements ScoringFunction<BayesianF
 			HSQ += HSq * Pqi;
 		}
 
-		return -(HSQ / 2);
+		return HS - HSQ;
 	}
 }

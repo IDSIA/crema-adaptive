@@ -161,6 +161,8 @@ public class Teacher<F extends GenericFactor> implements AgentTeacher {
 
 			final double score = scoringFunction.score(model, question, observations);
 
+//			System.out.printf("%3d %3d %3d %.4f %n", question.skill, question.template, question.variable, score);
+
 			if (score > maxIG) {
 				maxIG = score;
 				nextQuestion = question;

@@ -1,6 +1,5 @@
 package ch.idsia.crema.adaptive.experiments;
 
-import ch.idsia.crema.adaptive.experiments.agents.AgentTeacher;
 import ch.idsia.crema.adaptive.experiments.agents.Student;
 import ch.idsia.crema.adaptive.experiments.agents.Teacher;
 import ch.idsia.crema.adaptive.experiments.model.imprecise.CredalMinimalistic1x2x1;
@@ -12,22 +11,16 @@ import ch.idsia.crema.adaptive.experiments.scoring.imprecise.ScoringFunctionUppe
 import ch.idsia.crema.adaptive.experiments.scoring.precise.ScoringFunctionBayesianMode;
 import ch.idsia.crema.adaptive.experiments.scoring.precise.ScoringFunctionExpectedEntropy;
 import ch.idsia.crema.adaptive.experiments.scoring.precise.ScoringFunctionRandom;
+import ch.idsia.crema.adaptive.experiments.stopping.imprecise.StoppingConditionCredalMeanEntropy;
 import ch.idsia.crema.factor.bayesian.BayesianFactor;
 import ch.idsia.crema.inference.sampling.BayesianNetworkSampling;
 import ch.idsia.crema.utility.RandomUtil;
 import gnu.trove.map.TIntIntMap;
-import org.apache.commons.lang3.ArrayUtils;
 
-import java.io.File;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.List;
 import java.util.Random;
-import java.util.concurrent.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-
-import static ch.idsia.crema.adaptive.experiments.Utils.separator;
 
 /**
  * Authors:  	Giorgia Adorni
@@ -64,191 +57,44 @@ public class AdaptiveSurveyMinimalistic1x2x1Simulation {
         // AnswerStrategy object since we don't need it
 
         final List<Student<BayesianFactor>> students = IntStream.range(0, N_STUDENTS)
-                .mapToObj(id -> new Student<BayesianFactor>(id, samples[id]))
-                .collect(Collectors.toList());
-
-        // We will use our lovely ExecutorService
-        ExecutorService es = Executors.newFixedThreadPool(PARALLEL_COUNT);
-
-        // Bayesian non adaptive survey
-        final List<Callable<String[]>> bayesianMinimalistic1x2x1TasksNonAdaptive = students.stream()
-                .map(student -> (Callable<String[]>) () -> {
-                    // all these tasks are similar: check bayesian experiments for comments!
-                    try {
-                        System.out.println("Bayesian Minimalistic1x2x1 non adaptive " + student.getId());
-
-                        final AgentTeacher teacher = new Teacher<>(
-                                new BayesianMinimalistic(N_QUESTIONS, .4, .6),
-                                new ScoringFunctionRandom(student.getId())
-                        )
-                                .setPersist(new PersistBayesian());
-
-                        new Experiment(teacher, student).run();
-
-                        String posteriors = student.getId() + separator + teacher.getResults();
-                        String answers = student.getAnswers(teacher.getTotalNumberQuestions());
-                        String profiles = student.getProfiles(teacher.getTotalNumberQuestions());
-
-                        return new String[]{posteriors, answers, profiles};
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                        return ArrayUtils.EMPTY_STRING_ARRAY;
-                    }
-                })
-                .collect(Collectors.toList());
-
-        // Bayesian adaptive survey
-        final List<Callable<String[]>> bayesianMinimalistic1x2x1TasksAdaptiveEntropy = students.stream()
-                .map(student -> (Callable<String[]>) () -> {
-                    // all these tasks are similar: check bayesian experiments for comments!
-                    try {
-                        System.out.println("Bayesian Minimalistic1x2x1 adaptive + ExpectedEntropy" + student.getId());
-
-                        final AgentTeacher teacher = new Teacher<>(
-                                new BayesianMinimalistic(N_QUESTIONS, .4, .6),
-                                new ScoringFunctionExpectedEntropy()
-                        )
-                                .setPersist(new PersistBayesian());
-
-                        new Experiment(teacher, student).run();
-
-                        String posteriors = student.getId() + separator + teacher.getResults();
-                        String answers = student.getAnswers(teacher.getTotalNumberQuestions());
-                        String profiles = student.getProfiles(teacher.getTotalNumberQuestions());
-
-                        return new String[]{posteriors, answers, profiles};
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                        return ArrayUtils.EMPTY_STRING_ARRAY;
-                    }
-                })
-                .collect(Collectors.toList());
-
-        final List<Callable<String[]>> bayesianMinimalistic1x2x1TasksAdaptiveMode = students.stream()
-                .map(student -> (Callable<String[]>) () -> {
-                    // all these tasks are similar: check bayesian experiments for comments!
-                    try {
-                        System.out.println("Bayesian Minimalistic1x2x1 adaptive + Mode" + student.getId());
-
-                        final AgentTeacher teacher = new Teacher<>(
-                                new BayesianMinimalistic(N_QUESTIONS, .4, .6),
-                                new ScoringFunctionBayesianMode()
-                        )
-                                .setPersist(new PersistBayesian());
-
-                        new Experiment(teacher, student).run();
-
-                        String posteriors = student.getId() + separator + teacher.getResults();
-                        String answers = student.getAnswers(teacher.getTotalNumberQuestions());
-                        String profiles = student.getProfiles(teacher.getTotalNumberQuestions());
-
-                        return new String[]{posteriors, answers, profiles};
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                        return ArrayUtils.EMPTY_STRING_ARRAY;
-                    }
-                })
-                .collect(Collectors.toList());
-
-        // Credal adaptive survey
-        final List<Callable<String[]>> credalMinimalistic1x2x1TasksAdaptiveEntropy = students.stream()
-                .map(student -> (Callable<String[]>) () -> {
-                    try {
-                        System.out.println("Credal Minimalistic1x2x1 adaptive + ExpectedEntropy" + student.getId());
-
-                        final AgentTeacher teacher = new Teacher<>(
-                                new CredalMinimalistic1x2x1(N_QUESTIONS, .4, .4, .6, .6),
-                                new ScoringFunctionUpperExpectedEntropy()
-                        )
-                                .setPersist(new PersistCredal());
-
-                        new Experiment(teacher, student).run();
-
-                        String posteriors = student.getId() + separator + teacher.getResults();
-                        String answers = student.getAnswers(teacher.getTotalNumberQuestions());
-                        String profiles = student.getProfiles(teacher.getTotalNumberQuestions());
-
-                        return new String[]{posteriors, answers, profiles};
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                        return ArrayUtils.EMPTY_STRING_ARRAY;
-                    }
-                })
-                .collect(Collectors.toList());
-
-        final List<Callable<String[]>> credalMinimalistic1x2x1TasksAdaptiveMode = students.stream()
-                .map(student -> (Callable<String[]>) () -> {
-                    try {
-                        System.out.println("Credal Minimalistic1x2x1 adaptive + Mode" + student.getId());
-
-                        final AgentTeacher teacher = new Teacher<>(
-                                new CredalMinimalistic1x2x1(N_QUESTIONS, .4, .4, .6, .6),
-                                new ScoringFunctionCredalMode()
-                        )
-                                .setPersist(new PersistCredal());
-
-                        new Experiment(teacher, student).run();
-
-                        String posteriors = student.getId() + separator + teacher.getResults();
-                        String answers = student.getAnswers(teacher.getTotalNumberQuestions());
-                        String profiles = student.getProfiles(teacher.getTotalNumberQuestions());
-
-                        return new String[]{posteriors, answers, profiles};
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                        return ArrayUtils.EMPTY_STRING_ARRAY;
-                    }
-                })
+                .mapToObj(id -> new Student<BayesianFactor>(id, samples[id], minimalistic1x2x1.skills))
                 .collect(Collectors.toList());
 
 
-        // submit all the tasks to the ExecutionService
-//        final List<Future<String[]>> resultsBayesianNonAdaptive = es.invokeAll(bayesianMinimalistic1x2x1TasksNonAdaptive);
-//        final List<Future<String[]>> resultsBayesianAdaptiveEntropy = es.invokeAll(bayesianMinimalistic1x2x1TasksAdaptiveEntropy);
-        final List<Future<String[]>> resultsCredalAdaptiveEntropy = es.invokeAll(credalMinimalistic1x2x1TasksAdaptiveEntropy);
+        final String path = "output/Minimalistic1x2x1/";
 
-//        final List<Future<String[]>> resultsBayesianAdaptiveMode = es.invokeAll(bayesianMinimalistic1x2x1TasksAdaptiveMode);
-//        final List<Future<String[]>> resultsCredalAdaptiveMode = es.invokeAll(credalMinimalistic1x2x1TasksAdaptiveMode);
+        final ExperimentSuite[] experiments = {
+                new ExperimentSuite(
+                        path, "Minimalistic1x2x1", "non-adaptive", students,
+                        () -> new Teacher<>(new BayesianMinimalistic(N_QUESTIONS, .4, .6), new ScoringFunctionRandom(0)).setPersist(new PersistBayesian()),
+                        2, 3
+                ),
+                new ExperimentSuite(
+                        path, "Minimalistic1x2x1", "bayesian-adaptive-entropy", students,
+                        () -> new Teacher<>(new BayesianMinimalistic(N_QUESTIONS, .4, .6), new ScoringFunctionExpectedEntropy()).setPersist(new PersistBayesian()),
+                        0, 1, 3
+                ),
+                new ExperimentSuite(
+                        path, "Minimalistic1x2x1", "bayesian-adaptive-mode", students,
+                        () -> new Teacher<>(new BayesianMinimalistic(N_QUESTIONS, .4, .6), new ScoringFunctionBayesianMode()).setPersist(new PersistBayesian()),
+                        0, 1, 3
+                ),
+                new ExperimentSuite(
+                        path, "Minimalistic1x2x1", "credal-adaptive-entropy", students,
+                        () -> new Teacher<>(new CredalMinimalistic1x2x1(N_QUESTIONS, .4, .4, .6, .6), new ScoringFunctionUpperExpectedEntropy(), new StoppingConditionCredalMeanEntropy(.1)).setPersist(new PersistCredal()),
+                        0, 1, 3
+                ),
+                new ExperimentSuite(
+                        path, "Minimalistic1x2x1", "credal-adaptive-mode", students,
+                        () -> new Teacher<>(new CredalMinimalistic1x2x1(N_QUESTIONS, .4, .4, .6, .6), new ScoringFunctionCredalMode(), new StoppingConditionCredalMeanEntropy(.1)).setPersist(new PersistCredal()),
+                        0, 1, 3
+                ),
+        };
 
-        // wait until the end, then shutdown and proceed with the code
-        es.shutdown();
-
-        // write the output to file
-        String path = "output/Minimalistic1x2x1/";
-//        writeToFile(path, "Minimalistic1x2x1.profiles", resultsBayesianNonAdaptive, 2);
-
-//        writeToFile(path, "Minimalistic1x2x1.posteriors.bayesian-non-adaptive", resultsBayesianNonAdaptive, 0);
-//        writeToFile(path, "Minimalistic1x2x1.answers.bayesian-non-adaptive", resultsBayesianNonAdaptive, 1);
-//
-//        writeToFile(path, "Minimalistic1x2x1.posteriors.bayesian-adaptive-entropy", resultsBayesianAdaptiveEntropy, 0);
-//        writeToFile(path, "Minimalistic1x2x1.answers.bayesian-adaptive-entropy", resultsBayesianAdaptiveEntropy, 1);
-//        writeToFile(path, "Minimalistic1x2x1.posteriors.bayesian-adaptive-mode", resultsBayesianAdaptiveMode, 0);
-//        writeToFile(path, "Minimalistic1x2x1.answers.bayesian-adaptive-mode", resultsBayesianAdaptiveMode, 1);
-
-        writeToFile(path, "Minimalistic1x2x1.posteriors.credal-adaptive-entropy", resultsCredalAdaptiveEntropy, 0);
-        writeToFile(path, "Minimalistic1x2x1.answers.credal-adaptive-entropy", resultsCredalAdaptiveEntropy, 1);
-//        writeToFile(path, "Minimalistic1x2x1.posteriors.credal-adaptive-mode", resultsCredalAdaptiveMode, 0);
-//        writeToFile(path, "Minimalistic1x2x1.answers.credal-adaptive-mode", resultsCredalAdaptiveMode, 1);
-    }
-
-    static void writeToFile(String path, String filename, List<Future<String[]>> content, int idx) throws Exception {
-        final List<String> lines = content.stream()
-                .map(x -> {
-                    try {
-                        // wait for the task to finish (should already be completed) and get the returned row
-                        return x.get()[idx];
-                    } catch (InterruptedException | ExecutionException e) {
-                        // if something bad happens, erase the line
-                        e.printStackTrace();
-                        return "";
-                    }
-                })
-                // ignore empty lines
-                .filter(x -> !x.isEmpty())
-                .collect(Collectors.toList());
-
-        // just dump everything to a file
-        new File(path).mkdirs();
-        Files.write(Paths.get(path + filename + ".csv"), lines);
+        experiments[0].run(PARALLEL_COUNT); // Bayesian4x2x4 non-adaptive
+        experiments[1].run(PARALLEL_COUNT); // Bayesian4x2x4 adaptive+entropy
+        experiments[2].run(PARALLEL_COUNT); // Bayesian4x2x4 adaptive+mode
+        experiments[3].run(PARALLEL_COUNT); // Credal4x2x4 adaptive+entropy
+        experiments[4].run(PARALLEL_COUNT); // Credal4x2x4 adaptive+mode
     }
 }

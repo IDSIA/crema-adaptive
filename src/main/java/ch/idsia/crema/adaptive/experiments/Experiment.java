@@ -47,8 +47,8 @@ public class Experiment {
 		}
 
 		String posteriors = student.getId() + separator + teacher.getResults();
-		String answers = student.getAnswers(teacher.getTotalNumberQuestions());
-		String profiles = student.getProfiles(teacher.getTotalNumberQuestions());
+		String answers = student.getAnswers();
+		String profiles = student.getProfiles();
 		String progress = String.join("\n", teacher.getProgress(student.getId()));
 
 		return new String[]{posteriors, answers, profiles, progress};

@@ -40,6 +40,10 @@ public class ScoringFunctionUpperExpectedEntropy implements ScoringFunction<Inte
 	 */
 	@Override
 	public double score(DAGModel<IntervalFactor> model, Question question, TIntIntMap observations) throws Exception {
+		final IntervalFactor qS = inferenceEngine.query(model, observations, question.skill); // TODO: bring outside
+		final double[] PS = entropy.getMaxEntropy(qS.getLower().clone(), qS.getUpper().clone());
+		final double HS = Utils.H(PS);
+
 		final double[] HSQs = new double[2];
 
 		for (int a = 0; a < 2; a++) {
@@ -66,7 +70,7 @@ public class ScoringFunctionUpperExpectedEntropy implements ScoringFunction<Inte
 			final double score0 = lower[0] * HSQs[0] + (1 - lower[0]) * HSQs[1];
 			final double score1 = lower[1] * HSQs[1] + (1 - lower[1]) * HSQs[0];
 
-			return -(Math.max(score0, score1));
+			return HS - Math.max(score0, score1);
 		} catch (NoFeasibleSolutionException e) {
 			System.err.printf("No Feasible Solution for PQ: question=%d obs=%s %n", question.variable, observations);
 			return 0.0;

@@ -1,6 +1,5 @@
 package ch.idsia.crema.adaptive.experiments;
 
-import ch.idsia.crema.adaptive.experiments.agents.AgentTeacher;
 import ch.idsia.crema.adaptive.experiments.agents.Student;
 import ch.idsia.crema.adaptive.experiments.agents.Teacher;
 import ch.idsia.crema.adaptive.experiments.model.imprecise.CredalMinimalistic1x2x1;
@@ -17,15 +16,9 @@ import ch.idsia.crema.factor.bayesian.BayesianFactor;
 import ch.idsia.crema.inference.sampling.BayesianNetworkSampling;
 import gnu.trove.map.TIntIntMap;
 
-import java.io.File;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.List;
-import java.util.concurrent.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-
-import static ch.idsia.crema.adaptive.experiments.Utils.separator;
 
 /**
  * Author:  Claudio "Dna" Bonesana
@@ -57,47 +50,24 @@ public class AdaptiveSurvey {
 
 		// creates students based on samples: note that we are not using an AnswerStrategy object since we don't need it
 		final List<Student<BayesianFactor>> students = IntStream.range(0, N_STUDENTS)
-				.mapToObj(id -> new Student<BayesianFactor>(id, samples[id]))
+				.mapToObj(id -> new Student<BayesianFactor>(id, samples[id], minimalistic.skills))
 				.collect(Collectors.toList());
 
-		// we will use our lovely ExecutorService
-		ExecutorService es = Executors.newFixedThreadPool(PARALLEL_COUNT);
+		final String path = "output/minimalistic/";
 
-		// all the tasks for the non adaptive survey
-		final List<Callable<String>> tasksNonAdaptive = students.stream()
-				.map(student -> (Callable<String>) () -> {
-					// all these tasks are similar: check bayesian experiments for comments!
-					try {
-						System.out.println("Student non adaptive " + student.getId());
-
-						final AgentTeacher teacher = new Teacher<>(
+		final ExperimentSuite[] experiments = {
+				new ExperimentSuite(
+						path, "minimalistic", "non-adaptive", students,
+						() -> new Teacher<>(
 								new BayesianMinimalistic(N_QUESTIONS, .4, .6),
-								new ScoringFunctionRandom(student.getId()),
+								new ScoringFunctionRandom(0),
 								new StoppingConditionQuestionNumber<>(10)
-						)
-								.setPersist(new PersistBayesian());
-
-						new Experiment(teacher, student).run();
-
-						return student.getId() + separator + teacher.getNumberQuestionsDone() + separator + teacher.getResults();
-					} catch (Exception e) {
-						e.printStackTrace();
-						return "";
-					}
-				})
-				.collect(Collectors.toList());
-
-		// all the tasks for the adaptive bayesian survey
-		final List<Callable<String>> tasksAdaptiveBayesian = students.stream()
-				.map(student -> (Callable<String>) () -> {
-					try {
-						System.out.println("Student Bayesian " + student.getId());
-
-						/*
-							build a teacher for each student since we are in a concurrent environment and the teacher
-							will save the output results of a single student
-						 */
-						final AgentTeacher teacher = new Teacher<>(
+						).setPersist(new PersistBayesian()),
+						2, 3
+				),
+				new ExperimentSuite(
+						path, "minimalistic", "bayesian-adaptive-entropy", students,
+						() -> new Teacher<>(
 								// model to use for the question choice
 								new BayesianMinimalistic(N_QUESTIONS, .4, .6),
 								// scoring function used to select the next question
@@ -106,81 +76,24 @@ public class AdaptiveSurvey {
 								new StoppingConditionBayesianMeanEntropy(.3),
 								// second stopping criteria: stop after 10 questions
 								new StoppingConditionQuestionNumber<>(10)
-						)
-								// we want to save the results and they are of bayesian type
-								.setPersist(new PersistBayesian());
-
-						// run new configured experiment
-						new Experiment(teacher, student).run();
-
-						// return a row for the CSV file
-						return student.getId() + separator + teacher.getNumberQuestionsDone() + separator + teacher.getResults();
-					} catch (Exception e) {
-						// if something goes wrong, return an empty row that will be filtered out
-						e.printStackTrace();
-						return "";
-					}
-				})
-				.collect(Collectors.toList());
-
-		// all the tasks for the adaptive credal survey
-		final List<Callable<String>> tasksAdaptiveCredal = students.stream()
-				.map(student -> (Callable<String>) () -> {
-					try {
-						System.out.println("Student Credal " + student.getId());
-
-						final AgentTeacher teacher = new Teacher<>(
+						).setPersist(new PersistBayesian()),
+						0, 1, 3
+				),
+				new ExperimentSuite(
+						path, "minimalistic", "credal-adaptive-entropy", students,
+						() -> new Teacher<>(
 								new CredalMinimalistic1x2x1(N_QUESTIONS, .4, .4, .6, .6),
 								new ScoringFunctionCredalMode(),
 								new StoppingConditionCredalMeanEntropy(.5),
 								new StoppingConditionQuestionNumber<>(10)
-						)
-								.setPersist(new PersistCredal());
+						).setPersist(new PersistCredal()),
+						0, 1, 3
+				),
+		};
 
-						new Experiment(teacher, student).run();
-
-						return student.getId() + separator + teacher.getNumberQuestionsDone() + separator + teacher.getResults();
-					} catch (Exception e) {
-						e.printStackTrace();
-						return "";
-					}
-				})
-				.collect(Collectors.toList());
-
-
-		// submit all the tasks to the ExecutionService
-		final List<Future<String>> resultsNonAdaptive = es.invokeAll(tasksNonAdaptive);
-		final List<Future<String>> resultsAdaptiveBayesian = es.invokeAll(tasksAdaptiveBayesian);
-		final List<Future<String>> resultsAdaptiveCredal = es.invokeAll(tasksAdaptiveCredal);
-
-		// wait until the end, then shutdown and proceed with the code
-		es.shutdown();
-
-		// write the output to file
-		writeToFile("non-adaptive.csv", resultsNonAdaptive);
-		writeToFile("bayesian-adaptive.csv", resultsAdaptiveBayesian);
-		writeToFile("credal-adaptive.csv", resultsAdaptiveCredal);
-	}
-
-	static void writeToFile(String filename, List<Future<String>> content) throws Exception {
-		final List<String> lines = content.stream()
-				.map(x -> {
-					try {
-						// wait for the task to finish (should already be completed) and get the returned row
-						return x.get();
-					} catch (InterruptedException | ExecutionException e) {
-						// if something bad happens, erase the line
-						e.printStackTrace();
-						return "";
-					}
-				})
-				// ignore empty lines
-				.filter(x -> !x.isEmpty())
-				.collect(Collectors.toList());
-
-		// just dump everything to a file
-		new File("output/").mkdirs();
-		Files.write(Paths.get("output/" + filename), lines);
+		experiments[0].run(PARALLEL_COUNT); // Bayesian4x2x4 non-adaptive
+		experiments[1].run(PARALLEL_COUNT); // Bayesian4x2x4 adaptive+entropy
+		experiments[2].run(PARALLEL_COUNT); // Credal4x2x4 adaptive+entropy
 	}
 
 }

@@ -104,9 +104,9 @@ public class ScoringFunctionCredalMode implements ScoringFunction<IntervalFactor
 				ci[i] = 1;      // vi
 				ci[j + m] = 1;  // wi
 
-				LinearObjectiveFunction f = new LinearObjectiveFunction(ci, 0);
+				final LinearObjectiveFunction f = new LinearObjectiveFunction(ci, 0);
 
-				List<LinearConstraint> constraints = new ArrayList<>();
+				final List<LinearConstraint> constraints = new ArrayList<>();
 				for (int k = 0; k < m; k++) {
 					if (i != k) {
 						double[] c0 = new double[2 * m];
@@ -138,9 +138,11 @@ public class ScoringFunctionCredalMode implements ScoringFunction<IntervalFactor
 		if (verbose) System.out.println("solutions found: " + solutions.size());
 
 		if (goalType == GoalType.MAXIMIZE) {
-			return solutions.stream().max(Comparator.comparingDouble(x -> x)).orElseThrow(IllegalStateException::new);
+			final double HS = Arrays.stream(pS.getUpper()).max().orElse(0.0);
+			return solutions.stream().max(Comparator.comparingDouble(x -> x)).orElseThrow(IllegalStateException::new) - HS;
 		} else {
-			return solutions.stream().min(Comparator.comparingDouble(x -> x)).orElseThrow(IllegalStateException::new);
+			final double HS = Arrays.stream(pS.getLower()).max().orElse(0.0);
+			return solutions.stream().min(Comparator.comparingDouble(x -> x)).orElseThrow(IllegalStateException::new) - HS;
 		}
 	}
 }

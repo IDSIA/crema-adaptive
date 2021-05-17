@@ -28,15 +28,15 @@ public class BayesianMinimalistic1x2x9 extends AbstractModelBuilder<BayesianFact
         skills.add(s);
 
         for (int i = 0; i < nQuestions; i++) {
-            addQuestionNodeL1(model, s, 10 * s + 1);
-            addQuestionNodeL2(model, s, 10 * s + 2);
-            addQuestionNodeL3(model, s, 10 * s + 3);
-            addQuestionNodeL4(model, s, 10 * s + 4);
-            addQuestionNodeL5(model, s, 10 * s + 5);
-            addQuestionNodeL6(model, s, 10 * s + 6);
-            addQuestionNodeL7(model, s, 10 * s + 7);
-            addQuestionNodeL8(model, s, 10 * s + 8);
-            addQuestionNodeL9(model, s, 10 * s + 9);
+            addQuestionNodeTemplate(model, s, 10 * s + 1, .40, .80);
+            addQuestionNodeTemplate(model, s, 10 * s + 2, .35, .85);
+            addQuestionNodeTemplate(model, s, 10 * s + 3, .30, .90);
+            addQuestionNodeTemplate(model, s, 10 * s + 4, .30, .70);
+            addQuestionNodeTemplate(model, s, 10 * s + 5, .25, .75);
+            addQuestionNodeTemplate(model, s, 10 * s + 6, .20, .80);
+            addQuestionNodeTemplate(model, s, 10 * s + 7, .40, .60);
+            addQuestionNodeTemplate(model, s, 10 * s + 8, .15, .65);
+            addQuestionNodeTemplate(model, s, 10 * s + 9, .10, .70);
         }
     }
 

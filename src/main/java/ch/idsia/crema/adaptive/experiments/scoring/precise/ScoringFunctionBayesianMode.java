@@ -31,6 +31,8 @@ public class ScoringFunctionBayesianMode implements ScoringFunction<BayesianFact
 	@Override
 	public double score(DAGModel<BayesianFactor> model, Question question, TIntIntMap observations) throws Exception {
 		final BayesianFactor PQ = inference.query(model, observations, question.variable);
+		final BayesianFactor PS = inference.query(model, observations, question.skill);
+		final double HS = mode(PS);
 
 		double[] modes = new double[2];
 
@@ -52,7 +54,7 @@ public class ScoringFunctionBayesianMode implements ScoringFunction<BayesianFact
 			System.err.printf("ScoringFunctionMode: Found question with same mode=%f %s %n", modes[0], question);
 		}
 
-		return HSQ / 2;
+		return HSQ - HS;
 	}
 
 	private double mode(BayesianFactor bf) {
