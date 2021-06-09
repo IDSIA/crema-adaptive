@@ -1,5 +1,8 @@
-package ch.idsia.crema.adaptive;
+package ch.idsia.crema.adaptive.old;
 
+import ch.idsia.crema.adaptive.AbellanEntropy;
+import ch.idsia.crema.adaptive.AnswerSet;
+import ch.idsia.crema.adaptive.QuestionSet;
 import org.apache.commons.lang3.ArrayUtils;
 
 import java.io.BufferedWriter;

@@ -1,11 +1,9 @@
 package ch.idsia.crema.adaptive;
 
-import com.google.common.math.Stats;
 import org.apache.commons.lang3.ArrayUtils;
 
-import java.io.File;
-import java.util.Random;
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -22,12 +20,6 @@ public class BNsAdaptiveSurveySimulation {
 
     // Adaptive configuration data -------------------------------------------------------------------------------------
     private static final String bayesianFileName = "adaptive/cnParametersBayes.txt";
-    private static final String[] dataset = {
-            "adaptive/Hören2015-16.csv",
-            "adaptive/Kommunikation2015-16.csv",
-            "adaptive/Lesen2015-16.csv",
-            "adaptive/Wortschatz und Strukturen2015-16.csv"
-    };
 
     private static final int nSkills = 4;
     private static final int nDifficultyLevels = 4;
@@ -35,111 +27,143 @@ public class BNsAdaptiveSurveySimulation {
     private static final int states = nDifficultyLevels;
 
     private static final long randomSeed = 42;
+    private static final double scale = Math.pow(10,2);
 
     // Define 16 students that correspond to the 16 possible profiles, that are
-    // the combination of the 4 nSkillLevels of eack skill
+    // the combination of the 4 nSkillLevels of each skill
     private final int student;
-    private static final int minStudent = 0;  // First id, inclusive
+    // First id, inclusive
     private static final int maxStudent = (int) Math.pow(nSkills, nDifficultyLevels); // Last id, exclusive
     private final int[] profile;
-
-    // Minimum value of entropy to stop the survey.
-    private static final double STOP_THRESHOLD = 0.25;
+    private final int[] studentAnswers;
 
     // List containing the number of right and wrong answer to the questions,
     // for each combination of skill and difficulty level
-    private final double[][] rightQ = new double[nSkills][nDifficultyLevels]; // {{0, 0, 0, 0}, {0, 0, 0, 0}, {0, 0, 0, 0}, {0, 0, 0, 0}}
-    private final double[][] wrongQ = new double[nSkills][nDifficultyLevels]; // {{0, 0, 0, 0}, {0, 0, 0, 0}, {0, 0, 0, 0}, {0, 0, 0, 0}}
+    // {{0, 0, 0, 0}, {0, 0, 0, 0}, {0, 0, 0, 0}, {0, 0, 0, 0}}
+    private final double[][] rightQ = new double[nSkills][nDifficultyLevels];
+    private final double[][] wrongQ = new double[nSkills][nDifficultyLevels];
 
     // Probabilities
     private final double[][][] priorResults = new double[nSkills][][];
     private final double[][][] hypotheticalPosteriorResults = new double[nSkills][][];
-    private final double[][][] posteriorResults = new double[nSkills][][];
+    private final String[][][] posteriors;
 
     private final double[][][][] answerLikelihood = new double[nSkills][][][];
 
-    private double rightAnswerProbability = 0;
-    private double wrongAnswerProbability = 0;
-
-    private final AnswerSet[] questionsPerSkill = new AnswerSet[nSkills];
-
-    private final AdaptiveTests AdaptiveTests;
+    private final Tests Tests;
     private final AbellanEntropy abellanEntropy;
     private final QuestionSet questionSet;
     private final Random random;
-
-    private int question = 0;
-    private int questionAnswered = 0;
 
     /**
      * Create a survey test for a single student. Each students will have its lists of questions, its personal test,
      * and its answer sheet.
      *
-     * @param student reference id of the students
+     * @param student reference id of the student
+     * @param profile profile of the student
      */
     private BNsAdaptiveSurveySimulation(int student, int[] profile) {
         this.student = student;
         this.profile = profile;
 
         random = new Random(randomSeed + student);
-        AdaptiveTests = new AdaptiveTests();
+
+        Tests = new Tests();
         abellanEntropy = new AbellanEntropy();
         questionSet = new QuestionSet();
         questionSet.loadKeyList();
+        posteriors = new String[questionSet.getQuestionNum()][nSkills][nDifficultyLevels];
 
-        for (int i = 0; i < questionsPerSkill.length; i++) {
-            questionsPerSkill[i] = new AnswerSet().load(dataset[i]);
-        }
+        studentAnswers = new int[questionSet.getQuestionNum()];
+        Arrays.fill(studentAnswers, -1);
     }
 
     public static void main(String[] args) {
 
-        int numOfSimulations = 5;
+        final int numOfSimulations = 1;
 
         // for each student
         final int[][] profiles = new int[maxStudent][nSkillLevels];
 
-        Quaternary quaternary = new Quaternary(nSkillLevels);
+        final Quaternary quaternary = new Quaternary(nSkillLevels);
         quaternary.generate(profiles);
+
+        final List<int[]> profilesList = Arrays.asList(profiles);
+
+//        FIXME
+//        final List<int[]> _profilesList = profilesList.subList(0, 1);
 
         //  Loop that iterate over 5/10 simulations for each profile
         for (int s = 0; s < numOfSimulations; s++) {
-            for (int student = minStudent; student < maxStudent; student++) {
-                try {
-                    System.out.printf("Start for student %d with profile %s %n", student,
-                            ArrayUtils.toString(profiles[student]));
+            final File simDir = new File("output/adaptive_entropy/sim_" + s);
+            simDir.mkdirs();
 
-                    BNsAdaptiveSurveySimulation aslat = new BNsAdaptiveSurveySimulation(student, profiles[student]);
+            final Path answersPath = Paths.get(simDir + "/answers.txt");
+            final Path initProfilePath = Paths.get(simDir + "/initial_profiles.txt");
+//            final Path finalProfilePath = Paths.get(simDir + "/predicted_profiles.txt");
+            final Path finalPosteriorProfilePath = Paths.get(simDir + "/final_posterior.txt");
+            final Path posteriorsProfilePath = Paths.get(simDir + "/posteriors.txt");
+
+            profilesList.parallelStream().forEach(profile -> {
+                try {
+                    int student = profilesList.indexOf(profile);
+                    long start = System.currentTimeMillis();
+                    System.out.printf("Started for student %d with profile %s %n", student,
+                            ArrayUtils.toString(profile));
+
+                    BNsAdaptiveSurveySimulation aslat = new BNsAdaptiveSurveySimulation(student, profile);
                     aslat.test();
 
-                    // Append to file the right and wrong answer count
-                    File right_dir = new File("output/right_answers/sim_" + s);
-                    right_dir.mkdirs();
+                    // Parse the outputs of the test
+                    String[] studentAnswers = Arrays.stream(aslat.studentAnswers)
+                            .mapToObj(String::valueOf)
+                            .toArray(String[]::new);
 
-                    File wrong_dir = new File("output/wrong_answers/sim_" + s);
-                    wrong_dir.mkdirs();
+                    String[][] priorResultsS = new String[aslat.priorResults.length][];
+//                    int[][] priorResultsD = new int[aslat.priorResults.length][];
+//                    String[] finalProfile = new String[profile.length];
 
-                    final Path right_out_path = Paths.get(right_dir + "/profile_" + student + ".txt");
-                    final Path wrong_out_path = Paths.get(wrong_dir + "/profile_" + student + ".txt");
+                    extractParsedPosteriors(priorResultsS, aslat.priorResults);
 
-                    appendToFile(aslat, right_out_path, wrong_out_path);
+//                    for (int i = 0; i < priorResultsD.length; i++) {
+//                        priorResultsD[i] = Arrays.stream(aslat.priorResults[i][0])
+//                                                 .map(x -> Math.round(x * scale))
+//                                                 .mapToInt(x -> (int)x)
+//                                                 .toArray();
+//
+//                        finalProfile[i] = Integer.toString(Objects.requireNonNull(
+//                                Case.findHighestValue1D(priorResultsD[i])).getRow());
+//                    }
+
+                    String[] finalPosteriorResults = Arrays.stream(priorResultsS)
+                                                      .flatMap(Arrays::stream)
+                                                      .toArray(String[]::new);
+
+                    String[] posteriorsResults = Arrays.stream(aslat.posteriors)
+                                                       .flatMap(x -> Arrays.stream(x).flatMap(Arrays::stream))
+                                                       .toArray(String[]::new);
+
+                    String[] initProfile = Arrays.stream(profile).mapToObj(String::valueOf).toArray(String[]::new);
+
+                    // Append the outputs to file
+                    synchronized (BNsAdaptiveSurveySimulation.class) {
+                        appendToFile(student, studentAnswers, answersPath);
+                        appendToFile(student, initProfile, initProfilePath);
+//                        appendToFile(student, finalProfile, finalProfilePath);
+                        appendToFile(student, finalPosteriorResults, finalPosteriorProfilePath);
+                        appendToFile(student, posteriorsResults, posteriorsProfilePath);
+                    }
+                    long end = System.currentTimeMillis();
+                    float msec = end - start;
+                    float sec = msec/1000F;
+                    float minutes = sec/60F;
+
+                    System.out.printf("%30s %d %s %.2f %s%n", "Finished for student", student, "in", minutes, "minutes");
+
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
-            }
-        }
-    }
-
-    private static synchronized void appendToFile(BNsAdaptiveSurveySimulation aslat, Path right_path, Path wrong_path) {
-        try (BufferedWriter bw = Files.newBufferedWriter(right_path, StandardOpenOption.CREATE, StandardOpenOption.APPEND)) {
-            bw.write(ArrayUtils.toString(aslat.rightQ) + "\n");
-
-        } catch (IOException ignored) {
-        }
-
-        try (BufferedWriter bw = Files.newBufferedWriter(wrong_path, StandardOpenOption.CREATE, StandardOpenOption.APPEND)) {
-            bw.write(ArrayUtils.toString(aslat.wrongQ) + "\n");
-        } catch (IOException ignored) {
+            });
         }
     }
 
@@ -147,20 +171,20 @@ public class BNsAdaptiveSurveySimulation {
      * Perform the adaptive test with the initialized data.
      */
     private void test() {
-        boolean stop;
-        do {
+        while (true) {
             // search for next question using
             double maxIG = 0.0;
             int nextSkill = -1;
             int nextDifficultyLevel = -1;
+            int[][] nextSkillAndLevelRank = new int[nSkills][nDifficultyLevels];
+            int incrementRank = 1;
 
             for (int s = 0; s < nSkills; s++) {
                 // Current prior
-                Object[] testOutput = AdaptiveTests.germanTest(bayesianFileName, s, rightQ, wrongQ);
+                Object[] testOutput = Tests.germanTest(bayesianFileName, s, rightQ, wrongQ);
                 priorResults[s] = (double[][]) testOutput[0];
                 answerLikelihood[s] = (double[][][]) testOutput[1];
 
-                // Entropy of the skill
                 for (int dl = 0; dl < nDifficultyLevels; dl++) {
                     if (Math.abs(priorResults[s][0][dl] - priorResults[s][1][dl]) >= 0.000001) {
                         System.err.println("Different lower and upper in priors!! " + priorResults[s][0][dl] + ", " +
@@ -169,18 +193,21 @@ public class BNsAdaptiveSurveySimulation {
                     }
                 }
 
+                // Entropy of the skill
                 double HS = H(priorResults[s][0]);
 
                 for (int dl = 0; dl < nDifficultyLevels; dl++) {
                     List<Integer> availableQuestions = questionSet.getQuestions(s, dl);
 
-                    // compute entropy only if we have questions available
+                    // Compute entropy only if we have questions available
                     if (availableQuestions.size() == 0) {
                         continue;
                     }
 
                     double[] HResults = new double[2];
-                    // in the first iteration of the loop simulate to answer wrong, in the secondo to answer right
+                    // Simulate the two possible outcomes:
+                    // in the first iteration of the loop answer wrong,
+                    // in the second answer right
                     for (int answer = 0; answer < 2; answer++) {
                         if (answer == 0) {
                             wrongQ[s][dl] += 1;
@@ -188,7 +215,7 @@ public class BNsAdaptiveSurveySimulation {
                             rightQ[s][dl] += 1;
                         }
 
-                        testOutput = AdaptiveTests.germanTest(bayesianFileName, s, rightQ, wrongQ);
+                        testOutput = Tests.germanTest(bayesianFileName, s, rightQ, wrongQ);
                         hypotheticalPosteriorResults[s] = (double[][]) testOutput[0];
 
                         computeEntropy(hypotheticalPosteriorResults[s], HResults, answer);
@@ -201,8 +228,8 @@ public class BNsAdaptiveSurveySimulation {
                         }
                     }
 
-                    rightAnswerProbability = 0;
-                    wrongAnswerProbability = 0;
+                    double rightAnswerProbability = 0;
+                    double wrongAnswerProbability = 0;
 
                     for (int sl = 0; sl < nSkillLevels; sl++) {
                         rightAnswerProbability += answerLikelihood[s][dl][sl][0] * priorResults[s][0][sl];
@@ -217,18 +244,33 @@ public class BNsAdaptiveSurveySimulation {
 
                     double H = HResults[0] * wrongAnswerProbability + HResults[1] * rightAnswerProbability;
 
-                    double ig = HS - H; // infogain
+                    double ig = HS - H;
 
-                    if (ig < 0.000001) {
-                        System.err.println("Negative information gain for skill " + s + " level " + dl +
-                                ": \n IG = HS" + " - H = " + HS + " - " + H + "=" + ig);
-                    }
-
+                    // Decide the optimal pair skill and level that will be used to choose the questions
                     if (ig > maxIG) {
                         maxIG = ig;
-                        nextSkill = s;
-                        nextDifficultyLevel = dl;
+                        nextSkillAndLevelRank[s][dl] += incrementRank;
+                        incrementRank++;
                     }
+                }
+            }
+
+            ArrayList<ArrayList<Integer>> nextSkillsAndLevels = new ArrayList<>();
+            boolean iterate = true;
+
+            while (iterate) {
+                Case highestValue = Case.findHighestValue2D(nextSkillAndLevelRank);
+
+                if (highestValue == null | highestValue.getValue() == 0) {
+                    iterate = false;
+                } else {
+                    ArrayList<Integer> nextSkillAndLevel = new ArrayList<>();
+
+                    nextSkillAndLevel.add(highestValue.getRow());
+                    nextSkillAndLevel.add(highestValue.getCol());
+                    nextSkillsAndLevels.add(nextSkillAndLevel);
+
+                    nextSkillAndLevelRank[highestValue.getRow()][highestValue.getCol()] = 0;
                 }
             }
 
@@ -237,44 +279,75 @@ public class BNsAdaptiveSurveySimulation {
                 break;
             }
 
-            // TODO:
-            //  Lets ask 40 questions,
-            //  10 easy, 10 medium-easy, 10 medium-hard, 10 hard
-            //  now we aske the same
+            if (questionSet.getAskedQuestion() == 80) {
+                System.err.println("BUG");
+            }
+            extractParsedPosteriors(posteriors[questionSet.getAskedQuestion()], priorResults);
 
-            // get available questions
+            //  Lets ask 80 questions:
+            //  5 questions for each skill and difficulty level,
+            //  in total, 20 easy, 20 medium-easy, 20 medium-hard, 20 hard
             List<Integer> availableQuestions = null;
 
             try {
-                availableQuestions = questionSet.getQuestions(nextSkill, nextDifficultyLevel);
+                for (ArrayList<Integer> skillAndLevel : nextSkillsAndLevels) {
+                    nextSkill = skillAndLevel.get(0);
+                    nextDifficultyLevel = skillAndLevel.get(1);
+
+                    availableQuestions = questionSet.getQuestions(nextSkill, nextDifficultyLevel);
+
+                    if (availableQuestions.size() > 0) {
+                        break;
+                    }
+                }
+                if (Objects.requireNonNull(availableQuestions).size() <= 0) {
+                    availableQuestions = questionSet.getQuestionsFromRemaining();
+                    nextSkill = -1;
+                    nextDifficultyLevel = -1;
+                }
             } catch (NullPointerException e) {
-                System.out.print(questionSet);
-                System.out.println("NullPointerException Caught\n");
-                System.out.println("No more answers available!\n");
-                break;
+                availableQuestions = questionSet.getQuestionsFromRemaining();
+                nextSkill = -1;
+                nextDifficultyLevel = -1;
             }
 
-            assert availableQuestions != null;
             int indexQ = random.nextInt(availableQuestions.size());
+            int indexA = availableQuestions.get(indexQ);
+
+            ArrayList<Integer> nextSkillAndLevel = questionSet.getKeys(indexA);
+
+            if (nextSkill == -1 & nextDifficultyLevel == -1) {
+                nextSkill = nextSkillAndLevel.get(0);
+                nextDifficultyLevel = nextSkillAndLevel.get(1);
+            } else {
+                assert (nextSkill == nextSkillAndLevel.get(0));
+                assert (nextDifficultyLevel == nextSkillAndLevel.get(1));
+            }
 
             // Sample the answer
-            Random random = new Random();
             double rd = random.nextDouble();
 
             //  if the random double sampled 'rd' is higher than
             //  answerLikelihood[nextSkill][nextDifficultyLevel][skillLevel][0]
             //  the answer to the question is true, else false
             int answer = 0;
+
             if (rd < answerLikelihood[nextSkill][nextDifficultyLevel][profile[nextSkill]][0]) {
                 answer = 1;
             }
-            System.out.printf("Asked question %d, answer %d%n next skill %d, " +
-                              "next difficulty level %d, (H=%.4f)%n", question, answer,
-                               nextSkill, nextDifficultyLevel, maxIG);
 
-            questionAnswered++;
+            // Save the answer of the student
+            studentAnswers[indexA] = answer;
+
+            // Mark the question as answered and remove it from the list of available questions
             availableQuestions.remove(indexQ);
-            questionSet.revomeQuestion();
+            if (questionSet.getRemainingQuestions().contains(indexA)) {
+                System.err.println("BUG");
+            }
+            if (studentAnswers[indexA] == -1) {
+                System.err.println("BUG");
+            }
+            questionSet.addAskedQuestion();
 
             if (answer == 0) {
                 wrongQ[nextSkill][nextDifficultyLevel] += 1;
@@ -282,64 +355,20 @@ public class BNsAdaptiveSurveySimulation {
                 rightQ[nextSkill][nextDifficultyLevel] += 1;
             }
 
-            // stop criteria
-            stop = true;
-            for (int s = 0; s < nSkills; s++) {
-                Object[] output = AdaptiveTests.germanTest(bayesianFileName, s, rightQ, wrongQ);
-                posteriorResults[s] = (double[][]) output[0];
-
-                // entropy of the skill
-                for (int dl = 0; dl < nDifficultyLevels; dl++) {
-                    if (Math.abs(posteriorResults[s][0][dl] - posteriorResults[s][1][dl]) >= 0.000001) {
-                        System.err.println("Different lower and upper in posteriors!! " + posteriorResults[s][0][dl] +
-                                ", " + posteriorResults[s][1][dl]);
-                        break;
-                    }
-                }
-                double HS = H(posteriorResults[s][0]);
-
-                if (HS > STOP_THRESHOLD) {
-                    System.out.println("HS(s=" + s + ") = " + HS + ", HS > STOP_THRESHOLD, continue");
-                    stop = false;
-                    break;
-                } else {
-                    System.out.println("HS(s=" + s + ") = " + HS + ", HS < STOP_THRESHOLD");
-                }
-            }
-
+            // All questions done
             if (questionSet.isEmpty()) {
-                System.out.println("All questions done!");
                 break;
             }
-
-            question++;
-
-        } while (!stop);
-        System.out.println("\n--------------------------------------------\n");
-
-        System.out.printf("Skills probabilities %s%n", ArrayUtils.toString(posteriorResults));
-        System.out.printf("Right answers %s%n", ArrayUtils.toString(rightQ));
-        System.out.printf("Wrong answers %s%n", ArrayUtils.toString(wrongQ));
-
-        double[] rightA = new double[nSkills];
-        double[] totalA = new double[nSkills];
-        double[] rightAnswerPercentage = new double[nSkills];
-
-        for (int s = 0; s < nSkills; s++) {
-            for (int dl = 0; dl < nDifficultyLevels; dl++) {
-                rightA[s] += rightQ[s][dl];
-                totalA[s] += rightQ[s][dl] + wrongQ[s][dl];
-            }
         }
+    }
 
-        for (int s = 0; s < nSkills; s++) {
-            rightAnswerPercentage[s] = rightA[s] / totalA[s];
+    private static void extractParsedPosteriors(String[][] posteriorsArray, double[][][] priorsArray) {
+        for (int i = 0; i < posteriorsArray.length; i++) {
+            posteriorsArray[i] = Arrays.stream(priorsArray[i][0])
+                                       .map(x -> Math.round(x * BNsAdaptiveSurveySimulation.scale) / BNsAdaptiveSurveySimulation.scale)
+                                       .mapToObj(String::valueOf)
+                                       .toArray(String[]::new);
         }
-
-        System.out.printf("Total questions %s%n", ArrayUtils.toString(totalA));
-        System.out.printf("Percentage of correct answer %s%n", ArrayUtils.toString(rightAnswerPercentage));
-        System.out.printf("Average of correct answer %.2f%%%n", Stats.meanOf(rightAnswerPercentage));
-        System.out.println("\n--------------------------------------------\n");
     }
 
     private void computeEntropy(double[][] results, double[] HResults, int r) {
@@ -364,16 +393,21 @@ public class BNsAdaptiveSurveySimulation {
         return -h;
     }
 
-    private double[][][] getResults() {
-        double[][][] result = new double[nSkills][][];
-        Object[] testResult;
+    private static void appendToFile(int id, String[] variable, Path outputPath) {
 
-        for (int s = 0; s < nSkills; s++) {
+        try (BufferedWriter bw = Files.newBufferedWriter(outputPath, StandardOpenOption.CREATE, StandardOpenOption.APPEND)) {
+            bw.write(id + ", ");
+            for (String item : variable){
+                bw.write(item + ", ");
+            }
+            bw.write( "\n");
 
-            testResult = AdaptiveTests.germanTest(bayesianFileName, s, rightQ, wrongQ);
-            result[s] = (double[][]) testResult[0];
+        } catch (IOException ignored) {
         }
-
-        return result;
     }
+
+    public int getStudent() {
+        return student;
+    }
+
 }

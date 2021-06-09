@@ -7,28 +7,26 @@ import java.io.FileNotFoundException;
 import java.util.*;
 
 /**
- * Author:  Claudio "Dna" Bonesana
- * Project: Credo3
- * Date:    22.02.2017 15:15
+ * Author:  Giorgia Adorni
+ * Date:    28.01.2020 14:00
  */
-class QuestionSet {
+public class QuestionSet {
 
-    private static final String[] levels = {"A1", "A2", "B1", "B2"};
+//    private static final String[] levels = {"A1", "A2", "B1", "B2"};
     private static final String[] skills = {"Horen", "Kommunikation", "Lesen", "Wortschatz"};
+    private static final String[] difficulties = {"easy", "medium-easy", "medium-hard", "hard"};
 
-    /**
-     * ID Skill -> ID Level -> Question
-     */
     private Map<Integer, Map<Integer, List<Integer>>> questions = null;
     private int questionNum = 0;
+    private int askedQuestion = 0;
 
-    void loadKeyList() {
+    public void loadKeyList() {
         questions = new HashMap<>();
 
         for (int s = 0; s < skills.length; s++) {
             questions.put(s, new HashMap<>());
-            for (int l = 0; l < skills.length; l++) {
-                questions.get(s).put(l, new ArrayList<>());
+            for (int d = 0; d < difficulties.length; d++) {
+                questions.get(s).put(d, new ArrayList<>());
             }
         }
 
@@ -38,10 +36,10 @@ class QuestionSet {
                 String[] tokens = line.split(" ");
 
                 int id = Integer.parseInt(tokens[0]);
-                int lvl = ArrayUtils.indexOf(levels, tokens[2]);
-                int skill = ArrayUtils.indexOf(skills, tokens[3]);
+                int difficulty = ArrayUtils.indexOf(difficulties, tokens[1]);
+                int skill = ArrayUtils.indexOf(skills, tokens[2]);
 
-                questions.get(skill).get(lvl).add(id);
+                questions.get(skill).get(difficulty).add(id);
                 questionNum++;
             }
         } catch (FileNotFoundException e) {
@@ -49,18 +47,82 @@ class QuestionSet {
         }
     }
 
-    List<Integer> getQuestions(int skill, int level) {
+    public List<Integer> getQuestions(int skill, int difficulty) {
         if (questions == null) {
             loadKeyList();
         }
-        return questions.get(skill).get(level);
+        return questions.get(skill).get(difficulty);
     }
 
-    boolean isEmpty() {
-        return questionNum == 0;
+    public List<Integer> getRemainingQuestions() {
+        if (questions == null) {
+            loadKeyList();
+        }
+
+        List<Integer> remainingQuestions = new ArrayList<>();
+        for (int s = 0; s < skills.length; s++) {
+            for (int d = 0; d < difficulties.length; d++) {
+                if (questions.get(s).get(d).size() != 0) {
+                    remainingQuestions.addAll(questions.get(s).get(d));
+                }
+            }
+        }
+
+        return remainingQuestions;
     }
 
-    public void revomeQuestion() {
-        questionNum--;
+    public List<Integer> getQuestionsFromRemaining() {
+        List<Integer> remainingQuestions = getRemainingQuestions();
+
+        int nextSkill = getKeys(remainingQuestions.get(0)).get(0);
+        int nextDifficultyLevel = getKeys(remainingQuestions.get(0)).get(1);
+
+        return questions.get(nextSkill).get(nextDifficultyLevel);
+    }
+
+    public ArrayList<Integer> getKeys(Integer value) {
+        if (questions == null) {
+            loadKeyList();
+        }
+        ArrayList<Integer> nextSkillAndLevel = new ArrayList<>();
+
+        for (int s = 0; s < skills.length; s++) {
+            for (int d = 0; d < difficulties.length; d++) {
+                for (Integer val : questions.get(s).get(d)) {
+                    if (val.equals(value)) {
+                        nextSkillAndLevel.add(s);
+                        nextSkillAndLevel.add(d);
+
+                        return nextSkillAndLevel;
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+    int getQuestionNum() {
+        return questionNum;
+    }
+
+    public boolean isEmpty() {
+        boolean empty = getRemainingQuestions().size() == 0;
+        boolean asked = getAskedQuestion() == 80;
+        if (empty != asked) {
+            System.err.println("Asked all the questions but some are still in the list ");
+        }
+        return empty;
+    }
+
+    public int getAskedQuestion() {
+        return askedQuestion;
+    }
+
+    public void setAskedQuestion(int askedQuestion) {
+        this.askedQuestion = askedQuestion;
+    }
+
+    public void addAskedQuestion() {
+        askedQuestion ++;
     }
 }

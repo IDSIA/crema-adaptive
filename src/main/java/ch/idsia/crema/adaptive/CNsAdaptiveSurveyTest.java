@@ -64,7 +64,7 @@ public class CNsAdaptiveSurveyTest {
 
     private final AnswerSet[] questionsPerSkill = new AnswerSet[nSkills];
 
-    private final AdaptiveTests AdaptiveTests;
+    private final Tests Tests;
     private final AbellanEntropy abellanEntropy;
     private final QuestionSet questionSet;
     private final Random random;
@@ -83,7 +83,7 @@ public class CNsAdaptiveSurveyTest {
         this.student = student;
 
         random = new Random(randomSeed + student);
-        AdaptiveTests = new AdaptiveTests();
+        Tests = new Tests();
         abellanEntropy = new AbellanEntropy();
         questionSet = new QuestionSet();
         questionSet.loadKeyList();
@@ -188,7 +188,7 @@ public class CNsAdaptiveSurveyTest {
 
             for (int s = 0; s < nSkills; s++) {
                 // Current prior
-                Object[] testOutput = AdaptiveTests.germanTest(credalFileName, s, rightQ, wrongQ);
+                Object[] testOutput = Tests.germanTest(credalFileName, s, rightQ, wrongQ);
                 priorResults[s] = (double[][]) testOutput[0];
                 answerLikelihood[s] = (double[][][]) testOutput[1];
 
@@ -214,7 +214,7 @@ public class CNsAdaptiveSurveyTest {
                             rightQ[s][dl] += 1;
                         }
 
-                        testOutput = AdaptiveTests.germanTest(credalFileName, s, rightQ, wrongQ);
+                        testOutput = Tests.germanTest(credalFileName, s, rightQ, wrongQ);
                         hypotheticalPosteriorResults[s] = (double[][]) testOutput[0];
 
                         if (answer == 0) {
@@ -237,7 +237,6 @@ public class CNsAdaptiveSurveyTest {
 
                     // FIXME
                     for (int sl = 0; sl < nSkillLevels; sl++) {
-                        // answerLikelihood[s][dl][sl][0] not 0
                         rightAnswerProbability += answerLikelihood[s][dl][sl][0] * priorResults[s][0][sl];
                         wrongAnswerProbability += (1 - answerLikelihood[s][dl][sl][0]) * priorResults[s][0][sl];
                     }
@@ -301,7 +300,6 @@ public class CNsAdaptiveSurveyTest {
 
             questionAnswered++;
             availableQuestions.remove(indexQ);
-            questionSet.revomeQuestion();
 
             if (answer == 0) {
                 wrongQ[nextSkill][nextDifficultyLevel] += 1;
@@ -312,7 +310,7 @@ public class CNsAdaptiveSurveyTest {
             // stop criteria
             stop = true;
             for (int s = 0; s < nSkills; s++) {
-                Object[] output = AdaptiveTests.germanTest(credalFileName, s, rightQ, wrongQ);
+                Object[] output = Tests.germanTest(credalFileName, s, rightQ, wrongQ);
                 posteriorResults[s] = (double[][]) output[0];
 
                 // entropy of the skill
@@ -372,7 +370,7 @@ public class CNsAdaptiveSurveyTest {
 
         for (int s = 0; s < nSkills; s++) {
 
-            testResult = AdaptiveTests.germanTest(credalFileName, s, rightQ, wrongQ);
+            testResult = Tests.germanTest(credalFileName, s, rightQ, wrongQ);
             result[s] = (double[][]) testResult[0];
         }
 

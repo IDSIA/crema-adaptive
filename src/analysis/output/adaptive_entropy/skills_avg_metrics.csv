@@ -1,0 +1,2 @@
+skill_0_accuracy, skill_1_accuracy, skill_2_accuracy, skill_3_accuracy, skill_0_precision, skill_1_precision, skill_2_precision, skill_3_precision, skill_0_recall, skill_1_recall, skill_2_recall, skill_3_recall, skill_0_f1_score, skill_1_f1_score, skill_2_f1_score, skill_3_f1_score
+0.703125, 0.671875, 0.636719, 0.722656, 0.857143, 0.551282, 0.573944, 0.848624, 0.703125, 0.671875, 0.636719, 0.722656, 0.772532, 0.605634, 0.603704, 0.780591

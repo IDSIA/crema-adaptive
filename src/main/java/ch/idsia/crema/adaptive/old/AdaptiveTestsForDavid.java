@@ -1,28 +1,27 @@
-package ch.idsia.crema.adaptive;
+package ch.idsia.crema.adaptive.old;
 
+import ch.idsia.crema.adaptive.AdaptiveFileTools;
+import ch.idsia.crema.core.Strides;
 import ch.idsia.crema.factor.GenericFactor;
 import ch.idsia.crema.factor.bayesian.BayesianFactor;
 import ch.idsia.crema.factor.credal.linear.IntervalFactor;
-import ch.idsia.crema.inference.approxlp.Inference;
-import ch.idsia.crema.model.Strides;
-import ch.idsia.crema.model.graphical.SparseModel;
-import ch.idsia.crema.preprocess.RemoveBarren;
-import ch.idsia.crema.search.ISearch;
-import ch.idsia.crema.search.impl.GreedyWithRandomRestart;
+import ch.idsia.crema.model.graphical.DAGModel;
+import ch.idsia.crema.utility.ArraysUtil;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 
-public class AdaptiveTests_old {
+public class AdaptiveTestsForDavid {
 
 	// Global variables
 	public static final int nSkills = 4; // Number of skill variables
 	public static final int nLevels = 4; // Number of state for the skill variables
-	public static final double cutOff = 1E-3; // Cutoff to remove numerical problems
+	public static final double cutOff = 1E-2; // Cutoff to remove numerical problems
 	public static final String myPath = "adaptive/"; // Path to find input/output files
-	public static final int nStudents = 3; // Number of students
+	public static final int nStudents = 1; // Number of students FIXME
 
 	public static void main(String[] args) {
 
@@ -32,22 +31,23 @@ public class AdaptiveTests_old {
 
 		// Read the credal net and create a file with the Bayesian network
 		System.out.println("Converting the credal in a Bayesian net ...");
-		AdaptiveFileTools.writeBNFile(myPath + credalFileName);
+		new AdaptiveFileTools().writeBNFile(myPath + credalFileName);
 		System.out.println("Inference time ...");
-
-//		// Demonstrative answers sequence
-//		double[][] right2 = {{0.0, 7.0, 9.0, 10.0}, {0.0, 8.0, 8.0, 7.0}, {0.0, 5.0, 5.0, 5.0}, {0.0, 4.0, 6.0, 1.0}};
-//		double[][] wrong2 = {{0.0, 6.0, 5.0, 5.0}, {0.0, 4.0, 7.0, 3.0}, {0.0, 1.0, 2.0, 5.0}, {0.0, 5.0, 8.0, 9.0}};
-
+		double[][][] right2 = {{{0.0, 6.0, 9.0, 10.0}, {0.0, 0.0, 0.0, 0.0}, {0.0, 4.0, 5.0, 4.0}, {0.0, 3.0, 6.0, 0.0}}};
+		double[][][] wrong2 = {{{0.0, 4.0, 1.0, 0.0}, {0.0, 8.0, 8.0, 8.0}, {0.0, 1.0, 0.0, 1.0}, {0.0, 3.0, 4.0, 10.0}}};
+		// Demonstrative answers sequence
+		//double[][][] right2 = {{{1.0, 7.0, 9.0, 10.0},{0.0, 8.0, 8.0, 7.0},{0.0, 5.0, 5.0, 5.0},{0.0, 4.0, 6.0, 1.0}}};
+		//double[][][] wrong2 = {{{0.0, 1.0, 2.0, 5.0},{0.0, 4.0, 7.0, 3.0},{0.0, 1.0, 2.0, 5.0},{0.0, 5.0, 8.0, 9.0}}};
 		// Whole set of answers
-		double[][][] right2 = {{{0.0, 4.0, 5.0, 5.0}, {0.0, 4.0, 1.0, 5.0}, {0.0, 4.0, 3.0, 0.0}, {0.0, 1.0, 2.0, 1.0}}, {{0.0, 3.0, 6.0, 2.0}, {0.0, 4.0, 1.0, 1.0}, {0.0, 3.0, 2.0, 0.0}, {0.0, 2.0, 4.0, 4.0}}, {{0.0, 5.0, 0.0, 0.0}, {0.0, 1.0, 0.0, 0.0}, {0.0, 0.0, 0.0, 0.0}, {0.0, 0.0, 0.0, 0.0}}};
-		double[][][] wrong2 = {{{0.0, 6.0, 5.0, 5.0}, {0.0, 4.0, 7.0, 3.0}, {0.0, 1.0, 2.0, 5.0}, {0.0, 5.0, 8.0, 9.0}}, {{0.0, 7.0, 4.0, 8.0}, {0.0, 4.0, 7.0, 7.0}, {0.0, 2.0, 3.0, 5.0}, {0.0, 4.0, 6.0, 6.0}}, {{0.0, 5.0, 10.0, 10.0}, {0.0, 7.0, 8.0, 8.0}, {0.0, 5.0, 5.0, 5.0}, {0.0, 6.0, 10.0, 10.0}}};
+		//double[][][] right2 = {{{0.0, 4.0, 5.0, 5.0},{0.0, 4.0, 1.0, 5.0},{0.0, 4.0, 3.0, 0.0},{0.0, 1.0, 2.0, 1.0}}, {{0.0, 3.0, 6.0, 2.0},{0.0, 4.0, 1.0, 1.0},{0.0, 3.0, 2.0, 0.0},{0.0, 2.0, 4.0, 4.0}}, {{0.0, 5.0, 0.0, 0.0},{0.0, 1.0, 0.0, 0.0},{0.0, 0.0, 0.0, 0.0},{0.0, 0.0, 0.0, 0.0}}};
+		//double[][][] wrong2 = {{{10.0, 6.0, 5.0, 5.0},{0.0, 4.0, 7.0, 3.0},{0.0, 1.0, 2.0, 5.0},{0.0, 5.0, 8.0, 9.0}}, {{0.0, 7.0, 4.0, 8.0},{0.0, 4.0, 7.0, 7.0},{0.0, 2.0, 3.0, 5.0},{0.0, 4.0, 6.0, 6.0}}, {{0.0, 5.0, 10.0, 10.0},{0.0, 7.0, 8.0, 8.0},{0.0, 5.0, 5.0, 5.0},{0.0, 6.0, 10.0, 10.0}}};
 
 		// Initialise objects
-		AdaptiveTests_old myTest = new AdaptiveTests_old();
+		AdaptiveTestsForDavid myTest = new AdaptiveTestsForDavid();
+		//AbellanEntropy Abellan = new AbellanEntropy();
 
 		// Local variables
-		double[][] results;
+		double[][] results = new double[4][2];
 		long startTime, difference;
 
 		// Start the clock (elapsed time)
@@ -62,17 +62,16 @@ public class AdaptiveTests_old {
 				// Compute and print the results of the credal
 				results = myTest.germanTest(myPath + credalFileName, skill, right2[student], wrong2[student]);
 				System.out.print("[ID" + student + "][S" + skill + "][Credal L]\t");
-				for (double p : results[0]) System.out.printf(Locale.ROOT, "%2.3f\t", p * 100);
+				for (double p : results[0]) System.out.print(String.format(Locale.ROOT, "%2.3f\t", p * 100));
 				System.out.print("\n");
 				System.out.print("[ID" + student + "][S" + skill + "][Credal U]\t");
-				for (double p : results[1]) System.out.printf(Locale.ROOT, "%2.3f\t", p * 100);
+				for (double p : results[1]) System.out.print(String.format(Locale.ROOT, "%2.3f\t", p * 100));
 				System.out.print("\n");
 
 				// Compute and print the results of the Bayesian
 				results = myTest.germanTest(myPath + bayesFileName, skill, right2[student], wrong2[student]);
 				System.out.print("[ID" + student + "][S" + skill + "][Bayes]\t\t");
-//				Same upper and lower bounds in case of a Bayesian inference
-				for (double p : results[0]) System.out.printf(Locale.ROOT, "%2.3f\t", p * 100);
+				for (double p : results[0]) System.out.print(String.format(Locale.ROOT, "%2.3f\t", p * 100));
 				System.out.print("\n");
 			}
 		}
@@ -84,12 +83,17 @@ public class AdaptiveTests_old {
 						- TimeUnit.MINUTES.toSeconds(TimeUnit.NANOSECONDS.toMinutes(difference))));
 	}
 
-	/**
-	 * Multiply a logarithmic CPT by a constant and exponentiate.
-	 *
-	 * @param logTab logarithmic CPT
-	 * @return exponential value of the CPT
-	 */
+	//System.out.println("H="+Arrays.toString(Abellan.getMaxEntro(results[0],results[1])));
+
+	public static double round(double value, int places) {
+		if (places < 0) throw new IllegalArgumentException();
+
+		BigDecimal bd = new BigDecimal(value);
+		bd = bd.setScale(places, RoundingMode.HALF_UP);
+		return bd.doubleValue();
+	}
+
+	// Multiply a logarithmic CPT by a constant and exponentiate
 	public double[][] fromLogsToProbs(double[][] logTab) {
 
 		// Initialise the output
@@ -104,22 +108,30 @@ public class AdaptiveTests_old {
 		// Renormalization
 		for (int i = 0; i < nLevels; i++) {
 			for (int j = 0; j < 2; j++) {
-				probs[i][j] = Math.exp(logTab[i][j] - maximumLog);
-				if (probs[i][j] < cutOff)
-					probs[i][j] = cutOff;
-				//				if(probs[i][0]>probs[i][1]){
-//					double tmp;
-//					tmp = probs[i][0];
-//					probs[i][0] = probs[i][1];
-//					probs[i][1] = tmp;
-//				}
-				//System.out.println(Arrays.toString(probs[i]));
+				probs[i][j] = Math.exp(logTab[i][j] - maximumLog - 0.0);
 			}
 		}
+
+		for (int i = 0; i < nLevels; i++)
+			System.out.println(Arrays.toString(probs[i]));
+		//if(probs[i][j]<cutOff)
+		//	probs[i][j]=cutOff;
+		//if(probs[i][j]>1.0-cutOff)
+		//	probs[i][j]=1.0-cutOff;
+
+		//				if(probs[i][0]>probs[i][1]){
+		//					double tmp;
+		//					tmp = probs[i][0];
+		//					probs[i][0] = probs[i][1];
+		//					probs[i][1] = tmp;
+		//				}
+		//System.out.println(Arrays.toString(probs[i]));
+		//}}
 
 		return probs;
 	}
 
+	//@Test
 	// s is the skill under consideration
 	public double[][] germanTest(String fileName, int queriedSkill, double[][] rightQ, double[][] wrongQ) {
 
@@ -127,11 +139,11 @@ public class AdaptiveTests_old {
 		//  v     v     v     v
 		// Q0     Q1    Q2    Q3
 
-		// Vertex Specification
-		SparseModel<GenericFactor> model = new SparseModel<>();
+		DAGModel<GenericFactor> model = new DAGModel<>();
 
 		// Read probabilities from external file
-		double[][] cnPars = AdaptiveFileTools.readMyFile(fileName);
+		AdaptiveFileTools myTools = new AdaptiveFileTools();
+		double[][] cnPars = myTools.readMyFile(fileName);
 
 		// -------------- //
 		// SET THE SKILLS //
@@ -139,14 +151,20 @@ public class AdaptiveTests_old {
 		// Prepare the domains of the skills (nLevels states each)
 		// Local models over the skills initialized
 		IntervalFactor[] sFact = new IntervalFactor[nSkills]; // Array of factors
-		Strides[] domSkill = new Strides[nSkills];
+		Strides domSkill[] = new Strides[nSkills];
 		int[] skill = new int[nSkills];
+		double myEps = 1E-10;
+
 
 		for (int s = 0; s < nSkills; s++) {
 			skill[s] = model.addVariable(nLevels);
 			domSkill[s] = Strides.as(skill[s], nLevels);
 			//for(int i=0;i<9;i++)
 			//	ArraysUtil.roundArrayToTarget(cnPars[i],1.0,myEps);
+
+			for (int i = 0; i < 10; i++)
+				ArraysUtil.roundArrayToTarget(cnPars[i], 1.0, 1E-2);
+
 
 			if (s == 0) {
 				sFact[s] = new IntervalFactor(domSkill[s], Strides.EMPTY);
@@ -169,8 +187,8 @@ public class AdaptiveTests_old {
 		// ----------------------------- //
 		// PARSE THE QUESTION PARAMETERS //
 		// ----------------------------- //
-
 		double[][][] qType = new double[nLevels][nLevels][2];
+		// FIXME PUT A LOOP HERE
 		qType[0][0] = Arrays.copyOfRange(cnPars[10], 0, 2);
 		qType[0][1] = Arrays.copyOfRange(cnPars[11], 0, 2);
 		qType[0][2] = Arrays.copyOfRange(cnPars[12], 0, 2);
@@ -199,7 +217,7 @@ public class AdaptiveTests_old {
 		IntervalFactor[] qFact = new IntervalFactor[nQuestions]; // Array of factors	
 
 		// Prepare the domains of the questions (two states each)
-		Strides[] domQuestion = new Strides[nQuestions];
+		Strides domQuestion[] = new Strides[nQuestions];
 		int[] question = new int[nQuestions];
 		for (int s = 0; s < nQuestions; s++) {
 			question[s] = model.addVariable(2);
@@ -209,7 +227,6 @@ public class AdaptiveTests_old {
 			double[][] lP = new double[nLevels][2];
 			double[][] uP = new double[nLevels][2];
 
-//			Computing the entropy
 			for (int l = 0; l < nLevels; l++) {
 				for (int l2 = 0; l2 < 4; l2++) {
 					myLogs[l][0] += Math.log(qType[l2][l][0]) * rightQ[s][l2];
@@ -220,32 +237,32 @@ public class AdaptiveTests_old {
 			}
 
 			double[][] probs = fromLogsToProbs(myLogs);
-
+			//System.out.println();
 			for (int l = 0; l < nLevels; l++) {
 				lP[l][0] = probs[l][0];
 				uP[l][0] = probs[l][1];
 				lP[l][1] = 1.0 - probs[l][1];
 				uP[l][1] = 1.0 - probs[l][0];
-//				if(uP[l][1]==1.0)
-//					lP[l][0]= 0.0;
-//				if(uP[l][0]==1.0)
-//					lP[l][1]=0.0;
-//				if(lP[l][1]==1.0)
-//					uP[l][0]=0.0;
-//				if(lP[l][0]==1.0)
-//					lP[l][1] = 0.99999;
-//				if(uP[l][1]==1.0)
-//					lP[l][0] = 0.99999;
-//				if(uP[l][0]==1.0)
-//					lP[l][1] = 0.99999;
-//				if(lP[l][1]==1.0)
-//					lP[l][0] = 0.99999;
-//				if(lP[l][0]==1.0)
-//					lP[l][1] = 0.99999;
+				//				if(uP[l][1]==1.0)
+				//					lP[l][0]= 0.0;
+				//				if(uP[l][0]==1.0)
+				//					lP[l][1]=0.0;
+				//				if(lP[l][1]==1.0)
+				//					uP[l][0]=0.0;
+				//				if(lP[l][0]==1.0)
+				//					lP[l][1] = 0.99999;
+				//				if(uP[l][1]==1.0)
+				//					lP[l][0] = 0.99999;
+				//				if(uP[l][0]==1.0)
+				//					lP[l][1] = 0.99999;
+				//				if(lP[l][1]==1.0)
+				//					lP[l][0] = 0.99999;
+				//				if(lP[l][0]==1.0)
+				//					lP[l][1] = 0.99999;
 				//lP[l][1] = 0.0;-probs[l][1];
 				//uP[l][1] = 1.0-probs[l][0];				
-				//System.out.println("L"+Arrays.toString(lP[l]));
-				//System.out.println("U"+Arrays.toString(uP[l]));
+				System.out.println("L" + Arrays.toString(lP[l]));
+				System.out.println("U" + Arrays.toString(uP[l]));
 				qFact[s].setLower(lP[l].clone(), l);
 				qFact[s].setUpper(uP[l].clone(), l);
 			}
@@ -273,6 +290,9 @@ public class AdaptiveTests_old {
 		fDummy.setValue(1.0, 1, 1, 1, 0, 0);
 		fDummy.setValue(1.0, 1, 1, 1, 1, 0);
 		model.setFactor(dummy, fDummy);
+
+/*
+        TODO: incompatible with CREMA 0.1.7.RC3
 		model = new RemoveBarren().execute(model, skill[queriedSkill], dummy);
 
 		// Compute the inferences
@@ -282,10 +302,9 @@ public class AdaptiveTests_old {
 			put(GreedyWithRandomRestart.MAX_RESTARTS, "4");
 			put(GreedyWithRandomRestart.MAX_PLATEAU, "2");
 		}});
-
+		IntervalFactor resultsALP = null;
 		try {
-			IntervalFactor resultsALP = approx.query(model, skill[queriedSkill], dummy);
-			// Return the results of ApproxLP
+			resultsALP = approx.query(model, skill[queriedSkill], dummy);        // Return the results of ApproxLP
 			double[][] output = new double[2][nLevels];
 			output[0] = resultsALP.getLower();
 			output[1] = resultsALP.getUpper();
@@ -293,7 +312,7 @@ public class AdaptiveTests_old {
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
-
+*/
 		return null;
 	}
 }

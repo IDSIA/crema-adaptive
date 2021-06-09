@@ -1,17 +1,12 @@
 package ch.idsia.crema.adaptive;
 
+import ch.idsia.crema.core.Strides;
 import ch.idsia.crema.factor.GenericFactor;
 import ch.idsia.crema.factor.bayesian.BayesianFactor;
 import ch.idsia.crema.factor.credal.linear.IntervalFactor;
-import ch.idsia.crema.inference.approxlp.Inference;
-import ch.idsia.crema.model.Strides;
-import ch.idsia.crema.model.graphical.SparseModel;
-import ch.idsia.crema.preprocess.RemoveBarren;
-import ch.idsia.crema.search.ISearch;
-import ch.idsia.crema.search.impl.GreedyWithRandomRestart;
+import ch.idsia.crema.model.graphical.DAGModel;
 
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 
@@ -20,7 +15,7 @@ import java.util.concurrent.TimeUnit;
  * Project: Crema
  * Date:    24.11.2020 11:40
  */
-public class AdaptiveTests {
+public class Tests {
 
     // Global variables
     public static final int nSkills = 4; // Number of skill variables
@@ -41,7 +36,7 @@ public class AdaptiveTests {
         double[][][] wrongQ = {{{0.0, 6.0, 5.0, 5.0}, {0.0, 4.0, 7.0, 3.0}, {0.0, 1.0, 2.0, 5.0}, {0.0, 5.0, 8.0, 9.0}}, {{0.0, 7.0, 4.0, 8.0}, {0.0, 4.0, 7.0, 7.0}, {0.0, 2.0, 3.0, 5.0}, {0.0, 4.0, 6.0, 6.0}}, {{0.0, 5.0, 10.0, 10.0}, {0.0, 7.0, 8.0, 8.0}, {0.0, 5.0, 5.0, 5.0}, {0.0, 6.0, 10.0, 10.0}}};
 
         // Initialise objects
-        AdaptiveTests myTest = new AdaptiveTests();
+        Tests myTest = new Tests();
 
         // Local variables
         double[][] results;
@@ -110,7 +105,7 @@ public class AdaptiveTests {
         // Q0     Q1    Q2    Q3
 
         // Vertex Specification
-        SparseModel<GenericFactor> model = new SparseModel<>();
+        DAGModel<GenericFactor> model = new DAGModel<>();
 
         // Read probabilities from external file
         double[][] netPars = AdaptiveFileTools.readMyFile(fileName);
@@ -190,12 +185,9 @@ public class AdaptiveTests {
             double[][] lP = new double[skillLevels][2];
             double[][] uP = new double[skillLevels][2];
 
-//			Computing the entropy
+  			// Computing the entropy
             for (int sl = 0; sl < skillLevels; sl++) { // livelli skill
                 for (int dl = 0; dl < difficultyLevels; dl++) { // livelli di difficoltá
-//                    FIXME: altra cosa che non torna, nel codice in BNsAdaptiveSurvey rightQ é chiamato
-//                     askedQuestion mentre wrongQ rightQuestion. Quindi non capisco la corrispondenza tra le due
-//                     cose...
                     myLogs[sl][0] += Math.log(questionsCPT[dl][sl][0]) * rightQ[s][dl];
                     myLogs[sl][1] += Math.log(questionsCPT[dl][sl][1]) * rightQ[s][dl];
                     myLogs[sl][0] += Math.log(1.0 - questionsCPT[dl][sl][1]) * wrongQ[s][dl];
@@ -203,11 +195,9 @@ public class AdaptiveTests {
                 }
             }
 
-            // FIXME likelihood??
             double[][] probs = fromLogsToProbs(myLogs);
 
             for (int skillLevel = 0; skillLevel < skillLevels; skillLevel++) {
-                //  FIXME perchè nel lower usa prima [skillLevel][0] e poi [skillLevel][1] ???? é giusto?
                 lP[skillLevel][0] = probs[skillLevel][0];
                 lP[skillLevel][1] = 1.0 - probs[skillLevel][1];
 
@@ -217,7 +207,7 @@ public class AdaptiveTests {
                 qFact[s].setLower(lP[skillLevel].clone(), skillLevel);
                 qFact[s].setUpper(uP[skillLevel].clone(), skillLevel);
             }
-            // FIXME likelihood??
+
             model.setFactor(question[s], qFact[s]);
         }
 
@@ -243,6 +233,10 @@ public class AdaptiveTests {
         fDummy.setValue(1.0, 1, 1, 1, 0, 0);
         fDummy.setValue(1.0, 1, 1, 1, 1, 0);
         model.setFactor(dummy, fDummy);
+
+/*
+        TODO: incompatible with CREMA 0.1.7.RC3
+
         model = new RemoveBarren().execute(model, skill[queriedSkill], dummy);
 
         // Compute the inferences
@@ -260,6 +254,9 @@ public class AdaptiveTests {
             posteriors[0] = resultsALP.getLower();
             posteriors[1] = resultsALP.getUpper();
 
+            // TODO: ritornare anche la probabilitá di rispondere giusto/sbagliato
+            
+
             // Return, in addition to the probability of the skill (posterior or the updated prior), the
             // probability of the answer given the skill, used in BNsAdaptiveSurvey to compute the probability of the
             // answer
@@ -271,7 +268,7 @@ public class AdaptiveTests {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-
+*/
         return null;
     }
 }
